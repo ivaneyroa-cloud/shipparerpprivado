@@ -385,12 +385,19 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ error: 'El super administrador no puede ser eliminado' }, { status: 403 });
         }
 
-        // Delete profile first, then auth user
-        await supabaseAdmin.from('profiles').delete().eq('id', userId);
-        const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+        // Clean up dependent records first (nullify references)
+        await supabaseAdmin.from('shipments').update({ user_id: null }).eq('user_id', userId);
+        await supabaseAdmin.from('shipments').update({ seller_id: null }).eq('seller_id', userId);
 
+        // Delete profile first, then auth user
+        const { error: profileError } = await supabaseAdmin.from('profiles').delete().eq('id', userId);
+        if (profileError) {
+            return NextResponse.json({ error: 'Error borrando perfil: ' + profileError.message }, { status: 500 });
+        }
+
+        const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
         if (authError) {
-            return NextResponse.json({ error: authError.message }, { status: 500 });
+            return NextResponse.json({ error: 'Error borrando auth: ' + authError.message }, { status: 500 });
         }
 
         // Audit
