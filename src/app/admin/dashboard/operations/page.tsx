@@ -114,15 +114,15 @@ export default function OperationsPage() {
     }, [shipments, today]);
 
     const expectedToday = useMemo(() => {
-        // Estimate: shipments in transit created > 5 days ago
+        // Shipments in transit created > 5 days ago (likely to arrive today)
         const fiveDaysAgo = new Date();
         fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
         const cutoff = fiveDaysAgo.toISOString();
         return shipments.filter(s =>
             ['En Transito', 'Pendiente Expo'].some(st => st.toLowerCase() === (s.internal_status || '').toLowerCase()) &&
             s.created_at < cutoff
-        ).length || Math.max(receptionsToday, 5);
-    }, [shipments, receptionsToday]);
+        ).length;
+    }, [shipments]);
 
     const completionPct = Math.min(Math.round((receptionsToday / Math.max(expectedToday, 1)) * 100), 100);
 
