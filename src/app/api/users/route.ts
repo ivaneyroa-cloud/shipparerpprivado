@@ -346,7 +346,7 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
         }
 
-        const { data: { user: requestingUser } } = await supabase.auth.getUser(token);
+        const { data: { user: requestingUser } } = await supabaseAdmin.auth.getUser(token);
         if (!requestingUser) {
             return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
         }
@@ -401,7 +401,7 @@ export async function DELETE(req: NextRequest) {
             targetTable: 'profiles',
             targetId: userId,
             oldValues: { email: targetProfile?.email, full_name: targetProfile?.full_name },
-            newValues: null,
+            newValues: {},
         });
 
         return NextResponse.json({ success: true });
