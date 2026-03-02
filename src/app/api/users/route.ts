@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
             .eq('id', requestingUser.id)
             .single();
 
-        if (!profile || profile.role !== 'admin') {
+        if (!profile || !['admin', 'super_admin'].includes(profile.role)) {
             return NextResponse.json({ error: 'Solo administradores pueden crear usuarios' }, { status: 403 });
         }
 
@@ -158,7 +158,7 @@ export async function GET(req: NextRequest) {
             .eq('id', user.id)
             .single();
 
-        if (!reqProfile || reqProfile.role !== 'admin') {
+        if (!reqProfile || !['admin', 'super_admin'].includes(reqProfile.role)) {
             return NextResponse.json({ error: 'Solo administradores pueden listar usuarios' }, { status: 403 });
         }
 
@@ -209,7 +209,7 @@ export async function PATCH(req: NextRequest) {
             .eq('id', requestingUser.id)
             .single();
 
-        if (!profile || profile.role !== 'admin') {
+        if (!profile || !['admin', 'super_admin'].includes(profile.role)) {
             return NextResponse.json({ error: 'Solo administradores pueden modificar usuarios' }, { status: 403 });
         }
 

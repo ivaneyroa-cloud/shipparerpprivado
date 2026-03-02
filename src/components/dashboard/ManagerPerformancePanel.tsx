@@ -34,7 +34,7 @@ export function ManagerPerformancePanel() {
                     .eq('id', session.user.id)
                     .single();
 
-                if (profile?.role !== 'admin') { setLoading(false); return; }
+                if (profile?.role !== 'admin' && profile?.role !== 'super_admin') { setLoading(false); return; }
 
                 // Date range
                 const now = new Date();
@@ -134,8 +134,8 @@ export function ManagerPerformancePanel() {
                             key={range}
                             onClick={() => setDateRange(range)}
                             className={`px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider transition-all ${dateRange === range
-                                    ? 'bg-[#2E7BFF] text-white shadow-sm'
-                                    : 'hover:bg-white/[0.04]'
+                                ? 'bg-[#2E7BFF] text-white shadow-sm'
+                                : 'hover:bg-white/[0.04]'
                                 }`}
                             style={dateRange !== range ? { color: 'var(--text-muted)' } : undefined}
                         >

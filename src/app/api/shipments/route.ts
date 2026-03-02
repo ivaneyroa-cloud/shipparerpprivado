@@ -189,7 +189,7 @@ export async function PATCH(req: NextRequest) {
 
                 if (allowed && allowed.length > 0 && !allowed.includes(newStatus)) {
                     // Admin can override terminal states
-                    if (role !== 'admin') {
+                    if (role !== 'admin' && role !== 'super_admin') {
                         return NextResponse.json(
                             { error: `Transición inválida: "${currentStatus}" → "${newStatus}". Transiciones válidas: ${allowed.join(', ')}` },
                             { status: 400 }

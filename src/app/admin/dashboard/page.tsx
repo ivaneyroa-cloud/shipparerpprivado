@@ -118,7 +118,7 @@ export default function DashboardPage() {
     }, [userProfile]);
 
     const isSales = userProfile?.role === 'sales';
-    const isAdmin = userProfile?.role === 'admin';
+    const isAdmin = userProfile?.role === 'admin' || userProfile?.role === 'super_admin';
     const isLogistics = userProfile?.role === 'logistics';
     const firstName = userProfile?.full_name?.split(' ')[0] || 'Usuario';
 

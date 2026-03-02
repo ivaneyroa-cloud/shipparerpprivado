@@ -77,7 +77,7 @@ export default function CommissionsDashboard() {
             if (clientsData) setClients(clientsData);
 
             // If admin, fetch all profiles to build leaderboard
-            if (profile?.role === 'admin') {
+            if (profile?.role === 'admin' || profile?.role === 'super_admin') {
                 const { data: profilesData } = await supabase.from('profiles').select('id, full_name, role, org_id');
                 if (profilesData) setProfiles(profilesData);
             }
@@ -148,7 +148,7 @@ export default function CommissionsDashboard() {
             return { ...s, ganancia, comision, vendorId, totalFacturado: totalCobrarFinal };
         });
 
-        if (userProfile?.role === 'admin') {
+        if (userProfile?.role === 'admin' || userProfile?.role === 'super_admin') {
             // Global Stats for Admin
             const totalFacturado = processed.reduce((acc, s) => acc + s.totalFacturado, 0);
             const totalGanancia = processed.reduce((acc, s) => acc + s.ganancia, 0);
@@ -355,7 +355,7 @@ export default function CommissionsDashboard() {
 
                 {/* Right Panel: Side Stats / Leaderboard */}
                 <div className="lg:col-span-4 space-y-6">
-                    {userProfile?.role === 'admin' && (
+                    {(userProfile?.role === 'admin' || userProfile?.role === 'super_admin') && (
                         <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-[32px] p-6 shadow-sm border-l-8 border-l-blue-500">
                             <h3 className="text-sm font-black uppercase tracking-tighter mb-6 flex items-center gap-2">
                                 <TrendingUp size={16} className="text-blue-500" /> Leaderboard Mensual
@@ -371,7 +371,7 @@ export default function CommissionsDashboard() {
                                             </div>
                                             <div>
                                                 <p className="text-xs font-black text-slate-900 dark:text-white">{p.name}</p>
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase">{p.role === 'admin' ? 'BOSS' : 'Ventas'}</p>
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase">{p.role === 'admin' || p.role === 'super_admin' ? 'BOSS' : 'Ventas'}</p>
                                             </div>
                                         </div>
                                         <div className="text-right">
