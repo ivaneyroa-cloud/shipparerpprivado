@@ -34,10 +34,10 @@ export function validateReception({
     const errors: string[] = [];
     const warnings: string[] = [];
 
-    // Monto factura
+    // Monto factura (optional — warning only)
     const montoVal = parseFloat(costoFlete);
     if (!costoFlete || isNaN(montoVal) || montoVal <= 0) {
-        errors.push('Monto factura (USD) es obligatorio y debe ser > 0');
+        warnings.push('Monto factura (USD) no cargado — podés completarlo después');
     }
 
     // New boxes with data
@@ -77,9 +77,9 @@ export function validateReception({
         }
     });
 
-    // Photos
-    if (!photo1 && !existingPhoto1) errors.push('Factura 1 es obligatoria');
-    if (!photo2 && !existingPhoto2) errors.push('Factura 2 es obligatoria');
+    // Photos (optional — warning only)
+    if (!photo1 && !existingPhoto1) warnings.push('Factura 1 no cargada — podés subirla después');
+    if (!photo2 && !existingPhoto2) warnings.push('Factura 2 no cargada — podés subirla después');
 
     // Total computable
     if (totalComputable <= 0 && newBoxes.length > 0) errors.push('El peso total computable debe ser > 0');

@@ -432,7 +432,7 @@ export function ReceiveShipmentModal({ isOpen, onClose, onSuccess, shipment }: R
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.95, opacity: 0 }}
                         transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-                        className="bg-white dark:bg-[#1c1c1e] w-full max-w-4xl rounded-[28px] shadow-2xl border border-slate-200 dark:border-white/10 my-auto"
+                        className="bg-white dark:bg-[#1c1c1e] w-full max-w-4xl rounded-[28px] shadow-2xl border border-slate-200 dark:border-white/10 my-auto max-h-[90vh] overflow-y-auto"
                     >
                         <div className="p-6 md:p-8">
                             {/* ── Header ── */}
@@ -624,36 +624,36 @@ export function ReceiveShipmentModal({ isOpen, onClose, onSuccess, shipment }: R
                                     </p>
                                 </div>
 
-                                {/* ── Monto Factura + Photos ── */}
+                                {/* ── Monto Factura + Photos (Opcional) ── */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-slate-200 dark:border-white/10 pb-5">
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-red-500 flex items-center gap-1">
-                                            <DollarSign size={11} /> Monto Factura (USD) *
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-1">
+                                            <DollarSign size={11} /> Monto Factura (USD) <span className="text-slate-400 font-medium normal-case">Opcional</span>
                                         </label>
                                         <input
-                                            type="number" step="0.01" min="0.01" placeholder="0.00" required
-                                            className="w-full bg-white dark:bg-[#161618] border-2 border-red-300 dark:border-red-500/40 px-4 py-3 rounded-xl outline-none focus:border-red-500 font-bold text-slate-900 dark:text-white transition-colors"
+                                            type="number" step="0.01" min="0" placeholder="0.00"
+                                            className="w-full bg-white dark:bg-[#161618] border border-slate-200 dark:border-white/10 px-4 py-3 rounded-xl outline-none focus:border-blue-500 font-bold text-slate-900 dark:text-white transition-colors"
                                             value={costoFlete} onChange={(e) => setCostoFlete(e.target.value)}
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-red-500 flex items-center gap-1">
-                                            <ImageIcon size={11} /> Factura 1 *
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-1">
+                                            <ImageIcon size={11} /> Factura 1 <span className="text-slate-400 font-medium normal-case">Opcional</span>
                                         </label>
                                         <input
                                             type="file" accept="image/*,application/pdf"
-                                            className="w-full bg-white dark:bg-[#161618] border-2 border-red-300 dark:border-red-500/40 px-3 py-2.5 rounded-xl outline-none text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-black file:uppercase file:tracking-widest file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-500/10 dark:file:text-blue-400 cursor-pointer"
+                                            className="w-full bg-white dark:bg-[#161618] border border-slate-200 dark:border-white/10 px-3 py-2.5 rounded-xl outline-none text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-black file:uppercase file:tracking-widest file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-500/10 dark:file:text-blue-400 cursor-pointer"
                                             onChange={(e) => setPhoto1(e.target.files?.[0] || null)}
                                         />
                                         {shipment.invoice_photo_1 && !photo1 && <p className="text-[10px] text-emerald-500 font-bold">✓ Ya cargada</p>}
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-red-500 flex items-center gap-1">
-                                            <ImageIcon size={11} /> Factura 2 *
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-1">
+                                            <ImageIcon size={11} /> Factura 2 <span className="text-slate-400 font-medium normal-case">Opcional</span>
                                         </label>
                                         <input
                                             type="file" accept="image/*,application/pdf"
-                                            className="w-full bg-white dark:bg-[#161618] border-2 border-red-300 dark:border-red-500/40 px-3 py-2.5 rounded-xl outline-none text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-black file:uppercase file:tracking-widest file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-500/10 dark:file:text-blue-400 cursor-pointer"
+                                            className="w-full bg-white dark:bg-[#161618] border border-slate-200 dark:border-white/10 px-3 py-2.5 rounded-xl outline-none text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-black file:uppercase file:tracking-widest file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-500/10 dark:file:text-blue-400 cursor-pointer"
                                             onChange={(e) => setPhoto2(e.target.files?.[0] || null)}
                                         />
                                         {shipment.invoice_photo_2 && !photo2 && <p className="text-[10px] text-emerald-500 font-bold">✓ Ya cargada</p>}
