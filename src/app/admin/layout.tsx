@@ -117,7 +117,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     };
 
     return (
-        <div className={`min-h-screen flex ${isDarkMode ? 'dark' : ''}`} style={{ backgroundColor: isDarkMode ? '#0B0F17' : '#F4F6FA', color: isDarkMode ? '#F0F4F8' : '#1a1f36' }}>
+        <div className={`min-h-screen flex ${isDarkMode ? 'dark' : ''}`} style={{ backgroundColor: isDarkMode ? '#0B0F17' : '#F5F7FB', color: isDarkMode ? '#F0F4F8' : '#0F172A' }}>
             <div className="erp-noise" />
             <Toaster position="bottom-right" theme={isDarkMode ? 'dark' : 'light'} />
 
@@ -133,7 +133,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <aside className={`
                 fixed inset-y-0 left-0 z-50 w-72 transition-transform duration-300 transform
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-                ${isDarkMode ? 'bg-[#0D1117]/95 backdrop-blur-xl border-r border-white/[0.06]' : 'bg-white/95 backdrop-blur-xl border-r border-slate-200/80'}
+                ${isDarkMode ? 'bg-[#0D1117]/95 backdrop-blur-xl border-r border-white/[0.06]' : 'bg-[#F2F6FF] border-r border-[#E3E8F2]'}
                 lg:relative lg:translate-x-0
             `}>
                 <div className="h-full flex flex-col p-6">
@@ -156,8 +156,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     className={`
                         group relative flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-[13px] transition-all duration-250
                                         ${isActive
-                                            ? 'text-white bg-gradient-to-r from-blue-600/20 to-blue-500/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)]'
-                                            : isDarkMode ? 'text-slate-500 hover:bg-white/[0.04] hover:text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                                            ? isDarkMode
+                                                ? 'text-white bg-gradient-to-r from-blue-600/20 to-blue-500/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)]'
+                                                : 'text-[#2563EB] bg-[#E8F0FF] font-bold'
+                                            : isDarkMode ? 'text-slate-500 hover:bg-white/[0.04] hover:text-slate-200' : 'text-slate-600 hover:bg-[#E8F0FF] hover:text-slate-900'
                                         }
                                     `}
                                 >
@@ -166,7 +168,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         <div className="absolute left-0 w-[3px] h-5 bg-[#2E7BFF] rounded-full shadow-[0_0_12px_rgba(46,123,255,0.7)]" />
                                     )}
 
-                                    <span className={`${isActive ? 'text-[#2E7BFF]' : isDarkMode ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-400 group-hover:text-slate-700'} transition-colors duration-250`}>
+                                    <span className={`${isActive ? (isDarkMode ? 'text-[#2E7BFF]' : 'text-[#2563EB]') : isDarkMode ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-400 group-hover:text-slate-700'} transition-colors duration-250`}>
                                         {item.icon}
                                     </span>
                                     {item.label}
@@ -198,7 +200,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {/* Topbar */}
                 <header className={`
           h-14 md:h-16 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40
-          ${isDarkMode ? 'bg-[#0B0F17]/70 backdrop-blur-xl border-b border-white/[0.04]' : 'bg-[#F4F6FA]/80 backdrop-blur-xl border-b border-slate-200/60'}
+          ${isDarkMode ? 'bg-[#0B0F17]/70 backdrop-blur-xl border-b border-white/[0.04]' : 'bg-[#F5F7FB]/90 backdrop-blur-xl border-b border-[#E3E8F2]'}
         `}>
                     <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden text-slate-400">
                         {sidebarOpen ? <X /> : <Menu />}
