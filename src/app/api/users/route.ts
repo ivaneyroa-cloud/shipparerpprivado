@@ -221,7 +221,7 @@ export async function PATCH(req: NextRequest) {
         }
 
         // ── FIELD WHITELIST — only these fields can be updated ──
-        const ALLOWED_FIELDS = ['role', 'is_active', 'full_name'] as const;
+        const ALLOWED_FIELDS = ['role', 'is_active', 'full_name', 'password'] as const;
         type AllowedField = (typeof ALLOWED_FIELDS)[number];
 
         const sanitized: Partial<Record<AllowedField, any>> = {};
@@ -231,12 +231,16 @@ export async function PATCH(req: NextRequest) {
             }
         }
 
-        if (Object.keys(sanitized).length === 0) {
+        // Handle password separately (not a profile field)
+        const newPassword = sanitized.password;
+        delete sanitized.password;
+
+        if (Object.keys(sanitized).length === 0 && !newPassword) {
             return NextResponse.json({ error: 'No se enviaron campos válidos para actualizar' }, { status: 400 });
         }
 
         // Validate role value if present
-        const VALID_ROLES = ['admin', 'logistics', 'sales', 'billing', 'operator'];
+        const VALID_ROLES = ['super_admin', 'admin', 'logistics', 'sales', 'billing', 'operator'];
         if (sanitized.role && !VALID_ROLES.includes(sanitized.role)) {
             return NextResponse.json({ error: 'Rol inválido' }, { status: 400 });
         }
@@ -279,13 +283,28 @@ export async function PATCH(req: NextRequest) {
         }
 
         // Update profile — only whitelisted fields
-        const { error } = await supabaseAdmin
-            .from('profiles')
-            .update(sanitized)
-            .eq('id', userId);
+        if (Object.keys(sanitized).length > 0) {
+            const { error } = await supabaseAdmin
+                .from('profiles')
+                .update(sanitized)
+                .eq('id', userId);
 
-        if (error) {
-            return NextResponse.json({ error: error.message }, { status: 500 });
+            if (error) {
+                return NextResponse.json({ error: error.message }, { status: 500 });
+            }
+        }
+
+        // Update password in auth if requested
+        if (newPassword) {
+            if (typeof newPassword !== 'string' || newPassword.length < 6) {
+                return NextResponse.json({ error: 'Contraseña debe tener mín. 6 caracteres' }, { status: 400 });
+            }
+            const { error: pwError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+                password: newPassword
+            });
+            if (pwError) {
+                return NextResponse.json({ error: pwError.message }, { status: 500 });
+            }
         }
 
         // If deactivating, also disable auth user
@@ -303,11 +322,86 @@ export async function PATCH(req: NextRequest) {
         await logAudit({
             actorId: requestingUser.id,
             actorEmail: requestingUser.email || '',
-            action: sanitized.role ? 'update_user_role' : sanitized.is_active !== undefined ? 'toggle_user_active' : 'update_user',
+            action: sanitized.role ? 'update_user_role' : sanitized.is_active !== undefined ? 'toggle_user_active' : newPassword ? 'reset_password' : 'update_user',
             targetTable: 'profiles',
             targetId: userId,
             oldValues: { role: targetProfile?.role },
             newValues: sanitized,
+        });
+
+        return NextResponse.json({ success: true });
+
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message || 'Error interno' }, { status: 500 });
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DELETE /api/users — Delete a user completely
+// ═══════════════════════════════════════════════════════════════
+export async function DELETE(req: NextRequest) {
+    try {
+        const token = req.headers.get('authorization')?.replace('Bearer ', '');
+        if (!token) {
+            return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+        }
+
+        const { data: { user: requestingUser } } = await supabase.auth.getUser(token);
+        if (!requestingUser) {
+            return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+        }
+
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('role')
+            .eq('id', requestingUser.id)
+            .single();
+
+        if (!profile || !['admin', 'super_admin'].includes(profile.role)) {
+            return NextResponse.json({ error: 'Solo administradores pueden eliminar usuarios' }, { status: 403 });
+        }
+
+        const body = await req.json();
+        const { userId } = body;
+
+        if (!userId || typeof userId !== 'string') {
+            return NextResponse.json({ error: 'userId es obligatorio' }, { status: 400 });
+        }
+
+        // Cannot delete yourself
+        if (userId === requestingUser.id) {
+            return NextResponse.json({ error: 'No podés eliminarte a vos mismo' }, { status: 403 });
+        }
+
+        // SUPER ADMIN PROTECTION
+        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || 'ivaneyroa@shippar.net';
+        const { data: targetProfile } = await supabaseAdmin
+            .from('profiles')
+            .select('email, full_name')
+            .eq('id', userId)
+            .single();
+
+        if (targetProfile?.email === SUPER_ADMIN_EMAIL) {
+            return NextResponse.json({ error: 'El super administrador no puede ser eliminado' }, { status: 403 });
+        }
+
+        // Delete profile first, then auth user
+        await supabaseAdmin.from('profiles').delete().eq('id', userId);
+        const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+
+        if (authError) {
+            return NextResponse.json({ error: authError.message }, { status: 500 });
+        }
+
+        // Audit
+        await logAudit({
+            actorId: requestingUser.id,
+            actorEmail: requestingUser.email || '',
+            action: 'delete_user',
+            targetTable: 'profiles',
+            targetId: userId,
+            oldValues: { email: targetProfile?.email, full_name: targetProfile?.full_name },
+            newValues: null,
         });
 
         return NextResponse.json({ success: true });

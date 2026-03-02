@@ -7,10 +7,16 @@ import { toast } from 'sonner';
 import {
     Users, Plus, Shield, ShieldCheck, Truck, Receipt, UserCog,
     Mail, Lock, User as UserIcon, X, Loader2, CheckCircle2,
-    MoreVertical, Ban, CheckCircle, Eye, EyeOff
+    MoreVertical, Ban, CheckCircle, Eye, EyeOff, Trash2
 } from 'lucide-react';
 
 const ROLE_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode; description: string }> = {
+    super_admin: {
+        label: 'Super Admin',
+        color: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+        icon: <ShieldCheck size={14} />,
+        description: 'Control absoluto del sistema'
+    },
     admin: {
         label: 'Administrador',
         color: 'bg-red-500/10 text-red-500 border-red-500/20',
@@ -171,6 +177,61 @@ export default function TeamPage() {
         }
     };
 
+    const handleDeleteUser = async (userId: string, userName: string) => {
+        if (!confirm(`¿Seguro que querés ELIMINAR a ${userName}? Esta acción no se puede deshacer.`)) return;
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const res = await fetch('/api/users', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({ userId })
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error);
+            }
+
+            toast.success(`Usuario ${userName} eliminado`);
+            fetchUsers();
+        } catch (err: any) {
+            toast.error(err.message);
+        }
+    };
+
+    const handleResetPassword = async (userId: string, newPassword: string, userName: string) => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const res = await fetch('/api/users', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({
+                    userId,
+                    updates: { password: newPassword }
+                })
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error);
+            }
+
+            toast.success(`Contraseña de ${userName} actualizada`);
+        } catch (err: any) {
+            toast.error(err.message);
+        }
+    };
+
     return (
         <>
             <div className="space-y-8">
@@ -294,18 +355,35 @@ export default function TeamPage() {
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     {!isSuperAdmin && !isSelf ? (
-                                                        <button
-                                                            onClick={() => handleToggleActive(user.id, user.is_active !== false)}
-                                                            className={`text-xs font-black px-3 py-1.5 rounded-lg transition-colors ${user.is_active !== false
-                                                                ? 'text-red-500 hover:bg-red-500/10'
-                                                                : 'text-green-500 hover:bg-green-500/10'}`}
-                                                        >
-                                                            {user.is_active !== false ? (
-                                                                <span className="flex items-center gap-1"><Ban size={12} /> Desactivar</span>
-                                                            ) : (
-                                                                <span className="flex items-center gap-1"><CheckCircle size={12} /> Activar</span>
-                                                            )}
-                                                        </button>
+                                                        <div className="flex items-center gap-1 justify-end">
+                                                            <button
+                                                                onClick={() => handleToggleActive(user.id, user.is_active !== false)}
+                                                                className={`text-xs font-black px-2 py-1.5 rounded-lg transition-colors ${user.is_active !== false
+                                                                    ? 'text-red-500 hover:bg-red-500/10'
+                                                                    : 'text-green-500 hover:bg-green-500/10'}`}
+                                                                title={user.is_active !== false ? 'Desactivar' : 'Activar'}
+                                                            >
+                                                                {user.is_active !== false ? <Ban size={14} /> : <CheckCircle size={14} />}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    const newPass = prompt(`Nueva contraseña para ${user.full_name || user.email} (mín. 6 caracteres):`);
+                                                                    if (newPass && newPass.length >= 6) handleResetPassword(user.id, newPass, user.full_name || user.email);
+                                                                    else if (newPass) toast.error('La contraseña debe tener al menos 6 caracteres');
+                                                                }}
+                                                                className="text-xs font-black px-2 py-1.5 rounded-lg transition-colors text-blue-400 hover:bg-blue-500/10"
+                                                                title="Cambiar contraseña"
+                                                            >
+                                                                <Lock size={14} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteUser(user.id, user.full_name || user.email)}
+                                                                className="text-xs font-black px-2 py-1.5 rounded-lg transition-colors text-red-400 hover:bg-red-500/10"
+                                                                title="Eliminar usuario"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </div>
                                                     ) : (
                                                         <span className="text-[10px] text-slate-500 font-bold">—</span>
                                                     )}
