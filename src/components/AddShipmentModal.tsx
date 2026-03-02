@@ -4,7 +4,7 @@ import { X, Package, ChevronRight, ChevronDown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { Client } from '@/types';
-import { validateShipmentPayload, sanitizeLine } from '@/lib/validation';
+import { validateShipmentPayload, sanitizeLine, isValidBoxesCount } from '@/lib/validation';
 
 interface AddShipmentModalProps {
     isOpen: boolean;
@@ -103,6 +103,13 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
         if (!validation.valid) {
             validation.errors.forEach(err => toast.error(err));
             return;
+        }
+
+        // Warning for unusual boxes count
+        const boxCheck = isValidBoxesCount(payload.boxes_count);
+        if (boxCheck.warning) {
+            const proceed = window.confirm(boxCheck.warning + '\n\n¿Querés continuar?');
+            if (!proceed) return;
         }
 
         const { error } = await supabase

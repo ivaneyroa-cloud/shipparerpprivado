@@ -63,11 +63,34 @@ export function parseNumeric(
 }
 
 /**
- * Validate weight (kg). Must be positive, max 50000 kg.
+ * Validate weight (kg). Must be positive, max 500 kg per shipment.
  */
 export function isValidWeight(weight: unknown): boolean {
-    const w = parseNumeric(weight, { min: 0, max: 50_000, allowNull: true });
+    const w = parseNumeric(weight, { min: 0, max: 500, allowNull: true });
     return w !== null && w >= 0;
+}
+
+/**
+ * Validate boxes count. Max 20 per shipment.
+ */
+export function isValidBoxesCount(count: unknown): { valid: boolean; warning?: string } {
+    const n = Number(count);
+    if (isNaN(n) || n < 0 || n > 20) {
+        return { valid: false };
+    }
+    if (n > 10) {
+        return { valid: true, warning: `⚠️ ${n} cajas es inusual. ¿Estás seguro? Máximo registrado: 15.` };
+    }
+    return { valid: true };
+}
+
+/**
+ * Validate dimensions (cm). Max 150cm per side.
+ */
+export function isValidDimension(cm: unknown): boolean {
+    if (cm === null || cm === undefined || cm === '' || cm === 0) return true;
+    const v = Number(cm);
+    return !isNaN(v) && v >= 0 && v <= 150;
 }
 
 // ── Enum validation ────────────────────────────────────────────────────────
@@ -79,7 +102,7 @@ const VALID_STATUSES = [
     'Despachado', 'Mercado Libre full', 'Retenido',
 ] as const;
 
-const VALID_ROLES = ['admin', 'sales', 'logistics', 'billing', 'operator'] as const;
+const VALID_ROLES = ['super_admin', 'admin', 'sales', 'logistics', 'billing', 'operator'] as const;
 
 const VALID_COBRANZA_STATES = ['Pendiente', 'Facturado', 'Pagado', 'Pagado Parcial'] as const;
 
@@ -139,8 +162,15 @@ export function validateShipmentPayload(payload: Record<string, any>): ShipmentV
     // Numeric fields
     if (payload.weight !== undefined && payload.weight !== null) {
         if (!isValidWeight(payload.weight)) {
-            errors.push('Peso inválido (0 - 50,000 kg)');
+            errors.push('Peso inválido. Máximo 500 kg por envío.');
         }
+    }
+    if (payload.boxes_count !== undefined && payload.boxes_count !== null) {
+        const boxResult = isValidBoxesCount(payload.boxes_count);
+        if (!boxResult.valid) {
+            errors.push('Cantidad de cajas inválida. Máximo 20 por envío.');
+        }
+        // Warnings are handled separately in the UI
     }
     if (payload.precio_envio !== undefined) {
         if (parseNumeric(payload.precio_envio, { max: 999_999 }) === null && payload.precio_envio !== 0) {
