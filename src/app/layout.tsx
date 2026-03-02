@@ -5,6 +5,11 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Shippar Courier - Rastreo de Envios',
   description: 'Rastrea tus paquetes logísticos de forma inteligente.',
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
 };
 
 export default function RootLayout({
