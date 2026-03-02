@@ -1,6 +1,6 @@
 export interface UserProfile {
     id: string;
-    role: 'admin' | 'sales' | 'logistics' | 'billing' | 'operator';
+    role: 'super_admin' | 'admin' | 'sales' | 'logistics' | 'billing' | 'operator';
     full_name?: string;
     email?: string;
     org_id?: string;

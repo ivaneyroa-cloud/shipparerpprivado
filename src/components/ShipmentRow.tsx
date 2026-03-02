@@ -154,9 +154,9 @@ export const ShipmentRow = React.memo(function ShipmentRow({
     }, []);
 
     // DEPOT ONLY: admin + operator can set Retirado, Despachado, ML/FULL
-    const canMarkDelivered = userRole === 'admin' || userRole === 'operator';
+    const canMarkDelivered = userRole === 'super_admin' || userRole === 'admin' || userRole === 'operator';
     // Logistics + admin can mark Retenido
-    const canMarkRetenido = userRole === 'admin' || userRole === 'logistics';
+    const canMarkRetenido = userRole === 'super_admin' || userRole === 'admin' || userRole === 'logistics';
 
 
 

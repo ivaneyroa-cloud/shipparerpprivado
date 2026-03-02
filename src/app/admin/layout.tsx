@@ -35,7 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [loading, setLoading] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [isDarkMode, setIsDarkMode] = useState(true);
-    const [userRole, setUserRole] = useState<string>('admin'); // Default to admin, will update on profile load
+    const [userRole, setUserRole] = useState<string>(''); // Empty until profile loads
     const router = useRouter();
     const pathname = usePathname();
 
@@ -94,19 +94,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     // Role-based menu: each item specifies which roles can see it
     const allMenuItems = [
-        { icon: <LayoutDashboard size={18} strokeWidth={1.5} />, label: 'Dashboard', href: '/admin/dashboard', roles: ['admin', 'logistics', 'sales', 'billing', 'operator'] },
-        { icon: <Package size={18} strokeWidth={1.5} />, label: 'Envíos', href: '/admin/dashboard/shipments', roles: ['admin', 'logistics', 'sales', 'billing'] },
-        { icon: <Box size={18} strokeWidth={1.5} />, label: 'Depósito', href: '/admin/dashboard/deposito', roles: ['admin', 'logistics', 'operator', 'billing'] },
-        { icon: <Activity size={18} strokeWidth={1.5} />, label: 'Operaciones', href: '/admin/dashboard/operations', roles: ['admin', 'logistics', 'operator'] },
-        { icon: <Shield size={18} strokeWidth={1.5} />, label: 'Gerencia', href: '/admin/dashboard/gerencia', roles: ['admin'] },
-        { icon: <DollarSign size={18} strokeWidth={1.5} />, label: 'Cobranzas', href: '/admin/dashboard/cobranzas', roles: ['admin', 'billing'] },
-        { icon: <TrendingUp size={18} strokeWidth={1.5} />, label: 'Finanzas', href: '/admin/dashboard/finanzas', roles: ['admin', 'billing'] },
+        { icon: <LayoutDashboard size={18} strokeWidth={1.5} />, label: 'Dashboard', href: '/admin/dashboard', roles: ['super_admin', 'admin', 'logistics', 'sales', 'billing', 'operator'] },
+        { icon: <Package size={18} strokeWidth={1.5} />, label: 'Envíos', href: '/admin/dashboard/shipments', roles: ['super_admin', 'admin', 'logistics', 'sales', 'billing'] },
+        { icon: <Box size={18} strokeWidth={1.5} />, label: 'Depósito', href: '/admin/dashboard/deposito', roles: ['super_admin', 'admin', 'logistics', 'operator', 'billing'] },
+        { icon: <Activity size={18} strokeWidth={1.5} />, label: 'Operaciones', href: '/admin/dashboard/operations', roles: ['super_admin', 'admin', 'logistics', 'operator'] },
+        { icon: <Shield size={18} strokeWidth={1.5} />, label: 'Gerencia', href: '/admin/dashboard/gerencia', roles: ['super_admin', 'admin'] },
+        { icon: <DollarSign size={18} strokeWidth={1.5} />, label: 'Cobranzas', href: '/admin/dashboard/cobranzas', roles: ['super_admin', 'admin', 'billing'] },
+        { icon: <TrendingUp size={18} strokeWidth={1.5} />, label: 'Finanzas', href: '/admin/dashboard/finanzas', roles: ['super_admin', 'admin', 'billing'] },
 
-        { icon: <Users size={18} strokeWidth={1.5} />, label: 'Clientes', href: '/admin/dashboard/clients', roles: ['admin', 'logistics', 'sales'] },
-        { icon: <BarChart3 size={18} strokeWidth={1.5} />, label: 'Reportes', href: '/admin/dashboard/reports', roles: ['admin'] },
-        { icon: <Radio size={18} strokeWidth={1.5} />, label: 'Comunicación', href: '/admin/dashboard/comunicacion', roles: ['admin', 'logistics', 'sales', 'billing', 'operator'] },
-        { icon: <UsersRound size={18} strokeWidth={1.5} />, label: 'Equipo', href: '/admin/dashboard/team', roles: ['admin'] },
-        { icon: <Settings size={18} strokeWidth={1.5} />, label: 'Ajustes', href: '/admin/dashboard/settings', roles: ['admin', 'logistics'] },
+        { icon: <Users size={18} strokeWidth={1.5} />, label: 'Clientes', href: '/admin/dashboard/clients', roles: ['super_admin', 'admin', 'logistics', 'sales'] },
+        { icon: <BarChart3 size={18} strokeWidth={1.5} />, label: 'Reportes', href: '/admin/dashboard/reports', roles: ['super_admin', 'admin'] },
+        { icon: <Radio size={18} strokeWidth={1.5} />, label: 'Comunicación', href: '/admin/dashboard/comunicacion', roles: ['super_admin', 'admin', 'logistics', 'sales', 'billing', 'operator'] },
+        { icon: <UsersRound size={18} strokeWidth={1.5} />, label: 'Equipo', href: '/admin/dashboard/team', roles: ['super_admin', 'admin'] },
+        { icon: <Settings size={18} strokeWidth={1.5} />, label: 'Ajustes', href: '/admin/dashboard/settings', roles: ['super_admin', 'admin', 'logistics'] },
     ];
 
     const menuItems = allMenuItems.filter(item => item.roles.includes(userRole));

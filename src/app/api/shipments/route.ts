@@ -66,14 +66,14 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
 
 // Roles that can set each status
 const STATUS_ROLE_PERMISSIONS: Record<string, string[]> = {
-    'Guía creada': ['admin', 'logistics', 'sales'],
-    'Pendiente expo': ['admin', 'logistics'],
-    'En tránsito': ['admin', 'logistics'],
-    'Recibido en Oficina': ['admin', 'logistics', 'operator'],
-    'Retirado': ['admin', 'operator'],
-    'Despachado': ['admin', 'operator'],
-    'Mercado Libre full': ['admin', 'operator'],
-    'Retenido': ['admin', 'logistics', 'operator'],
+    'Guía creada': ['super_admin', 'admin', 'logistics', 'sales'],
+    'Pendiente expo': ['super_admin', 'admin', 'logistics'],
+    'En tránsito': ['super_admin', 'admin', 'logistics'],
+    'Recibido en Oficina': ['super_admin', 'admin', 'logistics', 'operator'],
+    'Retirado': ['super_admin', 'admin', 'operator'],
+    'Despachado': ['super_admin', 'admin', 'operator'],
+    'Mercado Libre full': ['super_admin', 'admin', 'operator'],
+    'Retenido': ['super_admin', 'admin', 'logistics', 'operator'],
 };
 
 // ═══════════════════════════════════════════════════════════════

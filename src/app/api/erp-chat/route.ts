@@ -250,7 +250,7 @@ export async function POST(req: NextRequest) {
         // ── Auth gate ──
         const ctx = await getAuthContext(req);
         if (!ctx) return unauthorized();
-        if (!['admin', 'logistics'].includes(ctx.profile.role)) {
+        if (!['super_admin', 'admin', 'logistics'].includes(ctx.profile.role)) {
             return forbidden('Solo admin y logistics pueden usar el chat ERP');
         }
 
