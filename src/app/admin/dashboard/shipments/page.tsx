@@ -120,42 +120,66 @@ export default function ShipmentsPage() {
                 return;
             }
 
-            // 1) Always fetch active (in-transit) shipments — no date filter
-            const activeStatuses = ['Guía Creada', 'Pendiente Expo', 'En Transito', 'Retenido'];
-            const activeQuery = buildBase().in('internal_status', activeStatuses);
+            // ── Monthly tracking logic ──
+            // Current month = show ALL unreceived (rolled forward) + received this month
+            // Past month = show ONLY received in that month
+            const currentMonth = format(new Date(), 'yyyy-MM');
+            const isCurrentMonth = selectedMonth === currentMonth;
 
-            // 2) Fetch non-active shipments filtered by selected month
-            let historicalQuery = buildBase().not('internal_status', 'in', `(${activeStatuses.map(s => `"${s}"`).join(',')})`);
-            if (selectedMonth) {
-                const start = `${selectedMonth}-01`;
-                const end = format(new Date(parseInt(selectedMonth.split('-')[0]), parseInt(selectedMonth.split('-')[1]), 0), 'yyyy-MM-dd');
-                historicalQuery = historicalQuery.gte('created_at', start).lte('created_at', `${end} 23:59:59`);
-            }
+            const monthStart = `${selectedMonth}-01`;
+            const monthEnd = format(
+                new Date(parseInt(selectedMonth.split('-')[0]), parseInt(selectedMonth.split('-')[1]), 0),
+                'yyyy-MM-dd'
+            );
 
-            const [activeResult, historicalResult] = await Promise.all([
-                activeQuery,
-                historicalQuery,
-            ]);
+            // Query 1: Shipments RECEIVED in the selected month (always needed)
+            const receivedQuery = buildBase()
+                .gte('date_arrived', monthStart)
+                .lte('date_arrived', `${monthEnd} 23:59:59`);
 
-            if (activeResult.error) {
-                toast.error(`Error al cargar envíos activos: ${activeResult.error.message}`);
-                return;
-            }
-            if (historicalResult.error) {
-                toast.error(`Error al cargar envíos históricos: ${historicalResult.error.message}`);
-                return;
-            }
+            if (isCurrentMonth) {
+                // Query 2: ALL unreceived shipments (they roll forward to current month)
+                const unreceivedQuery = buildBase().is('date_arrived', null);
 
-            // Merge & deduplicate (active shipments take priority)
-            const activeData = (activeResult.data || []) as Shipment[];
-            const historicalData = (historicalResult.data || []) as Shipment[];
-            const activeIds = new Set(activeData.map(s => s.id));
-            const merged = [...activeData, ...historicalData.filter(s => !activeIds.has(s.id))];
+                const [receivedResult, unreceivedResult] = await Promise.all([
+                    receivedQuery,
+                    unreceivedQuery,
+                ]);
 
-            setShipments(merged);
+                if (receivedResult.error) {
+                    toast.error(`Error al cargar recepcionados: ${receivedResult.error.message}`);
+                    return;
+                }
+                if (unreceivedResult.error) {
+                    toast.error(`Error al cargar pendientes: ${unreceivedResult.error.message}`);
+                    return;
+                }
 
-            if (isPossiblyTruncated(activeData.length) || isPossiblyTruncated(historicalData.length)) {
-                toast.warning('⚠️ Se cargaron +1000 envíos. Puede haber datos no mostrados. Acotá el rango de fechas para mejor precisión.', { duration: 6000 });
+                // Merge & deduplicate
+                const received = (receivedResult.data || []) as Shipment[];
+                const unreceived = (unreceivedResult.data || []) as Shipment[];
+                const receivedIds = new Set(received.map(s => s.id));
+                const merged = [...unreceived, ...received.filter(s => !receivedIds.has(s.id))];
+
+                setShipments(merged);
+
+                if (isPossiblyTruncated(received.length) || isPossiblyTruncated(unreceived.length)) {
+                    toast.warning('⚠️ Se cargaron +1000 envíos. Puede haber datos no mostrados.', { duration: 6000 });
+                }
+            } else {
+                // Past month: only shipments received in that month
+                const result = await receivedQuery;
+
+                if (result.error) {
+                    toast.error(`Error al cargar envíos: ${result.error.message}`);
+                    return;
+                }
+
+                setShipments((result.data || []) as Shipment[]);
+
+                if (isPossiblyTruncated((result.data || []).length)) {
+                    toast.warning('⚠️ Se cargaron +1000 envíos. Acotá el rango para mejor precisión.', { duration: 6000 });
+                }
             }
         } catch (err) {
             toast.error('Error de red al cargar envíos.');
