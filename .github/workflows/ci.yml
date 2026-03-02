@@ -1,0 +1,89 @@
+name: CI — Shippar Admin
+
+# Run on every push to main and on PRs
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─────────────────────────────────────────────
+  # 1. Lint + TypeCheck + Tests
+  # ─────────────────────────────────────────────
+  quality:
+    name: 🧪 Quality Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: true  # Don't block on lint warnings
+
+      - name: Run tests
+        run: npm test
+
+  # ─────────────────────────────────────────────
+  # 2. Build check (ensures production build works)
+  # ─────────────────────────────────────────────
+  build:
+    name: 🏗️ Build Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: quality  # Only build if quality passes
+
+    env:
+      # Dummy env vars so build doesn't fail
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+      SUPABASE_SERVICE_ROLE_KEY: placeholder
+      OPENAI_API_KEY: placeholder
+      NEXT_PUBLIC_SENTRY_DSN: ""
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Report bundle size
+        run: |
+          echo "## 📦 Bundle Size" >> $GITHUB_STEP_SUMMARY
+          du -sh .next/ | awk '{print "Total: " $1}' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Pages:" >> $GITHUB_STEP_SUMMARY
+          find .next/server/app -name "*.html" -o -name "*.js" | head -20 | while read f; do
+            size=$(du -sh "$f" | awk '{print $1}')
+            echo "- \`$(basename $f)\`: $size" >> $GITHUB_STEP_SUMMARY
+          done

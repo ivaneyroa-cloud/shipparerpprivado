@@ -1,0 +1,784 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+@config "../../tailwind.config.js";
+
+@theme {
+  --color-shippar-dark: #0B0F17;
+  --color-shippar-blue: #2E7BFF;
+  --color-shippar-light: #f8fafc;
+  --color-shippar-accent: #00C2FF;
+  --color-shippar-success: #10B981;
+  --color-shippar-red: #EF4444;
+  --color-shippar-amber: #FFB020;
+  --font-outfit: "Outfit", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+/* ══════════════════════════════════════
+   LIGHT MODE TOKENS
+   ══════════════════════════════════════ */
+:root {
+  --font-sans: "Outfit", sans-serif;
+  --card-bg: #ffffff;
+  --card-border: #e8ecf1;
+  --input-bg: #f4f6f9;
+  --table-header: #f8fafc;
+  --text-primary: #1a1f36;
+  --text-muted: #6b7a99;
+  --surface-bg: #F4F6FA;
+  --surface-elevated: #ffffff;
+  --accent-primary: #2E7BFF;
+  --accent-glow: rgba(46, 123, 255, 0.15);
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --card-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --card-radius: 12px;
+}
+
+/* ══════════════════════════════════════
+   DARK MODE TOKENS — Premium SaaS
+   ══════════════════════════════════════ */
+.dark {
+  --card-bg: #181D28;
+  --card-border: rgba(255, 255, 255, 0.07);
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --table-header: #0F1319;
+  --text-primary: #ECF0F6;
+  --text-muted: #8694B0;
+  --surface-bg: #0C1018;
+  --surface-elevated: #151A24;
+  --accent-primary: #2E7BFF;
+  --accent-glow: rgba(46, 123, 255, 0.08);
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --card-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.5);
+  --card-radius: 12px;
+}
+
+@variant dark (&:is(.dark, .dark *));
+
+/* ══════════════════════════════════════
+   BODY & BACKGROUNDS
+   ══════════════════════════════════════ */
+body {
+  font-family: var(--font-sans);
+  background-color: var(--surface-bg);
+  color: var(--text-primary);
+  transition: background-color 0.4s ease, color 0.3s ease;
+}
+
+.dark body {
+  background-color: #0A0E14;
+  color: #E8ECF2;
+}
+
+/* Depth layer — single very subtle gradient, no glow */
+.dark .erp-bg-depth {
+  position: relative;
+}
+
+.dark .erp-bg-depth::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(12, 16, 24, 0) 60%, rgba(10, 14, 20, 0.4) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Remove secondary glow — killed */
+.dark .erp-bg-depth::after {
+  display: none;
+}
+
+/* Noise texture — reduced to near-invisible */
+.erp-noise::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.012;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* ══════════════════════════════════════
+   CARD SYSTEM — 4-tier hierarchy
+   ══════════════════════════════════════ */
+.erp-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.erp-card:hover {
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* Card Primary — high contrast, dominant */
+.erp-card-primary {
+  background: var(--surface-elevated);
+  border: 1px solid rgba(46, 123, 255, 0.1);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+}
+
+/* Card Info — minimal, recedes */
+.erp-card-info {
+  background: var(--input-bg);
+  border: 1px solid transparent;
+  border-radius: var(--card-radius);
+}
+
+/* Card Alert — distinctive border */
+.erp-card-alert {
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+}
+
+.erp-card-alert-red {
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.erp-card-alert-amber {
+  border: 1px solid rgba(255, 176, 32, 0.2);
+}
+
+.erp-card-alert-green {
+  border: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+/* KPI card — primary metric enlarged */
+.erp-kpi-value {
+  font-size: 2.25rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.erp-kpi-label {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+}
+
+/* ══════════════════════════════════════
+   ELEVATED SURFACE (replaces glassmorphism)
+   ══════════════════════════════════════ */
+.glass-morphism {
+  background: var(--surface-elevated);
+  border: 1px solid var(--card-border);
+}
+
+.dark .glass-morphism {
+  background: var(--surface-elevated);
+  border: 1px solid var(--card-border);
+}
+
+/* ══════════════════════════════════════
+   GRADIENT TEXT
+   ══════════════════════════════════════ */
+.gradient-text {
+  background: linear-gradient(135deg, #2E7BFF 0%, #00C2FF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ══════════════════════════════════════
+   INPUT SYSTEM
+   ══════════════════════════════════════ */
+.erp-input {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 0.625rem 0.875rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.erp-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.erp-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(46, 123, 255, 0.08);
+}
+
+/* ══════════════════════════════════════
+   SELECT SYSTEM
+   ══════════════════════════════════════ */
+.erp-select {
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 0.375rem 0.5rem;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.6875rem;
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.erp-select:focus {
+  border-color: var(--accent-primary);
+}
+
+/* ══════════════════════════════════════
+   TABLE SYSTEM
+   ══════════════════════════════════════ */
+.erp-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+
+.erp-table thead tr {
+  border-bottom: 1px solid var(--card-border);
+}
+
+.erp-table th {
+  padding: 0.625rem 1rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.erp-table tbody tr {
+  border-bottom: 1px solid var(--card-border);
+  transition: background 0.15s ease;
+}
+
+.erp-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.erp-table td {
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+}
+
+/* ══════════════════════════════════════
+   BUTTON SYSTEM — Premium
+   ══════════════════════════════════════ */
+
+/* Primary button — gradient + glow */
+.erp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  border-radius: 14px;
+  padding: 0.625rem 1.25rem;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  overflow: hidden;
+}
+
+.erp-btn:active {
+  transform: scale(0.97);
+}
+
+.erp-btn-primary {
+  background: #2E7BFF;
+  color: white;
+  box-shadow: 0 1px 3px rgba(46, 123, 255, 0.2);
+}
+
+.erp-btn-primary:hover {
+  background: #2570E8;
+  box-shadow: 0 2px 8px rgba(46, 123, 255, 0.25);
+}
+
+.erp-btn-success {
+  background: #10B981;
+  color: white;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2);
+}
+
+.erp-btn-success:hover {
+  background: #0EA573;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.erp-btn-danger {
+  background: #DC2626;
+  color: white;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.15);
+}
+
+.erp-btn-danger:hover {
+  background: #C72020;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+}
+
+.erp-btn-secondary {
+  background: rgba(46, 123, 255, 0.08);
+  color: #2E7BFF;
+  border: 1px solid rgba(46, 123, 255, 0.2);
+}
+
+.erp-btn-secondary:hover {
+  background: rgba(46, 123, 255, 0.15);
+  border-color: rgba(46, 123, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.erp-btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--card-border);
+}
+
+.erp-btn-ghost:hover {
+  background: var(--input-bg);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Legacy support — killed glow */
+.button-glow {
+  transition: all 0.2s ease;
+}
+
+.button-glow:hover {
+  opacity: 0.92;
+}
+
+/* ══════════════════════════════════════
+   BADGE SYSTEM — Premium pill badges
+   ══════════════════════════════════════ */
+.erp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.625rem;
+  border-radius: 100px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.erp-badge-blue {
+  background: rgba(46, 123, 255, 0.12);
+  color: #5B9AFF;
+}
+
+.erp-badge-green {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34D399;
+}
+
+.erp-badge-amber {
+  background: rgba(255, 176, 32, 0.12);
+  color: #FFB020;
+}
+
+.erp-badge-red {
+  background: rgba(239, 68, 68, 0.12);
+  color: #F87171;
+}
+
+.erp-badge-purple {
+  background: rgba(139, 92, 246, 0.12);
+  color: #A78BFA;
+}
+
+.erp-badge-slate {
+  background: rgba(148, 163, 184, 0.1);
+  color: #94A3B8;
+}
+
+/* ══════════════════════════════════════
+   DATE INPUT — Themed calendar
+   ══════════════════════════════════════ */
+.erp-date-input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.erp-date-input:focus {
+  border-color: #2E7BFF;
+  box-shadow: 0 0 0 3px rgba(46, 123, 255, 0.12);
+}
+
+.erp-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(0.5);
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.erp-date-input:hover::-webkit-calendar-picker-indicator {
+  opacity: 1;
+}
+
+.dark .erp-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(0.8) sepia(0.2) hue-rotate(190deg);
+}
+
+/* Dark mode calendar popup override */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-datetime-edit {
+    color: var(--text-primary);
+  }
+}
+
+/* ══════════════════════════════════════
+   TABLE SYSTEM — Premium
+   ══════════════════════════════════════ */
+.erp-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.erp-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.erp-table thead tr {
+  background: var(--table-header);
+  backdrop-filter: blur(8px);
+}
+
+.erp-table thead th {
+  padding: 0.75rem 0.875rem;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--card-border);
+  white-space: nowrap;
+}
+
+.erp-table thead th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.erp-table thead th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.erp-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.erp-table tbody tr:hover {
+  background: rgba(46, 123, 255, 0.025);
+}
+
+.dark .erp-table tbody tr:hover {
+  background: rgba(46, 123, 255, 0.04);
+}
+
+.erp-table tbody td {
+  padding: 0.75rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--card-border);
+  vertical-align: middle;
+}
+
+/* Row selected state */
+.erp-table tbody tr.erp-row-selected {
+  background: rgba(46, 123, 255, 0.06);
+  box-shadow: inset 3px 0 0 #2E7BFF;
+}
+
+/* Alternating row rhythm — very subtle */
+table tbody tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.008);
+}
+
+.dark table tbody tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.012);
+}
+
+/* Row hover elevation */
+table tbody tr:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* ══════════════════════════════════════
+   INPUT SYSTEM
+   ══════════════════════════════════════ */
+.erp-input {
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 0.625rem 0.875rem;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+}
+
+.erp-input:focus {
+  border-color: #2E7BFF;
+  box-shadow: 0 0 0 3px rgba(46, 123, 255, 0.1);
+}
+
+.erp-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+/* ══════════════════════════════════════
+   ANIMATIONS
+   ══════════════════════════════════════ */
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Entry animation */
+@keyframes shimmer-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.erp-animate-in {
+  animation: shimmer-in 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Staggered children animation */
+.erp-stagger>* {
+  opacity: 0;
+  animation: shimmer-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.erp-stagger>*:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.erp-stagger>*:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.erp-stagger>*:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.erp-stagger>*:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.erp-stagger>*:nth-child(5) {
+  animation-delay: 0.25s;
+}
+
+.erp-stagger>*:nth-child(6) {
+  animation-delay: 0.3s;
+}
+
+.erp-stagger>*:nth-child(7) {
+  animation-delay: 0.35s;
+}
+
+/* Fade in page */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.erp-page-enter {
+  animation: page-in 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Counter tick animation */
+@keyframes count-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.erp-count-animate {
+  animation: count-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ══════════════════════════════════════
+   SCROLLBAR
+   ══════════════════════════════════════ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Light mode scrollbar */
+:root ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+:root ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* ══════════════════════════════════════
+   SELECT SYSTEM
+   ══════════════════════════════════════ */
+.erp-select {
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237A8BA7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  transition: border-color 0.2s ease;
+}
+
+.erp-select:focus {
+  border-color: #2E7BFF;
+  box-shadow: 0 0 0 3px rgba(46, 123, 255, 0.1);
+}
+
+.erp-select option {
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+}
+
+/* ══════════════════════════════════════
+   MOBILE UTILITIES
+   ══════════════════════════════════════ */
+
+/* Hide scrollbar but keep scroll functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Touch targets — more comfortable tapping on mobile */
+@media (max-width: 768px) {
+
+  input,
+  select,
+  button {
+    touch-action: manipulation;
+    min-height: 44px;
+  }
+
+  /* Prevent iOS zoom on input focus */
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Safe area for notched phones (iPhone X+) */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .erp-bg-depth {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+}
