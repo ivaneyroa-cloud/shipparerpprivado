@@ -34,12 +34,12 @@ export function sanitizeLine(input: string, maxLength = 200): string {
 
 /**
  * Validates a tracking/guía number.
- * Accepts: alphanumeric + dashes + underscores, 3-50 chars.
+ * Must be exactly 18 alphanumeric characters (e.g. 1Z0J5W578632211979).
  */
 export function isValidTrackingNumber(tracking: string): boolean {
     if (!tracking || typeof tracking !== 'string') return false;
-    const cleaned = tracking.trim();
-    return /^[A-Za-z0-9\-_]{3,50}$/.test(cleaned);
+    const cleaned = tracking.trim().toUpperCase();
+    return /^[A-Z0-9]{18}$/.test(cleaned);
 }
 
 // ── Numeric validation ──────────────────────────────────────────────────────

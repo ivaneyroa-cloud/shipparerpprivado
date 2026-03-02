@@ -80,22 +80,29 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Tracking number: must be exactly 18 alphanumeric characters
+        const cleanTracking = formData.tracking_number.trim().toUpperCase();
+        if (!/^[A-Z0-9]{18}$/.test(cleanTracking)) {
+            toast.error('El número de guía debe tener exactamente 18 caracteres alfanuméricos. Ej: 1Z0J5W578632211979');
+            return;
+        }
+
         const payload = {
-            tracking_number: sanitizeLine(formData.tracking_number, 50),
+            tracking_number: cleanTracking,
             client_name: sanitizeLine(formData.client_name),
-            client_code: sanitizeLine(formData.client_code, 20),
+            client_code: sanitizeLine(formData.client_code) || null,
             client_id: formData.client_id || null,
-            category: sanitizeLine(formData.category),
+            category: sanitizeLine(formData.category).toUpperCase() || null,
             weight: parseFloat(formData.weight) || 0,
             boxes_count: parseInt(formData.boxes_count) || 1,
             internal_status: formData.internal_status,
-            origin: sanitizeLine(formData.origin),
             date_shipped: formData.date_shipped || null,
+            origin: formData.origin || null,
             precio_envio: parseFloat(formData.precio_envio) || 0,
             gastos_documentales: parseFloat(formData.gastos_documentales) || 0,
             impuestos: parseFloat(formData.impuestos) || 0,
-            observaciones_cotizacion: formData.observaciones_cotizacion || null,
-            org_id: orgId, // Required by INSERT RLS policy
+            observaciones_cotizacion: sanitizeLine(formData.observaciones_cotizacion) || null,
+            org_id: orgId,
         };
 
         // Validate before sending to DB
@@ -145,9 +152,9 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.95, opacity: 0 }}
                         onClick={(e) => e.stopPropagation()}
-                        className={`bg-white dark:bg-slate-900 w-full transition-all duration-300 rounded-[28px] shadow-2xl overflow-hidden border border-slate-200 dark:border-white/10 ${isExpandedModal ? 'max-w-6xl' : 'max-w-xl'}`}
+                        className={`bg-white dark:bg-slate-900 w-full transition-all duration-300 rounded-[28px] shadow-2xl border border-slate-200 dark:border-white/10 ${isExpandedModal ? 'max-w-6xl' : 'max-w-xl'} max-h-[90vh] overflow-y-auto`}
                     >
-                        <div className="p-10">
+                        <div className="p-6 md:p-10">
                             <div className="flex justify-between items-center mb-10">
                                 <h2 className="text-3xl font-black tracking-tight">Nuevo Envío</h2>
                                 <div className="flex items-center gap-2">
