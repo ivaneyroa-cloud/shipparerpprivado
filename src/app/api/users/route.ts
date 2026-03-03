@@ -158,14 +158,20 @@ export async function GET(req: NextRequest) {
             .eq('id', user.id)
             .single();
 
-        if (!reqProfile || !['admin', 'super_admin'].includes(reqProfile.role)) {
-            return NextResponse.json({ error: 'Solo administradores pueden listar usuarios' }, { status: 403 });
+        if (!reqProfile) {
+            return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 });
         }
 
-        // Fetch profiles — scoped to same org, with column whitelist
+        const isAdmin = ['admin', 'super_admin'].includes(reqProfile.role);
+
+        // Admins get full profile data; others get limited fields for task assignment
+        const columns = isAdmin
+            ? 'id, email, full_name, role, is_active, created_at, org_id'
+            : 'id, full_name, role';
+
         const query = supabaseAdmin
             .from('profiles')
-            .select('id, email, full_name, role, is_active, created_at, org_id')
+            .select(columns)
             .order('created_at', { ascending: true });
 
         if (reqProfile.org_id) {
