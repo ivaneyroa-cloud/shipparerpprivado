@@ -155,11 +155,11 @@ export default function ShipmentsPage() {
                     return;
                 }
 
-                // Merge & deduplicate
+                // Merge & deduplicate (unreceived that aren't also in received + all received)
                 const received = (receivedResult.data || []) as Shipment[];
                 const unreceived = (unreceivedResult.data || []) as Shipment[];
                 const receivedIds = new Set(received.map(s => s.id));
-                const merged = [...unreceived, ...received.filter(s => !receivedIds.has(s.id))];
+                const merged = [...received, ...unreceived.filter(s => !receivedIds.has(s.id))];
 
                 setShipments(merged);
 
