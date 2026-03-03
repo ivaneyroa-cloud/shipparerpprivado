@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import {
     Plus, Search, UserPlus, MoreVertical, User,
-    TrendingUp, X, UserCog, Check
+    TrendingUp, X, UserCog, Check, Upload, Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -25,6 +25,8 @@ export default function ClientsPage() {
     const [userProfile, setUserProfile] = useState<any>(null);
     const [sortOrder, setSortOrder] = useState<'name' | 'code'>('name');
     const [viewClient, setViewClient] = useState<any>(null);
+    const [importing, setImporting] = useState(false);
+    const csvInputRef = React.useRef<HTMLInputElement>(null);
 
     const fetchClients = async (profile?: any) => {
         setLoading(true);
@@ -107,6 +109,106 @@ export default function ClientsPage() {
 
     const salesMembers = teamMembers.filter(m => m.role === 'sales' || m.role === 'admin');
 
+    // ── CSV Import ──
+    const handleCsvImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setImporting(true);
+
+        try {
+            const text = await file.text();
+            const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+            if (lines.length < 2) {
+                toast.error('El CSV debe tener al menos una fila de datos después del encabezado');
+                return;
+            }
+
+            // Parse header
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            const nameIdx = headers.indexOf('name');
+            if (nameIdx === -1) {
+                toast.error('El CSV debe tener una columna "name"');
+                return;
+            }
+
+            // Parse rows (handle quoted commas)
+            const parseRow = (line: string): string[] => {
+                const result: string[] = [];
+                let current = '';
+                let inQuotes = false;
+                for (const ch of line) {
+                    if (ch === '"') { inQuotes = !inQuotes; continue; }
+                    if (ch === ',' && !inQuotes) { result.push(current.trim()); current = ''; continue; }
+                    current += ch;
+                }
+                result.push(current.trim());
+                return result;
+            };
+
+            // Get next SH code
+            const existingCodes = clients.map(c => parseInt((c.code || '').replace(/\D/g, '')) || 0);
+            let nextCode = Math.max(0, ...existingCodes) + 1;
+            const existingNames = new Set(clients.map(c => c.name.toUpperCase()));
+
+            const rows: any[] = [];
+            let skipped = 0;
+
+            for (let i = 1; i < lines.length; i++) {
+                const cols = parseRow(lines[i]);
+                const name = cols[nameIdx]?.trim();
+                if (!name) continue;
+
+                // Skip duplicates
+                if (existingNames.has(name.toUpperCase())) {
+                    skipped++;
+                    continue;
+                }
+                existingNames.add(name.toUpperCase());
+
+                const get = (key: string) => {
+                    const idx = headers.indexOf(key);
+                    return idx >= 0 && idx < cols.length ? cols[idx] : '';
+                };
+
+                rows.push({
+                    name,
+                    code: get('code') || `SH-${String(nextCode++).padStart(3, '0')}`,
+                    cuit: get('cuit') || null,
+                    phone: get('phone') || null,
+                    email: get('email') || null,
+                    address: get('address') || null,
+                    tax_condition: get('tax_condition') || 'Consumidor final',
+                    service_type: get('service_type') || 'Retiro',
+                });
+            }
+
+            if (rows.length === 0) {
+                toast.error('No se encontraron clientes nuevos para importar');
+                return;
+            }
+
+            // Insert in batches of 50
+            let inserted = 0;
+            for (let i = 0; i < rows.length; i += 50) {
+                const batch = rows.slice(i, i + 50);
+                const { error } = await supabase.from('clients').insert(batch);
+                if (error) {
+                    toast.error(`Error en lote ${Math.floor(i / 50) + 1}: ${error.message}`);
+                    break;
+                }
+                inserted += batch.length;
+            }
+
+            toast.success(`✅ ${inserted} clientes importados${skipped > 0 ? ` (${skipped} duplicados omitidos)` : ''}`);
+            fetchClients();
+        } catch (err: any) {
+            toast.error(`Error al importar: ${err.message}`);
+        } finally {
+            setImporting(false);
+            if (csvInputRef.current) csvInputRef.current.value = '';
+        }
+    };
+
     const filteredClients = clients
         .filter((c: any) =>
             c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -142,13 +244,38 @@ export default function ClientsPage() {
                     <h1 className="text-2xl font-black tracking-tight dark:text-white uppercase tracking-tighter lowercase">base de clientes</h1>
                     <p className="text-slate-500 font-bold dark:text-cyan-600/60 uppercase text-[9px] tracking-[0.2em] mt-1">Gestioná tu cartera de clientes y códigos SH</p>
                 </div>
-                <button
-                    onClick={() => setShowAddModal(true)}
-                    className="bg-blue-600 hover:bg-blue-500 text-white font-black px-6 py-3 rounded-xl transition-all  active:scale-95 flex items-center gap-2 text-[10px] uppercase tracking-widest"
-                >
-                    <Plus size={14} strokeWidth={1.5} />
-                    AGREGAR CLIENTE
-                </button>
+                <div className="flex items-center gap-2">
+                    <a
+                        href="/plantilla_clientes.csv"
+                        download
+                        className="border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 font-black px-4 py-3 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-white/5 flex items-center gap-2 text-[10px] uppercase tracking-widest"
+                    >
+                        <Download size={14} strokeWidth={1.5} />
+                        PLANTILLA CSV
+                    </a>
+                    <input
+                        ref={csvInputRef}
+                        type="file"
+                        accept=".csv"
+                        className="hidden"
+                        onChange={handleCsvImport}
+                    />
+                    <button
+                        onClick={() => csvInputRef.current?.click()}
+                        disabled={importing}
+                        className="border border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-black px-4 py-3 rounded-xl transition-all hover:bg-emerald-50 dark:hover:bg-emerald-500/10 flex items-center gap-2 text-[10px] uppercase tracking-widest disabled:opacity-50"
+                    >
+                        <Upload size={14} strokeWidth={1.5} />
+                        {importing ? 'IMPORTANDO...' : 'IMPORTAR CSV'}
+                    </button>
+                    <button
+                        onClick={() => setShowAddModal(true)}
+                        className="bg-blue-600 hover:bg-blue-500 text-white font-black px-6 py-3 rounded-xl transition-all  active:scale-95 flex items-center gap-2 text-[10px] uppercase tracking-widest"
+                    >
+                        <Plus size={14} strokeWidth={1.5} />
+                        AGREGAR CLIENTE
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

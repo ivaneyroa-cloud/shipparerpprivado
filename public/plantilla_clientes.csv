@@ -1,0 +1,4 @@
+name,code,cuit,phone,email,address,tax_condition,service_type
+EJEMPLO S.A.,SH-001,20-12345678-9,+54 11 1234-5678,contacto@ejemplo.com,"Av. Corrientes 1234, CABA",IVA responsable inscripto,Retiro
+JUAN PEREZ,SH-002,27-87654321-0,+54 11 9876-5432,juan@email.com,"Calle Falsa 123, Córdoba",Monotributista,Despacho
+MARIA GONZALEZ,SH-003,,+54 351 555-1234,maria@gmail.com,"San Martín 456, Rosario",Consumidor final,Retiro
