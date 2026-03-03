@@ -104,8 +104,12 @@ export function MobileShipmentCard({ s, clients, handleInlineUpdate, statusOptio
                         className="p-2 -m-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
                         onClick={(e) => {
                             e.stopPropagation();
-                            navigator.clipboard.writeText(s.tracking_number || '');
-                            toast.success('Tracking copiado');
+                            try {
+                                navigator.clipboard.writeText(s.tracking_number || '');
+                                toast.success('Tracking copiado');
+                            } catch {
+                                toast.error('No se pudo copiar');
+                            }
                         }}
                     >
                         <Copy size={14} className="text-slate-400" />
@@ -183,7 +187,7 @@ export function MobileShipmentCard({ s, clients, handleInlineUpdate, statusOptio
                         >
                             <option value={s.client_name}>{s.client_name}</option>
                             {clients.map(c => (
-                                c.name.toUpperCase() !== s.client_name?.toUpperCase() && (
+                                c.name && s.client_name && c.name.toUpperCase() !== s.client_name.toUpperCase() && (
                                     <option key={c.id} value={c.name}>{c.name}</option>
                                 )
                             ))}
