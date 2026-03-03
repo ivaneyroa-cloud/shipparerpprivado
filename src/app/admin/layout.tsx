@@ -33,7 +33,7 @@ import { useActiveTimeTracker } from '@/hooks/useActiveTimeTracker';
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [session, setSession] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(true);
     const [userRole, setUserRole] = useState<string>(''); // Empty until profile loads
     const router = useRouter();
@@ -70,6 +70,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         return () => subscription.unsubscribe();
     }, [router, pathname]);
+
+    // Open sidebar by default only on desktop (after mount)
+    useEffect(() => {
+        if (window.innerWidth >= 1024) setSidebarOpen(true);
+    }, []);
+
+    // Safety timeout — never show loading forever
+    useEffect(() => {
+        const timer = setTimeout(() => setLoading(false), 5000);
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         if (isDarkMode) {
