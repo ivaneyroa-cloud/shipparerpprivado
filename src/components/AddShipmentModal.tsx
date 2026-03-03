@@ -24,8 +24,19 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
     const [showClientResults, setShowClientResults] = useState(false);
     const [showCategoryResults, setShowCategoryResults] = useState(false);
     const [isQuoteExpanded, setIsQuoteExpanded] = useState(false);
+    const [dbCategories, setDbCategories] = useState<string[]>([]);
 
-    const commonCategories = ['OTROS', 'ROPA', 'ELECTRÓNICA', 'ACCESORIOS', 'SUPLEMENTOS', 'JUGUETES', 'CALZADO'];
+    // Fetch categories from DB
+    useEffect(() => {
+        supabase.from('categories').select('name').order('name').then(({ data }) => {
+            if (data && data.length > 0) {
+                setDbCategories(data.map((c: { name: string }) => c.name));
+            } else {
+                // Fallback if DB fetch fails
+                setDbCategories(['OTROS', 'ROPA', 'ELECTRÓNICA', 'ACCESORIOS']);
+            }
+        });
+    }, []);
     const statusOptions = ['Guía Creada', 'Pendiente Expo', 'En Transito'];
 
     const [formData, setFormData] = useState({
@@ -299,8 +310,8 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
                             />
                             {showCategoryResults && (
                                 <div className="absolute z-[110] left-0 right-0 w-[90vw] md:w-full max-w-[90vw] md:max-w-none top-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto">
-                                    {commonCategories
-                                        .filter(c => c.includes(formData.category.toUpperCase()))
+                                    {dbCategories
+                                        .filter(c => c.toUpperCase().includes(formData.category.toUpperCase()))
                                         .map(cat => (
                                             <button
                                                 key={cat}
