@@ -33,7 +33,7 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
                 setDbCategories(data.map((c: { name: string }) => c.name));
             } else {
                 // Fallback if DB fetch fails
-                setDbCategories(['OTROS', 'ROPA', 'ELECTRÓNICA', 'ACCESORIOS']);
+                setDbCategories(['OTROS']);
             }
         });
     }, []);
