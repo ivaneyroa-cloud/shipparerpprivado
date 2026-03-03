@@ -41,7 +41,7 @@ export function OperationalRadar() {
                     .from('shipments')
                     .select('id, internal_status, weight, created_at, date_shipped, date_arrived, delta_kg, updated_at')
                     .order('created_at', { ascending: false })
-                    .limit(2000);
+                    .limit(500);
 
                 if (shData) setShipments(shData as ShipmentMinimal[]);
 
