@@ -23,7 +23,7 @@ export default function ClientsPage() {
     const [assigningVendor, setAssigningVendor] = useState<string | null>(null);
     const [savingAssignment, setSavingAssignment] = useState(false);
     const [userProfile, setUserProfile] = useState<any>(null);
-    const [sortOrder, setSortOrder] = useState<'name' | 'code'>('name');
+    const [sortOrder, setSortOrder] = useState<'name-asc' | 'name-desc' | 'code-asc' | 'code-desc'>('name-asc');
     const [viewClient, setViewClient] = useState<any>(null);
     const [importing, setImporting] = useState(false);
     const csvInputRef = React.useRef<HTMLInputElement>(null);
@@ -223,12 +223,14 @@ export default function ClientsPage() {
             (c.code || '').toLowerCase().includes(searchTerm.toLowerCase())
         )
         .sort((a: any, b: any) => {
-            if (sortOrder === 'name') {
-                return a.name.localeCompare(b.name);
-            } else {
-                const numA = parseInt((a.code || '').replace(/\D/g, '')) || 0;
-                const numB = parseInt((b.code || '').replace(/\D/g, '')) || 0;
-                return numA - numB;
+            const numA = parseInt((a.code || '').replace(/\D/g, '')) || 0;
+            const numB = parseInt((b.code || '').replace(/\D/g, '')) || 0;
+            switch (sortOrder) {
+                case 'name-asc': return a.name.localeCompare(b.name);
+                case 'name-desc': return b.name.localeCompare(a.name);
+                case 'code-asc': return numA - numB;
+                case 'code-desc': return numB - numA;
+                default: return a.name.localeCompare(b.name);
             }
         });
 
@@ -328,9 +330,13 @@ export default function ClientsPage() {
                         />
                     </div>
                     <div className="flex items-center border rounded-lg overflow-hidden" style={{ borderColor: 'var(--card-border)' }}>
-                        <button onClick={() => setSortOrder('name')} className={`px-3 py-2 text-[9px] font-bold uppercase tracking-wider transition-all ${sortOrder === 'name' ? 'bg-[#2E7BFF] text-white' : 'hover:bg-white/[0.03]'}`} style={sortOrder !== 'name' ? { color: 'var(--text-muted)' } : undefined}>A → Z</button>
+                        <button onClick={() => setSortOrder('name-asc')} className={`px-3 py-2 text-[9px] font-bold uppercase tracking-wider transition-all ${sortOrder === 'name-asc' ? 'bg-[#2E7BFF] text-white' : 'hover:bg-white/[0.03]'}`} style={sortOrder !== 'name-asc' ? { color: 'var(--text-muted)' } : undefined}>A → Z</button>
                         <div className="w-px h-5" style={{ background: 'var(--card-border)' }} />
-                        <button onClick={() => setSortOrder('code')} className={`px-3 py-2 text-[9px] font-bold uppercase tracking-wider transition-all ${sortOrder === 'code' ? 'bg-[#2E7BFF] text-white' : 'hover:bg-white/[0.03]'}`} style={sortOrder !== 'code' ? { color: 'var(--text-muted)' } : undefined}>SH #</button>
+                        <button onClick={() => setSortOrder('name-desc')} className={`px-3 py-2 text-[9px] font-bold uppercase tracking-wider transition-all ${sortOrder === 'name-desc' ? 'bg-[#2E7BFF] text-white' : 'hover:bg-white/[0.03]'}`} style={sortOrder !== 'name-desc' ? { color: 'var(--text-muted)' } : undefined}>Z → A</button>
+                        <div className="w-px h-5" style={{ background: 'var(--card-border)' }} />
+                        <button onClick={() => setSortOrder('code-asc')} className={`px-3 py-2 text-[9px] font-bold uppercase tracking-wider transition-all ${sortOrder === 'code-asc' ? 'bg-[#2E7BFF] text-white' : 'hover:bg-white/[0.03]'}`} style={sortOrder !== 'code-asc' ? { color: 'var(--text-muted)' } : undefined}>SH ↑</button>
+                        <div className="w-px h-5" style={{ background: 'var(--card-border)' }} />
+                        <button onClick={() => setSortOrder('code-desc')} className={`px-3 py-2 text-[9px] font-bold uppercase tracking-wider transition-all ${sortOrder === 'code-desc' ? 'bg-[#2E7BFF] text-white' : 'hover:bg-white/[0.03]'}`} style={sortOrder !== 'code-desc' ? { color: 'var(--text-muted)' } : undefined}>SH ↓</button>
                     </div>
                 </div>
                 <div className="overflow-x-auto">
@@ -356,7 +362,7 @@ export default function ClientsPage() {
                                     return (
                                         <tr key={client.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group relative">
                                             <td className="px-5 py-3"><span className="font-black text-sm text-slate-800 dark:text-white uppercase tracking-tight">{client.name}</span></td>
-                                            <td className="px-5 py-3"><span className="font-mono text-xs font-black text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 px-2.5 py-1 rounded-lg">{client.code}</span></td>
+                                            <td className="px-5 py-3"><span className="text-sm font-black text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 px-3 py-1.5 rounded-lg tracking-wide">{client.code}</span></td>
                                             <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500">{client.cuit || '—'}</span></td>
                                             <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500">{client.tax_condition || '—'}</span></td>
                                             <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500">{client.phone || '—'}</span></td>
