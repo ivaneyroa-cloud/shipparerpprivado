@@ -144,11 +144,23 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Light mode */
-:root .base-modal-container,
+/* Light mode — only when NOT dark */
+:root:not(.dark) .base-modal-container,
 .light .base-modal-container {
   background: #ffffff;
   border-color: #E3E8F2;
+}
+
+/* Dark mode */
+.dark .base-modal-container {
+  background: #181D28;
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+/* Dark mode select options */
+.dark select option {
+  background: #1E2433;
+  color: #E8ECF2;
 }
 
 /* Smooth scroll inside modals */
