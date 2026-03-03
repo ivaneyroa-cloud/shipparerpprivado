@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Loader2, Edit2, FileCheck, FileText } from 'lucide-react';
 import { ShipmentCobranzasRow } from '@/types';
+import { MobileCobranzaCard } from '@/components/mobile/MobileCobranzaCard';
 import { PaymentVerificationModal } from './PaymentVerificationModal';
 import { supabase } from '@/lib/supabase';
 import { secureShipmentUpdate } from '@/lib/secure-shipment-update';
@@ -121,7 +122,8 @@ export function CobranzasTable({ shipments, loading, handleInlineUpdate, handleL
 
     return (
         <div className="w-full bg-white border border-slate-200 rounded-[24px] overflow-hidden shadow-[0_8px_30px_-4px_rgba(0,0,0,0.04)] dark:bg-slate-800 dark:border-slate-700 flex flex-col transition-all mb-12 font-[Outfit]">
-            <div className="overflow-x-auto rounded-[24px] pb-2">
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto rounded-[24px] pb-2">
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 [&>th]:px-4 [&>th]:py-3 [&>th]:text-[10px] [&>th]:font-bold [&>th]:uppercase [&>th]:tracking-wider [&>th]:text-slate-500">
@@ -301,6 +303,36 @@ export function CobranzasTable({ shipments, loading, handleInlineUpdate, handleL
                         )}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="md:hidden">
+                {loading ? (
+                    <div className="flex justify-center py-20">
+                        <Loader2 className="animate-spin text-[#FF6900]" />
+                    </div>
+                ) : shipments.length === 0 ? (
+                    <div className="px-4 py-16 text-center text-slate-500 font-medium text-sm">
+                        No hay envíos en este filtro.
+                    </div>
+                ) : (
+                    <div className="space-y-3 p-3">
+                        {shipments.map((s) => (
+                            <MobileCobranzaCard
+                                key={s.id}
+                                s={s}
+                                draftValues={draftValues}
+                                onDraftChange={handleDraftChange}
+                                onDraftBlur={handleDraftBlur}
+                                estadoOpciones={estadoOpciones}
+                                handleLocalUpdate={handleLocalUpdate}
+                                handleInlineUpdate={handleInlineUpdate}
+                                onPayment={(s) => { setSelectedForPayment(s); setIsPaymentModalOpen(true); }}
+                                clientTarifaMap={clientTarifaMap}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
 
             <PaymentVerificationModal

@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 // ── Extracted components ──
 import { AddClientModal } from '@/components/clients/AddClientModal';
 import { ClientDetailModal } from '@/components/clients/ClientDetailModal';
+import { MobileClientCard } from '@/components/mobile/MobileClientCard';
 
 function InlineTarifaCell({ clientId, value, onSaved }: { clientId: string; value: string; onSaved: (val: string) => void }) {
     const [editing, setEditing] = React.useState(false);
@@ -391,7 +392,8 @@ export default function ClientsPage() {
                         <button onClick={() => setSortOrder('code-desc')} className={`px-3 py-2 text-[9px] font-bold uppercase tracking-wider transition-all ${sortOrder === 'code-desc' ? 'bg-[#2E7BFF] text-white' : 'hover:bg-white/[0.03]'}`} style={sortOrder !== 'code-desc' ? { color: 'var(--text-muted)' } : undefined}>SH ↓</button>
                     </div>
                 </div>
-                <div className="overflow-x-auto">
+                {/* Desktop table */}
+                <div className="hidden md:block overflow-x-auto">
                     <table className="erp-table">
                         <thead>
                             <tr>
@@ -483,6 +485,38 @@ export default function ClientsPage() {
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Mobile cards */}
+                <div className="md:hidden">
+                    {loading ? (
+                        <div className="flex justify-center py-20">
+                            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                        </div>
+                    ) : filteredClients.length === 0 ? (
+                        <div className="px-4 py-16 text-center text-slate-400 font-bold text-sm">
+                            No se encontraron clientes
+                        </div>
+                    ) : (
+                        <div className="space-y-3 p-3">
+                            {filteredClients.map((client: any) => (
+                                <MobileClientCard
+                                    key={client.id}
+                                    client={client}
+                                    onView={(c) => setViewClient(c)}
+                                    onTarifaSave={async (clientId, val) => {
+                                        const { error } = await supabase.from('clients').update({ tarifa_aplicable: val || null }).eq('id', clientId);
+                                        if (error) {
+                                            toast.error('Error al guardar tarifa');
+                                        } else {
+                                            setClients(prev => prev.map(c => c.id === clientId ? { ...c, tarifa_aplicable: val } : c));
+                                            toast.success('Tarifa actualizada');
+                                        }
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 

@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Search, Loader2, Filter, CheckCircle2 } from 'lucide-react';
 import { ShipmentRow } from '@/components/ShipmentRow';
+import { MobileShipmentCard } from '@/components/mobile/MobileShipmentCard';
 import { FilterDropdown } from '@/components/FilterDropdown';
 import { DateFilterPopup } from '@/components/DateFilterPopup';
 import { ReceiveShipmentModal } from '@/components/ReceiveShipmentModal';
@@ -121,8 +122,8 @@ export function ShipmentsTable({
                 </div>
             </div>
 
-            {/* ── Data Zone ── */}
-            <div className={`overflow-x-auto ${isTableExpanded ? 'flex-1 overflow-y-auto min-h-0' : ''}`}>
+            {/* ── Desktop: Data Table ── */}
+            <div className={`hidden md:block overflow-x-auto ${isTableExpanded ? 'flex-1 overflow-y-auto min-h-0' : ''}`}>
                 <table className="w-full">
                     <thead>
                         <tr style={{ background: 'var(--table-header)' }}>
@@ -224,6 +225,43 @@ export function ShipmentsTable({
                         >
                             VER {Math.min(50, filteredShipments.length - visibleCount)} MÁS... ({filteredShipments.length - visibleCount} restantes)
                         </button>
+                    </div>
+                )}
+            </div>
+
+            {/* ── Mobile: Card Layout ── */}
+            <div className="md:hidden">
+                {loading ? (
+                    <div className="flex justify-center py-20">
+                        <Loader2 className="animate-spin text-blue-500" />
+                    </div>
+                ) : filteredShipments.length === 0 ? (
+                    <div className="px-4 py-16 text-center text-slate-500 font-medium text-sm">
+                        No se encontraron envíos.
+                    </div>
+                ) : (
+                    <div className="space-y-3 p-3">
+                        {filteredShipments.slice(0, visibleCount).map((s: Shipment) => (
+                            <MobileShipmentCard
+                                key={s.id}
+                                s={s}
+                                clients={clients}
+                                handleInlineUpdate={handleInlineUpdate}
+                                statusOptions={statusOptions}
+                                deleteShipments={deleteShipments}
+                                onReceiveShipment={(s: Shipment) => setShipmentToReceive(s)}
+                                userRole={userRole}
+                                isDepotView={isDepotView}
+                            />
+                        ))}
+                        {visibleCount < filteredShipments.length && (
+                            <button
+                                onClick={() => setVisibleCount((v) => v + 50)}
+                                className="w-full py-3 text-center text-sm font-bold text-blue-500 bg-blue-500/5 rounded-xl"
+                            >
+                                Ver {Math.min(50, filteredShipments.length - visibleCount)} más...
+                            </button>
+                        )}
                     </div>
                 )}
             </div>
