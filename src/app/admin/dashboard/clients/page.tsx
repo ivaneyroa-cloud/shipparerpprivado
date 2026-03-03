@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import {
     Plus, Search, UserPlus, MoreVertical, User,
-    TrendingUp, X, UserCog, Check, Upload, Download
+    TrendingUp, X, UserCog, Check, Upload
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -123,22 +123,26 @@ export default function ClientsPage() {
                 return;
             }
 
+            // Auto-detect separator: semicolon (Excel ES) or comma (standard CSV)
+            const headerLine = lines[0];
+            const sep = headerLine.includes(';') ? ';' : ',';
+
             // Parse header
-            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            const headers = headerLine.split(sep).map(h => h.trim().toLowerCase());
             const nameIdx = headers.indexOf('name');
             if (nameIdx === -1) {
                 toast.error('El CSV debe tener una columna "name"');
                 return;
             }
 
-            // Parse rows (handle quoted commas)
+            // Parse rows (handle quoted separators)
             const parseRow = (line: string): string[] => {
                 const result: string[] = [];
                 let current = '';
                 let inQuotes = false;
                 for (const ch of line) {
                     if (ch === '"') { inQuotes = !inQuotes; continue; }
-                    if (ch === ',' && !inQuotes) { result.push(current.trim()); current = ''; continue; }
+                    if (ch === sep && !inQuotes) { result.push(current.trim()); current = ''; continue; }
                     current += ch;
                 }
                 result.push(current.trim());
@@ -245,14 +249,6 @@ export default function ClientsPage() {
                     <p className="text-slate-500 font-bold dark:text-cyan-600/60 uppercase text-[9px] tracking-[0.2em] mt-1">Gestioná tu cartera de clientes y códigos SH</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <a
-                        href="/plantilla_clientes.csv"
-                        download
-                        className="border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 font-black px-4 py-3 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-white/5 flex items-center gap-2 text-[10px] uppercase tracking-widest"
-                    >
-                        <Download size={14} strokeWidth={1.5} />
-                        PLANTILLA CSV
-                    </a>
                     <input
                         ref={csvInputRef}
                         type="file"
