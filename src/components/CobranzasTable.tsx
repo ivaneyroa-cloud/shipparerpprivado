@@ -255,7 +255,20 @@ export function CobranzasTable({ shipments, loading, handleInlineUpdate, handleL
                                             >
                                                 {estadoOpciones.map(opt => <option key={opt} value={opt} className="text-left bg-white text-slate-800">{opt}</option>)}
                                             </select>
-
+                                            {(s.payment_notes || s.payment_proof_url) && (
+                                                <div className="mt-2 space-y-1">
+                                                    {s.payment_notes && (
+                                                        <p className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2 py-1 rounded-md leading-tight">
+                                                            📝 {s.payment_notes}
+                                                        </p>
+                                                    )}
+                                                    {s.payment_proof_url && (
+                                                        <a href={s.payment_proof_url} target="_blank" rel="noopener noreferrer" className="text-[9px] font-bold text-blue-500 hover:text-blue-600 underline flex items-center gap-1">
+                                                            <FileCheck size={10} /> Ver comprobante
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            )}
 
                                         </td>
                                     </tr>
@@ -276,7 +289,12 @@ export function CobranzasTable({ shipments, loading, handleInlineUpdate, handleL
                 onSuccess={async (data) => {
                     if (!selectedForPayment) return;
                     handleLocalUpdate(selectedForPayment.id, 'estado_cobranza', 'Pagado');
-                    const result = await secureShipmentUpdate(selectedForPayment.id, { estado_cobranza: 'Pagado' });
+                    const updatePayload: Record<string, any> = {
+                        estado_cobranza: 'Pagado',
+                    };
+                    if (data.proofUrl) updatePayload.payment_proof_url = data.proofUrl;
+                    if (data.notes) updatePayload.payment_notes = data.notes;
+                    const result = await secureShipmentUpdate(selectedForPayment.id, updatePayload);
                     if (!result.success) {
                         toast.error(`Error al registrar pago: ${result.error}`);
                     } else {

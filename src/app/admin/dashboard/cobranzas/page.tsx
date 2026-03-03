@@ -26,7 +26,7 @@ export default function CobranzasPage() {
 
             let query = supabase
                 .from('shipments')
-                .select('id, tracking_number, client_id, client_name, internal_status, bultos, invoice_photo_1, invoice_photo_2, peso_computable, weight, precio_envio, costo_flete, gastos_documentales, impuestos, monto_cobrado, estado_cobranza, estado_pago_proveedor, updated_at')
+                .select('id, tracking_number, client_id, client_name, internal_status, bultos, invoice_photo_1, invoice_photo_2, peso_computable, weight, precio_envio, costo_flete, gastos_documentales, impuestos, monto_cobrado, estado_cobranza, estado_pago_proveedor, updated_at, payment_proof_url, payment_notes')
                 .in('internal_status', allowedStatuses)
                 .order('updated_at', { ascending: false });
 
