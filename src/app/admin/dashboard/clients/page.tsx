@@ -496,6 +496,7 @@ export default function ClientsPage() {
 
             {/* View/Edit Client Modal */}
             <ClientDetailModal
+                key={viewClient?.id || 'none'}
                 client={viewClient}
                 onClose={() => setViewClient(null)}
                 onSaved={() => fetchClients()}
