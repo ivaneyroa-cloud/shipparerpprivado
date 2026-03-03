@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { format, differenceInDays, differenceInHours } from 'date-fns';
 import { ReceiveShipmentModal } from '@/components/ReceiveShipmentModal';
 import { QuickReceiveScreen } from '@/components/QuickReceiveScreen';
+import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
 import type { Shipment } from '@/types';
 
 type DepotTab = 'transit' | 'ready' | 'delivered';
@@ -39,7 +40,7 @@ export default function DepositoPage() {
         fetchAllShipments();
     }, []);
 
-    const fetchAllShipments = async () => {
+    const fetchAllShipments = useCallback(async () => {
         setLoading(true);
         try {
             const { data, error } = await supabase
@@ -55,7 +56,10 @@ export default function DepositoPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    // ── Realtime sync ──
+    useRealtimeRefresh('shipments', fetchAllShipments);
 
     // ── Actions ──
     const handleDispatch = async (id: string, newStatus: 'Retirado' | 'Despachado' | 'Mercado Libre full' = 'Retirado') => {

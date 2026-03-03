@@ -10,6 +10,7 @@ import { ProviderPaymentView } from '@/components/BulkProviderPaymentModal';
 import { DollarSign, CreditCard } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
 
 export default function CobranzasPage() {
     const [shipments, setShipments] = useState<ShipmentCobranzasRow[]>([]);
@@ -87,6 +88,9 @@ export default function CobranzasPage() {
     useEffect(() => {
         fetchCobranzas();
     }, [fetchCobranzas]);
+
+    // ── Realtime sync ──
+    useRealtimeRefresh('shipments', fetchCobranzas);
 
     const EDITABLE_FIELDS: Array<keyof ShipmentCobranzasRow> = [
         'estado_cobranza',

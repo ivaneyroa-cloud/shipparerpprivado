@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { useExcelImport } from '@/hooks/useExcelImport';
 import { useAudioFeedback } from '@/hooks/useAudioFeedback';
 import { useShipmentFilters } from '@/hooks/useShipmentFilters';
+import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
 
 import { AddShipmentModal } from '@/components/AddShipmentModal';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
@@ -201,6 +202,9 @@ export default function ShipmentsPage() {
         if (assignedClientIds === undefined) return;
         fetchShipments(assignedClientIds);
     }, [assignedClientIds, fetchShipments]);
+
+    // ── Realtime sync ──
+    useRealtimeRefresh('shipments', refreshShipments, assignedClientIds !== undefined);
 
     const fetchClients = useCallback(async (profile?: UserProfile) => {
         try {

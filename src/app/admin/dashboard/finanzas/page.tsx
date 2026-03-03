@@ -10,6 +10,7 @@ import {
 import { toast } from 'sonner';
 import { format, differenceInDays } from 'date-fns';
 import { StatusBadge, CobranzaBadge, LegendRow, DonutChart, MarginDistribution } from '@/components/finanzas/FinanzasCharts';
+import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -98,6 +99,9 @@ export default function FinanzasDashboard() {
     }, [selectedMonth]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
+
+    // ── Realtime sync ──
+    useRealtimeRefresh('shipments', fetchData);
 
     // ── Month Options ──
     const monthOptions = useMemo(() => {
