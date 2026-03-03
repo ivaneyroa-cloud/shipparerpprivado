@@ -248,7 +248,8 @@ export const ShipmentRow = React.memo(function ShipmentRow({
                         ${s.internal_status === 'Retirado' ? 'text-[#10B981]' :
                                     s.internal_status === 'Recibido en Oficina' ? 'text-[#2E7BFF]' :
                                         s.internal_status === 'Pendiente Expo' ? 'text-[#FFB020]' :
-                                            'text-slate-500'}
+                                            s.internal_status === 'En Transito' ? 'text-[#38BDF8]' :
+                                                'text-slate-500'}
                     `}
                             value={(getValue('_status_import', s.internal_status) as string)}
                             onChange={(e) => {
