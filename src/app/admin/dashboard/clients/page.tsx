@@ -13,6 +13,52 @@ import { toast } from 'sonner';
 import { AddClientModal } from '@/components/clients/AddClientModal';
 import { ClientDetailModal } from '@/components/clients/ClientDetailModal';
 
+function InlineTarifaCell({ clientId, value, onSaved }: { clientId: string; value: string; onSaved: (val: string) => void }) {
+    const [editing, setEditing] = React.useState(false);
+    const [draft, setDraft] = React.useState(value);
+    const inputRef = React.useRef<HTMLInputElement>(null);
+
+    React.useEffect(() => { if (editing && inputRef.current) inputRef.current.focus(); }, [editing]);
+    React.useEffect(() => { setDraft(value); }, [value]);
+
+    const save = async () => {
+        setEditing(false);
+        if (draft === value) return;
+        const { error } = await supabase.from('clients').update({ tarifa_aplicable: draft || null }).eq('id', clientId);
+        if (error) {
+            toast.error('Error al guardar tarifa');
+            setDraft(value);
+        } else {
+            onSaved(draft);
+            toast.success('Tarifa actualizada');
+        }
+    };
+
+    if (editing) {
+        return (
+            <input
+                ref={inputRef}
+                className="w-full bg-amber-50 dark:bg-amber-500/10 border-b-2 border-amber-500 outline-none py-1 px-1 text-xs font-black text-amber-700 dark:text-amber-300"
+                value={draft}
+                onChange={e => setDraft(e.target.value)}
+                onBlur={save}
+                onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') { setDraft(value); setEditing(false); } }}
+                placeholder="17*kg, 11.5..."
+            />
+        );
+    }
+
+    return (
+        <span
+            onClick={() => setEditing(true)}
+            className="text-xs font-black text-amber-600 dark:text-amber-400 cursor-pointer hover:bg-amber-50 dark:hover:bg-amber-500/10 px-1.5 py-0.5 rounded transition-colors"
+            title="Click para editar tarifa"
+        >
+            {value || '—'}
+        </span>
+    );
+}
+
 export default function ClientsPage() {
     const [clients, setClients] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -367,7 +413,15 @@ export default function ClientsPage() {
                                             <td className="px-5 py-3"><span className="text-sm font-black text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 px-3 py-1.5 rounded-lg tracking-wide">{client.code}</span></td>
                                             <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500">{client.cuit || '—'}</span></td>
                                             <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500">{client.tax_condition || '—'}</span></td>
-                                            <td className="px-5 py-3"><span className="text-xs font-black text-amber-600 dark:text-amber-400">{client.tarifa_aplicable || '—'}</span></td>
+                                            <td className="px-5 py-3">
+                                                <InlineTarifaCell
+                                                    clientId={client.id}
+                                                    value={client.tarifa_aplicable || ''}
+                                                    onSaved={(val) => {
+                                                        setClients(prev => prev.map(c => c.id === client.id ? { ...c, tarifa_aplicable: val } : c));
+                                                    }}
+                                                />
+                                            </td>
                                             <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500">{client.phone || '—'}</span></td>
                                             <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500 truncate max-w-[180px] block">{client.email || '—'}</span></td>
                                             <td className="px-5 py-3 text-center">
