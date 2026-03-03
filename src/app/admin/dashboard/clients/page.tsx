@@ -32,7 +32,7 @@ export default function ClientsPage() {
         setLoading(true);
         const currentProfile = profile || userProfile;
 
-        let query = supabase.from('clients').select('id, name, code, assigned_to, cuit, address, tax_condition, service_type, phone, email, created_at, org_id').order('name', { ascending: true });
+        let query = supabase.from('clients').select('id, name, code, assigned_to, cuit, address, tax_condition, service_type, phone, email, tarifa_aplicable, created_at, org_id').order('name', { ascending: true });
 
         // Sales users only see their assigned clients
         if (currentProfile?.role === 'sales') {
@@ -174,6 +174,7 @@ export default function ClientsPage() {
                     address: row.address || row.direccion || null,
                     tax_condition: row.tax_condition || row.condicion_fiscal || 'Consumidor final',
                     service_type: row.service_type || row.tipo_servicio || 'Retiro',
+                    tarifa_aplicable: row.tarifa_aplicable || row.tarifa || row['tarifa aplicable'] || null,
                 });
             }
 
@@ -347,6 +348,7 @@ export default function ClientsPage() {
                                 <th>Código</th>
                                 <th>CUIT</th>
                                 <th>Condición Fiscal</th>
+                                <th>Tarifa</th>
                                 <th>Teléfono</th>
                                 <th>Email</th>
                                 <th className="text-center w-40">Acciones</th>
@@ -354,9 +356,9 @@ export default function ClientsPage() {
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
-                                <tr><td colSpan={7} className="px-6 py-20 text-center"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" /></td></tr>
+                                <tr><td colSpan={8} className="px-6 py-20 text-center"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" /></td></tr>
                             ) : filteredClients.length === 0 ? (
-                                <tr><td colSpan={7} className="px-6 py-20 text-center text-slate-400 font-bold text-sm">No se encontraron clientes</td></tr>
+                                <tr><td colSpan={8} className="px-6 py-20 text-center text-slate-400 font-bold text-sm">No se encontraron clientes</td></tr>
                             ) : (
                                 filteredClients.map((client: any) => {
                                     return (
@@ -365,6 +367,7 @@ export default function ClientsPage() {
                                             <td className="px-5 py-3"><span className="text-sm font-black text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 px-3 py-1.5 rounded-lg tracking-wide">{client.code}</span></td>
                                             <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500">{client.cuit || '—'}</span></td>
                                             <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500">{client.tax_condition || '—'}</span></td>
+                                            <td className="px-5 py-3"><span className="text-xs font-black text-amber-600 dark:text-amber-400">{client.tarifa_aplicable || '—'}</span></td>
                                             <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500">{client.phone || '—'}</span></td>
                                             <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500 truncate max-w-[180px] block">{client.email || '—'}</span></td>
                                             <td className="px-5 py-3 text-center">

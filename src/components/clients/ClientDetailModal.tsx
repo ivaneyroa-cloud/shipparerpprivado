@@ -29,6 +29,7 @@ export function ClientDetailModal({ client, onClose, onSaved, getVendorName }: C
             address: editingClient.address,
             tax_condition: editingClient.tax_condition,
             service_type: editingClient.service_type,
+            tarifa_aplicable: editingClient.tarifa_aplicable,
         }).eq('id', client.id);
         setSavingClient(false);
         if (!error) {
@@ -65,6 +66,7 @@ export function ClientDetailModal({ client, onClose, onSaved, getVendorName }: C
                     { label: 'Teléfono', key: 'phone', placeholder: '549 11 ...' },
                     { label: 'Email', key: 'email', placeholder: 'correo@ejemplo.com' },
                     { label: 'Dirección', key: 'address', placeholder: 'Calle 123, CABA' },
+                    { label: 'Tarifa Aplicable', key: 'tarifa_aplicable', placeholder: 'Ej: 17*kg, 11.5, etc.' },
                 ].map(({ label, key, placeholder }) => (
                     <div key={key}>
                         <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">{label}</p>

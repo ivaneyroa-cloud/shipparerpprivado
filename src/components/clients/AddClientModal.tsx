@@ -22,7 +22,8 @@ const INITIAL_FORM = {
     tax_condition: 'Consumidor final',
     service_type: 'Retiro',
     email: '',
-    phone: ''
+    phone: '',
+    tarifa_aplicable: ''
 };
 
 export function AddClientModal({ isOpen, onClose, onCreated, salesMembers }: AddClientModalProps) {
@@ -65,7 +66,8 @@ export function AddClientModal({ isOpen, onClose, onCreated, salesMembers }: Add
             tax_condition: formData.tax_condition,
             service_type: formData.service_type,
             email: formData.email,
-            phone: formData.phone
+            phone: formData.phone,
+            tarifa_aplicable: formData.tarifa_aplicable || null
         };
         if (formData.assigned_to) {
             insertData.assigned_to = formData.assigned_to;
@@ -142,6 +144,15 @@ export function AddClientModal({ isOpen, onClose, onCreated, salesMembers }: Add
                         className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
                         value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })}
                         placeholder="Soler 3369, 1C CABA"
+                    />
+                </div>
+
+                <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-amber-600 ml-1">💰 Tarifa Aplicable</label>
+                    <input
+                        className="w-full border border-amber-200 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-500/5 px-5 py-3.5 rounded-xl outline-none focus:border-amber-500 transition-all font-black text-sm text-slate-900 dark:text-amber-400 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                        value={formData.tarifa_aplicable} onChange={e => setFormData({ ...formData, tarifa_aplicable: e.target.value })}
+                        placeholder="Ej: 17*kg, 11.5, TARIFA NUEVA UPS sin depo"
                     />
                 </div>
 
