@@ -19,6 +19,7 @@ interface CobranzasTableProps {
     handleInlineUpdate: (id: string, field: keyof ShipmentCobranzasRow, value: string | number | null, last_updated?: string) => void;
     handleLocalUpdate: (id: string, field: keyof ShipmentCobranzasRow, value: string | number | null) => void;
     clientVendorMap?: Record<string, string>;
+    clientTarifaMap?: Record<string, string>;
 }
 
 function EditableCurrencyCell({
@@ -91,7 +92,7 @@ function EditableCurrencyCell({
     );
 }
 
-export function CobranzasTable({ shipments, loading, handleInlineUpdate, handleLocalUpdate, clientVendorMap = {} }: CobranzasTableProps) {
+export function CobranzasTable({ shipments, loading, handleInlineUpdate, handleLocalUpdate, clientVendorMap = {}, clientTarifaMap = {} }: CobranzasTableProps) {
     const [draftValues, setDraftValues] = useState<Record<string, string>>({});
     const [selectedForPayment, setSelectedForPayment] = useState<ShipmentCobranzasRow | null>(null);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -187,24 +188,47 @@ export function CobranzasTable({ shipments, loading, handleInlineUpdate, handleL
                                         </td>
 
                                         <td className="px-4 py-3 align-top">
-                                            <div className="flex flex-col gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span className="text-[9px] font-bold uppercase text-slate-400">Cotizado/Envío:</span>
-                                                    <span className="text-[10px] font-bold text-slate-500">{formatMoney(envio)}</span>
+                                            {(s.quote_mode === 'tarifario') ? (
+                                                <div className="flex flex-col gap-1.5">
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/15 px-2 py-1 rounded-lg inline-block w-fit">📋 TARIFARIO</span>
+                                                    {s.client_id && clientTarifaMap[s.client_id] ? (
+                                                        <p className="text-xs font-black text-amber-700 dark:text-amber-300">{clientTarifaMap[s.client_id]}</p>
+                                                    ) : (
+                                                        <p className="text-[10px] font-bold text-slate-400">Sin tarifa cargada</p>
+                                                    )}
+                                                    <p className="text-[9px] text-slate-400">Cobranzas valida el monto</p>
                                                 </div>
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span className="text-[9px] font-bold uppercase text-slate-400">G. Documentales:</span>
-                                                    <span className="text-[10px] font-bold text-slate-500">{formatMoney(gastos)}</span>
+                                            ) : (s.quote_mode === 'pdf') ? (
+                                                <div className="flex flex-col gap-1.5">
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-500/15 px-2 py-1 rounded-lg inline-block w-fit">📎 PDF</span>
+                                                    {s.quote_pdf_url ? (
+                                                        <a href={s.quote_pdf_url} target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-blue-500 hover:text-blue-600 underline flex items-center gap-1">
+                                                            <FileText size={10} /> Ver cotización PDF
+                                                        </a>
+                                                    ) : (
+                                                        <p className="text-[10px] font-bold text-slate-400">PDF no disponible</p>
+                                                    )}
                                                 </div>
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span className="text-[9px] font-bold uppercase text-slate-400">Impuestos:</span>
-                                                    <span className="text-[10px] font-bold text-slate-500">{formatMoney(imp)}</span>
+                                            ) : (
+                                                <div className="flex flex-col gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <span className="text-[9px] font-bold uppercase text-slate-400">Cotizado/Envío:</span>
+                                                        <span className="text-[10px] font-bold text-slate-500">{formatMoney(envio)}</span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <span className="text-[9px] font-bold uppercase text-slate-400">G. Documentales:</span>
+                                                        <span className="text-[10px] font-bold text-slate-500">{formatMoney(gastos)}</span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <span className="text-[9px] font-bold uppercase text-slate-400">Impuestos:</span>
+                                                        <span className="text-[10px] font-bold text-slate-500">{formatMoney(imp)}</span>
+                                                    </div>
+                                                    <div className="mt-1 pt-1 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2">
+                                                        <span className="text-[9px] font-black uppercase text-slate-400">Sumatoria Ref:</span>
+                                                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-300">{formatMoney(totalEstimadoRef)}</span>
+                                                    </div>
                                                 </div>
-                                                <div className="mt-1 pt-1 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2">
-                                                    <span className="text-[9px] font-black uppercase text-slate-400">Sumatoria Ref:</span>
-                                                    <span className="text-[10px] font-black text-slate-600 dark:text-slate-300">{formatMoney(totalEstimadoRef)}</span>
-                                                </div>
-                                            </div>
+                                            )}
                                         </td>
 
                                         <td className="px-4 py-3 align-middle min-w-[160px]">

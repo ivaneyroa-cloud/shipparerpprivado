@@ -16,6 +16,7 @@ export default function CobranzasPage() {
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState<string>('Pendiente'); // Default: Pendientes first
     const [clientVendorMap, setClientVendorMap] = useState<Record<string, string>>({});
+    const [clientTarifaMap, setClientTarifaMap] = useState<Record<string, string>>({});
     const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'));
     const [isProviderView, setIsProviderView] = useState(false);
 
@@ -26,7 +27,7 @@ export default function CobranzasPage() {
 
             let query = supabase
                 .from('shipments')
-                .select('id, tracking_number, client_id, client_name, internal_status, bultos, invoice_photo_1, invoice_photo_2, peso_computable, weight, precio_envio, costo_flete, gastos_documentales, impuestos, monto_cobrado, estado_cobranza, estado_pago_proveedor, updated_at, payment_proof_url, payment_notes')
+                .select('id, tracking_number, client_id, client_name, internal_status, bultos, invoice_photo_1, invoice_photo_2, peso_computable, weight, precio_envio, costo_flete, gastos_documentales, impuestos, monto_cobrado, estado_cobranza, estado_pago_proveedor, updated_at, payment_proof_url, payment_notes, quote_mode, quote_pdf_url')
                 .in('internal_status', allowedStatuses)
                 .order('updated_at', { ascending: false });
 
@@ -46,7 +47,7 @@ export default function CobranzasPage() {
             // Build the Vendor Map
             const clientIds = Array.from(new Set(data.map(s => s.client_id).filter(Boolean)));
             if (clientIds.length > 0) {
-                const { data: clientsData } = await supabase.from('clients').select('id, assigned_to').in('id', clientIds);
+                const { data: clientsData } = await supabase.from('clients').select('id, assigned_to, tarifa_aplicable').in('id', clientIds);
 
                 const { data: { session } } = await supabase.auth.getSession();
                 let usersList: any[] = [];
@@ -61,15 +62,20 @@ export default function CobranzasPage() {
                 }
 
                 const map: Record<string, string> = {};
+                const tarifaMap: Record<string, string> = {};
                 if (clientsData) {
                     clientsData.forEach(c => {
                         if (c.assigned_to) {
                             const user = usersList.find(u => u.id === c.assigned_to);
                             map[c.id] = user?.full_name || user?.email || 'Sin Asignar';
                         }
+                        if (c.tarifa_aplicable) {
+                            tarifaMap[c.id] = c.tarifa_aplicable;
+                        }
                     });
                 }
                 setClientVendorMap(map);
+                setClientTarifaMap(tarifaMap);
             }
         } catch (error: any) {
             toast.error(`Error al cargar cobranzas: ${error.message}`);
@@ -262,6 +268,7 @@ export default function CobranzasPage() {
                         handleInlineUpdate={handleInlineUpdate}
                         handleLocalUpdate={handleLocalUpdate}
                         clientVendorMap={clientVendorMap}
+                        clientTarifaMap={clientTarifaMap}
                     />
                 </div>
             </div>
