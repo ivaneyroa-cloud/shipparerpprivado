@@ -167,7 +167,7 @@ export async function GET(req: NextRequest) {
         // Admins get full profile data; others get limited fields for task assignment
         const columns = isAdmin
             ? 'id, email, full_name, role, is_active, created_at, org_id'
-            : 'id, full_name, role';
+            : 'id, full_name, email, role';
 
         const query = supabaseAdmin
             .from('profiles')
