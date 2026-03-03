@@ -109,45 +109,43 @@ export default function ClientsPage() {
 
     const salesMembers = teamMembers.filter(m => m.role === 'sales' || m.role === 'admin');
 
-    // ── CSV Import ──
-    const handleCsvImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // ── Excel Import (.xlsx / .csv) ──
+    const handleFileImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         setImporting(true);
 
         try {
-            const text = await file.text();
-            const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-            if (lines.length < 2) {
-                toast.error('El CSV debe tener al menos una fila de datos después del encabezado');
+            const XLSX = (await import('xlsx')).default;
+            const buffer = await file.arrayBuffer();
+            const workbook = XLSX.read(buffer, { type: 'array' });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const jsonRows: Record<string, any>[] = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+            if (jsonRows.length === 0) {
+                toast.error('El archivo está vacío o no tiene datos');
                 return;
             }
 
-            // Auto-detect separator: semicolon (Excel ES) or comma (standard CSV)
-            const headerLine = lines[0];
-            const sep = headerLine.includes(';') ? ';' : ',';
+            // Normalize header keys to lowercase
+            const normalize = (rows: Record<string, any>[]): Record<string, string>[] =>
+                rows.map(row => {
+                    const out: Record<string, string> = {};
+                    for (const [k, v] of Object.entries(row)) {
+                        out[k.trim().toLowerCase()] = String(v ?? '').trim();
+                    }
+                    return out;
+                });
 
-            // Parse header
-            const headers = headerLine.split(sep).map(h => h.trim().toLowerCase());
-            const nameIdx = headers.indexOf('name');
-            if (nameIdx === -1) {
-                toast.error('El CSV debe tener una columna "name"');
+            const data = normalize(jsonRows);
+
+            // Check for 'name' column
+            if (!data[0].hasOwnProperty('name')) {
+                const keys = Object.keys(data[0]).join(', ');
+                toast.error(`No se encontró la columna "name". Columnas detectadas: ${keys}`);
                 return;
             }
-
-            // Parse rows (handle quoted separators)
-            const parseRow = (line: string): string[] => {
-                const result: string[] = [];
-                let current = '';
-                let inQuotes = false;
-                for (const ch of line) {
-                    if (ch === '"') { inQuotes = !inQuotes; continue; }
-                    if (ch === sep && !inQuotes) { result.push(current.trim()); current = ''; continue; }
-                    current += ch;
-                }
-                result.push(current.trim());
-                return result;
-            };
 
             // Get next SH code
             const existingCodes = clients.map(c => parseInt((c.code || '').replace(/\D/g, '')) || 0);
@@ -157,32 +155,25 @@ export default function ClientsPage() {
             const rows: any[] = [];
             let skipped = 0;
 
-            for (let i = 1; i < lines.length; i++) {
-                const cols = parseRow(lines[i]);
-                const name = cols[nameIdx]?.trim();
+            for (const row of data) {
+                const name = row.name?.trim();
                 if (!name) continue;
 
-                // Skip duplicates
                 if (existingNames.has(name.toUpperCase())) {
                     skipped++;
                     continue;
                 }
                 existingNames.add(name.toUpperCase());
 
-                const get = (key: string) => {
-                    const idx = headers.indexOf(key);
-                    return idx >= 0 && idx < cols.length ? cols[idx] : '';
-                };
-
                 rows.push({
                     name,
-                    code: get('code') || `SH-${String(nextCode++).padStart(3, '0')}`,
-                    cuit: get('cuit') || null,
-                    phone: get('phone') || null,
-                    email: get('email') || null,
-                    address: get('address') || null,
-                    tax_condition: get('tax_condition') || 'Consumidor final',
-                    service_type: get('service_type') || 'Retiro',
+                    code: row.code || `SH-${String(nextCode++).padStart(3, '0')}`,
+                    cuit: row.cuit || null,
+                    phone: row.phone || row.telefono || null,
+                    email: row.email || row.correo || null,
+                    address: row.address || row.direccion || null,
+                    tax_condition: row.tax_condition || row.condicion_fiscal || 'Consumidor final',
+                    service_type: row.service_type || row.tipo_servicio || 'Retiro',
                 });
             }
 
@@ -252,9 +243,9 @@ export default function ClientsPage() {
                     <input
                         ref={csvInputRef}
                         type="file"
-                        accept=".csv"
+                        accept=".xlsx,.xls,.csv"
                         className="hidden"
-                        onChange={handleCsvImport}
+                        onChange={handleFileImport}
                     />
                     <button
                         onClick={() => csvInputRef.current?.click()}
@@ -262,7 +253,7 @@ export default function ClientsPage() {
                         className="border border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-black px-4 py-3 rounded-xl transition-all hover:bg-emerald-50 dark:hover:bg-emerald-500/10 flex items-center gap-2 text-[10px] uppercase tracking-widest disabled:opacity-50"
                     >
                         <Upload size={14} strokeWidth={1.5} />
-                        {importing ? 'IMPORTANDO...' : 'IMPORTAR CSV'}
+                        {importing ? 'IMPORTANDO...' : 'IMPORTAR EXCEL'}
                     </button>
                     <button
                         onClick={() => setShowAddModal(true)}
