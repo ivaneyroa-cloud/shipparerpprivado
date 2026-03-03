@@ -49,11 +49,21 @@ export default function DashboardPage() {
     const loadTeamMembers = useCallback(async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
-        const { data: profiles } = await supabase
-            .from('profiles')
-            .select('id, full_name, email, role')
-            .neq('id', session.user.id);
-        if (profiles) setTeamMembers(profiles);
+        try {
+            const res = await fetch('/api/users', {
+                headers: { 'Authorization': `Bearer ${session.access_token}` }
+            });
+            if (res.ok) {
+                const body = await res.json();
+                const users = body.users || body;
+                if (Array.isArray(users)) {
+                    // Exclude current user from the list
+                    setTeamMembers(users.filter((u: any) => u.id !== session.user.id));
+                }
+            }
+        } catch (e) {
+            console.error('Error loading team members:', e);
+        }
     }, []);
 
     useEffect(() => { loadTeamMembers(); }, [loadTeamMembers]);
