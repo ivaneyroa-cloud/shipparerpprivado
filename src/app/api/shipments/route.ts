@@ -229,15 +229,25 @@ export async function PATCH(req: NextRequest) {
         // ── Always set updated_at ──
         sanitized.updated_at = new Date().toISOString();
 
-        // ── Execute update ──
-        const { error } = await supabaseAdmin
+        // ── Execute update (scoped to user's org) ──
+        let updateQuery = supabaseAdmin
             .from('shipments')
             .update(sanitized)
             .eq('id', shipmentId);
 
+        // Org isolation: prevent cross-org access
+        if (ctx.profile.org_id) {
+            updateQuery = updateQuery.eq('org_id', ctx.profile.org_id);
+        }
+
+        const { error } = await updateQuery;
+
         if (error) {
             console.error('[API /shipments PATCH] DB error:', error);
-            return NextResponse.json({ error: error.message }, { status: 500 });
+            return NextResponse.json(
+                { error: process.env.NODE_ENV === 'development' ? error.message : 'Error al actualizar el envío' },
+                { status: 500 }
+            );
         }
 
         // ── Audit log ──

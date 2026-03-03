@@ -245,6 +245,11 @@ export async function PATCH(req: NextRequest) {
             return NextResponse.json({ error: 'Rol inválido' }, { status: 400 });
         }
 
+        // Only super_admin can assign super_admin role
+        if (sanitized.role === 'super_admin' && profile.role !== 'super_admin') {
+            return NextResponse.json({ error: 'Solo un super administrador puede asignar ese rol' }, { status: 403 });
+        }
+
         // Sanitize full_name if present
         if (sanitized.full_name !== undefined) {
             if (typeof sanitized.full_name !== 'string' || sanitized.full_name.trim().length < 2) {
@@ -259,7 +264,7 @@ export async function PATCH(req: NextRequest) {
         }
 
         // SUPER ADMIN PROTECTION — env var with fallback
-        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || 'ivaneyroa@shippar.net';
+        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || '';
 
         const { data: targetProfile } = await supabaseAdmin
             .from('profiles')
@@ -268,8 +273,12 @@ export async function PATCH(req: NextRequest) {
             .single();
 
         // Nobody can modify the super admin
-        if (targetProfile?.email === SUPER_ADMIN_EMAIL) {
+        if (SUPER_ADMIN_EMAIL && targetProfile?.email === SUPER_ADMIN_EMAIL) {
             return NextResponse.json({ error: 'El super administrador no puede ser modificado' }, { status: 403 });
+        }
+        // Role-based fallback: also protect any super_admin
+        if (targetProfile?.role === 'super_admin' && profile.role !== 'super_admin') {
+            return NextResponse.json({ error: 'No podés modificar un super administrador' }, { status: 403 });
         }
 
         // Admins cannot change their OWN role (prevents locking yourself out)
@@ -296,8 +305,11 @@ export async function PATCH(req: NextRequest) {
 
         // Update password in auth if requested
         if (newPassword) {
-            if (typeof newPassword !== 'string' || newPassword.length < 6) {
-                return NextResponse.json({ error: 'Contraseña debe tener mín. 6 caracteres' }, { status: 400 });
+            if (typeof newPassword !== 'string' || newPassword.length < 8) {
+                return NextResponse.json({ error: 'Contraseña debe tener mín. 8 caracteres' }, { status: 400 });
+            }
+            if (!/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+                return NextResponse.json({ error: 'Contraseña debe incluir al menos una mayúscula y un número' }, { status: 400 });
             }
             const { error: pwError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
                 password: newPassword
@@ -374,15 +386,20 @@ export async function DELETE(req: NextRequest) {
         }
 
         // SUPER ADMIN PROTECTION
-        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || 'ivaneyroa@shippar.net';
+        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || '';
         const { data: targetProfile } = await supabaseAdmin
             .from('profiles')
             .select('email, full_name')
             .eq('id', userId)
             .single();
 
-        if (targetProfile?.email === SUPER_ADMIN_EMAIL) {
+        if (SUPER_ADMIN_EMAIL && targetProfile?.email === SUPER_ADMIN_EMAIL) {
             return NextResponse.json({ error: 'El super administrador no puede ser eliminado' }, { status: 403 });
+        }
+        // Role-based fallback: also protect any super_admin
+        const { data: targetRole } = await supabaseAdmin.from('profiles').select('role').eq('id', userId).single();
+        if (targetRole?.role === 'super_admin') {
+            return NextResponse.json({ error: 'No se puede eliminar un super administrador' }, { status: 403 });
         }
 
         // Clean up dependent records first (nullify references)

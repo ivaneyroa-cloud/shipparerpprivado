@@ -402,13 +402,35 @@ function ChatPanel({ tab, isActive }: { tab: TabConfig; isActive: boolean }) {
 
     const renderContent = (text: string) => {
         return text.split('\n').map((line, i) => {
-            let processed = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            processed = processed.replace(
-                /`(.*?)`/g,
-                '<code class="bg-slate-700/50 px-1.5 py-0.5 rounded text-blue-300 text-xs">$1</code>'
-            );
             if (line.trim() === '') return <br key={i} />;
-            return <p key={i} className="mb-1" dangerouslySetInnerHTML={{ __html: processed }} />;
+            // Safe renderer: parse **bold** and `code` into React elements (no raw HTML)
+            const parts: React.ReactNode[] = [];
+            let remaining = line;
+            let partKey = 0;
+            while (remaining.length > 0) {
+                // Match **bold** or `code`
+                const boldMatch = remaining.match(/\*\*(.*?)\*\*/);
+                const codeMatch = remaining.match(/`(.*?)`/);
+                // Find the earliest match
+                let earliest: { index: number; length: number; node: React.ReactNode } | null = null;
+                if (boldMatch && boldMatch.index !== undefined) {
+                    earliest = { index: boldMatch.index, length: boldMatch[0].length, node: <strong key={`b${partKey}`}>{boldMatch[1]}</strong> };
+                }
+                if (codeMatch && codeMatch.index !== undefined) {
+                    if (!earliest || codeMatch.index < earliest.index) {
+                        earliest = { index: codeMatch.index, length: codeMatch[0].length, node: <code key={`c${partKey}`} className="bg-slate-700/50 px-1.5 py-0.5 rounded text-blue-300 text-xs">{codeMatch[1]}</code> };
+                    }
+                }
+                if (!earliest) {
+                    parts.push(remaining);
+                    break;
+                }
+                if (earliest.index > 0) parts.push(remaining.slice(0, earliest.index));
+                parts.push(earliest.node);
+                remaining = remaining.slice(earliest.index + earliest.length);
+                partKey++;
+            }
+            return <p key={i} className="mb-1">{parts}</p>;
         });
     };
 
