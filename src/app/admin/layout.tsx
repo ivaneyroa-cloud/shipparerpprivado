@@ -39,53 +39,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const router = useRouter();
     const pathname = usePathname();
 
-    // Track real active time — only on desktop (saves battery on mobile)
-    const isMobileRef = React.useRef(false);
-    useEffect(() => {
-        isMobileRef.current = window.innerWidth < 1024;
-    }, []);
+    // Track real active time
     useActiveTimeTracker();
 
     useEffect(() => {
-        let cancelled = false;
-
-        const init = async () => {
-            try {
-                // Race against timeout for mobile
-                const sessionPromise = supabase.auth.getSession();
-                const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000));
-
-                const result = await Promise.race([sessionPromise, timeoutPromise]);
-
-                if (cancelled) return;
-
-                if (!result || !('data' in result)) {
-                    // Timeout — redirect to login
-                    setLoading(false);
-                    if (pathname !== '/admin') router.push('/admin');
-                    return;
-                }
-
-                const sess = result.data.session;
-                setSession(sess);
-
-                if (!sess && pathname !== '/admin') {
-                    router.push('/admin');
-                } else if (sess) {
-                    supabase.from('profiles').select('role').eq('id', sess.user.id).single()
-                        .then(({ data }) => {
-                            if (data?.role && !cancelled) setUserRole(data.role);
-                        });
-                }
-            } catch (err) {
-                console.warn('[Auth] Init failed:', err);
-                if (pathname !== '/admin') router.push('/admin');
-            } finally {
-                if (!cancelled) setLoading(false);
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+            if (!session && pathname !== '/admin') {
+                router.push('/admin');
+            } else if (session) {
+                supabase.from('profiles').select('role').eq('id', session.user.id).single()
+                    .then(({ data }) => {
+                        if (data?.role) setUserRole(data.role);
+                    });
             }
-        };
-
-        init();
+            setLoading(false);
+        }).catch(() => {
+            // Network error — just stop loading, don't redirect
+            setLoading(false);
+        });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
@@ -99,18 +71,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             }
         });
 
-        return () => { cancelled = true; subscription.unsubscribe(); };
+        return () => subscription.unsubscribe();
     }, [router, pathname]);
 
-    // Open sidebar by default only on desktop (after mount)
+    // Open sidebar by default only on desktop
     useEffect(() => {
-        if (window.innerWidth >= 1024) setSidebarOpen(true);
+        if (typeof window !== 'undefined' && window.innerWidth >= 1024) setSidebarOpen(true);
     }, []);
 
-    // Safety timeout — never show loading forever (2s for mobile)
+    // Safety: stop spinner after 2s no matter what
     useEffect(() => {
-        const timer = setTimeout(() => setLoading(false), 2000);
-        return () => clearTimeout(timer);
+        const t = setTimeout(() => setLoading(false), 2000);
+        return () => clearTimeout(t);
     }, []);
 
     useEffect(() => {
