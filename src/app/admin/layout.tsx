@@ -123,7 +123,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { icon: <Settings size={18} strokeWidth={1.5} />, label: 'Ajustes', href: '/admin/dashboard/settings', roles: ['super_admin', 'admin', 'logistics'] },
     ];
 
-    const menuItems = allMenuItems.filter(item => item.roles.includes(userRole));
+    // While role is loading, show all items so user isn't stuck with empty sidebar
+    const menuItems = userRole
+        ? allMenuItems.filter(item => item.roles.includes(userRole))
+        : allMenuItems;
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -210,7 +213,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </aside>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col min-w-0">
                 {/* Topbar */}
                 <header className={`
           h-14 md:h-16 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40
