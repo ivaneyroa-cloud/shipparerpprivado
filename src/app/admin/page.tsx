@@ -199,9 +199,9 @@ export default function AdminLogin() {
                 transition={{ duration: 0.5, ease: 'easeOut' }}
                 className="w-full max-w-[400px] relative z-10"
             >
-                <div className={`bg-[#0c1221]/70 backdrop-blur-2xl border border-white/[0.06] p-8 md:p-10 rounded-[28px] shadow-2xl shadow-black/40 ${shake ? 'shake' : ''}`}>
+                <div className={`bg-[#0d1424]/80 backdrop-blur-2xl border border-white/[0.10] p-7 md:p-9 rounded-[28px] shadow-[0_20px_60px_-12px_rgba(0,0,0,0.6)] ${shake ? 'shake' : ''}`}>
                     {/* Logo only */}
-                    <div className="flex flex-col items-center mb-10">
+                    <div className="flex flex-col items-center mb-8">
                         <img src="/logo-dark.png" alt="Shippar" className="h-12 w-auto" />
                     </div>
 
@@ -229,7 +229,7 @@ export default function AdminLogin() {
                                             autoComplete="email"
                                             tabIndex={1}
                                             placeholder="usuario@shippar.com"
-                                            className={`w-full bg-white/[0.03] border outline-none text-white px-11 py-3.5 rounded-xl transition-all duration-200 font-medium text-sm
+                                            className={`w-full bg-white/[0.03] border outline-none text-white/95 placeholder:text-slate-600 px-11 py-3.5 rounded-xl transition-all duration-150 font-medium text-sm
                                                 ${error ? 'border-red-500/40' : 'border-white/[0.06] focus:border-blue-500/40 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.08)]'}
                                             `}
                                             value={email}
@@ -249,7 +249,7 @@ export default function AdminLogin() {
                                             autoComplete="current-password"
                                             tabIndex={2}
                                             placeholder="••••••••"
-                                            className={`w-full bg-white/[0.03] border outline-none text-white px-11 py-3.5 rounded-xl transition-all duration-200 font-medium text-sm pr-12
+                                            className={`w-full bg-white/[0.03] border outline-none text-white/95 placeholder:text-slate-600 px-11 py-3.5 rounded-xl transition-all duration-150 font-medium text-sm pr-12
                                                 ${error ? 'border-red-500/40' : 'border-white/[0.06] focus:border-blue-500/40 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.08)]'}
                                             `}
                                             value={password}
@@ -284,13 +284,13 @@ export default function AdminLogin() {
                                 <div className="relative pt-1">
                                     {/* Glow */}
                                     <div
-                                        className="absolute inset-0 bg-blue-600/20 blur-2xl rounded-3xl transition-opacity duration-500"
-                                        style={{ opacity: isFormValid && !loading ? 0.6 : 0 }}
+                                        className="absolute inset-0 bg-blue-600/15 blur-xl rounded-3xl transition-opacity duration-500"
+                                        style={{ opacity: isFormValid && !loading ? 0.5 : 0 }}
                                     />
                                     <button
                                         disabled={!isFormValid || loading}
                                         tabIndex={3}
-                                        className="relative w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-600 text-white font-black py-3.5 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98] text-sm tracking-wide"
+                                        className="relative w-full bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 disabled:opacity-40 disabled:hover:from-blue-500 disabled:hover:to-blue-600 text-white font-black py-3.5 rounded-xl transition-all duration-150 flex items-center justify-center gap-2 active:scale-[0.98] text-sm tracking-wide"
                                     >
                                         {loading ? (
                                             <><Loader2 className="w-4 h-4 animate-spin" /> Validando…</>
@@ -301,12 +301,12 @@ export default function AdminLogin() {
                                 </div>
 
                                 {/* Forgot password link */}
-                                <div className="text-center pt-1">
+                                <div className="text-center pt-0.5">
                                     <button
                                         type="button"
                                         tabIndex={4}
                                         onClick={() => { setMode('reset'); setError(null); setResetEmail(email); }}
-                                        className="text-slate-600 hover:text-blue-400 text-xs font-medium transition-colors duration-200"
+                                        className="text-slate-500 hover:text-blue-400 text-xs font-medium transition-colors duration-150"
                                     >
                                         ¿Olvidaste tu contraseña?
                                     </button>
@@ -405,7 +405,7 @@ export default function AdminLogin() {
                     </AnimatePresence>
 
                     {/* Footer */}
-                    <div className="mt-8 flex items-center justify-center gap-1.5">
+                    <div className="mt-6 flex items-center justify-center gap-1.5">
                         <ShieldCheck size={12} className="text-slate-700" />
                         <p className="text-slate-700 text-[10px] font-medium tracking-wide">
                             Conexión segura
