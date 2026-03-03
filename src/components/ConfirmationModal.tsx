@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { AlertCircle, Trash2, X } from 'lucide-react';
 
 interface ConfirmationModalProps {
@@ -51,53 +51,42 @@ export function ConfirmationModal({
     const currentStyle = colors[variant];
 
     return (
-        <AnimatePresence>
-            {isOpen && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-                    <motion.div
-                        initial={{ scale: 0.95, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.95, opacity: 0 }}
-                        className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-white/10"
-                    >
-                        <div className="p-8">
-                            <div className="flex justify-between items-start mb-6">
-                                <div className={`p-4 rounded-full ${currentStyle.lightBg}`}>
-                                    {currentStyle.icon}
-                                </div>
-                                <button type="button" onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
-                                    <X size={20} strokeWidth={3} />
-                                </button>
-                            </div>
-
-                            <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-3">
-                                {title}
-                            </h3>
-                            <p className="text-slate-500 font-medium">
-                                {message}
-                            </p>
-
-                            <div className="flex gap-3 mt-8">
-                                <button
-                                    onClick={onClose}
-                                    className="flex-1 px-6 py-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-2xl transition-colors active:scale-95"
-                                >
-                                    {cancelText}
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        onConfirm();
-                                        onClose();
-                                    }}
-                                    className={`flex-1 px-6 py-4 ${currentStyle.bg} ${currentStyle.hover} text-white font-bold rounded-2xl transition-all shadow-lg active:scale-95`}
-                                >
-                                    {confirmText}
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
+        <BaseModal isOpen={isOpen} onClose={onClose} size="sm" zIndex={200}>
+            <div className="p-8">
+                <div className="flex justify-between items-start mb-6">
+                    <div className={`p-4 rounded-full ${currentStyle.lightBg}`}>
+                        {currentStyle.icon}
+                    </div>
+                    <button type="button" onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                        <X size={20} strokeWidth={3} />
+                    </button>
                 </div>
-            )}
-        </AnimatePresence>
+
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-3">
+                    {title}
+                </h3>
+                <p className="text-slate-500 font-medium">
+                    {message}
+                </p>
+
+                <div className="flex gap-3 mt-8">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 px-6 py-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-2xl transition-colors active:scale-95"
+                    >
+                        {cancelText}
+                    </button>
+                    <button
+                        onClick={() => {
+                            onConfirm();
+                            onClose();
+                        }}
+                        className={`flex-1 px-6 py-4 ${currentStyle.bg} ${currentStyle.hover} text-white font-bold rounded-2xl transition-all shadow-lg active:scale-95`}
+                    >
+                        {confirmText}
+                    </button>
+                </div>
+            </div>
+        </BaseModal>
     );
 }
