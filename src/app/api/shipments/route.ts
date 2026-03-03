@@ -6,6 +6,21 @@ import { getAuthContext, unauthorized, forbidden } from '@/lib/server-auth';
 // FIELD WHITELIST PER ROLE
 // ═══════════════════════════════════════════════════════════════
 const FIELD_PERMISSIONS: Record<string, string[]> = {
+    super_admin: [
+        'internal_status', 'date_shipped', 'date_arrived', 'date_dispatched',
+        'origin', 'tracking_number', 'category', 'weight', 'client_id', 'client_name', 'client_code',
+        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion',
+        'costo_flete', 'monto_cobrado', 'estado_cobranza', 'estado_pago_proveedor',
+        'payment_proof_url', 'payment_notes',
+        'retenido_nota',
+        'delta_kg', 'delta_boxes', 'boxes_count',
+        'reception_status', 'received_at', 'received_by', 'received_weight',
+        'has_weight_anomaly', 'anomaly_percentage', 'anomaly_absolute',
+        'bultos', 'peso_computable',
+        'invoice_photo_1', 'invoice_photo_2',
+        'reception_version_count', 'current_version_id',
+        'edited_post_delivery', 'post_delivery_edit', 'edit_count',
+    ],
     admin: [
         'internal_status', 'date_shipped', 'date_arrived', 'date_dispatched',
         'origin', 'tracking_number', 'category', 'weight', 'client_id', 'client_name', 'client_code',
