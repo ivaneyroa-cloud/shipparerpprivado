@@ -326,7 +326,8 @@ export default function ClientsPage() {
                             <tr>
                                 <th>Cliente</th>
                                 <th>Código</th>
-                                <th>Vendedor</th>
+                                <th>CUIT</th>
+                                <th>Condición Fiscal</th>
                                 <th>Teléfono</th>
                                 <th>Email</th>
                                 <th className="text-center w-40">Acciones</th>
@@ -334,23 +335,17 @@ export default function ClientsPage() {
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
-                                <tr><td colSpan={6} className="px-6 py-20 text-center"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" /></td></tr>
+                                <tr><td colSpan={7} className="px-6 py-20 text-center"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" /></td></tr>
                             ) : filteredClients.length === 0 ? (
-                                <tr><td colSpan={6} className="px-6 py-20 text-center text-slate-400 font-bold text-sm">No se encontraron clientes</td></tr>
+                                <tr><td colSpan={7} className="px-6 py-20 text-center text-slate-400 font-bold text-sm">No se encontraron clientes</td></tr>
                             ) : (
                                 filteredClients.map((client: any) => {
-                                    const vendorName = getVendorName(client.assigned_to);
                                     return (
                                         <tr key={client.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group relative">
                                             <td className="px-5 py-3"><span className="font-black text-sm text-slate-800 dark:text-white uppercase tracking-tight">{client.name}</span></td>
                                             <td className="px-5 py-3"><span className="font-mono text-xs font-black text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 px-2.5 py-1 rounded-lg">{client.code}</span></td>
-                                            <td className="px-5 py-3">
-                                                {vendorName ? (
-                                                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"><UserCog size={11} /> {vendorName}</span>
-                                                ) : (
-                                                    <span className="text-xs font-bold text-slate-400">Sin vendedor</span>
-                                                )}
-                                            </td>
+                                            <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500">{client.cuit || '—'}</span></td>
+                                            <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500">{client.tax_condition || '—'}</span></td>
                                             <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500">{client.phone || '—'}</span></td>
                                             <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500 truncate max-w-[180px] block">{client.email || '—'}</span></td>
                                             <td className="px-5 py-3 text-center">
