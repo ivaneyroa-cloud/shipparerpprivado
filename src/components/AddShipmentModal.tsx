@@ -200,9 +200,9 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
             onClose={onClose}
             size={isExpandedModal ? 'full' : 'md'}
         >
-            <div className="p-5 md:p-8">
-                <div className="flex justify-between items-center mb-10">
-                    <h2 className="text-3xl font-black tracking-tight">Nuevo Envío</h2>
+            <div className="p-4 md:p-8">
+                <div className="flex justify-between items-center mb-6 md:mb-10">
+                    <h2 className="text-xl md:text-3xl font-black tracking-tight">Nuevo Envío</h2>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setIsExpandedModal(!isExpandedModal)}
@@ -222,7 +222,7 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
                             <label className="text-xs font-black uppercase tracking-widest text-slate-500">Nro de Tracking (UPS, etc)</label>
                             <input
                                 required
-                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-5 py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-4 py-3 md:px-5 md:py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400"
                                 value={formData.tracking_number}
                                 onChange={e => setFormData({ ...formData, tracking_number: e.target.value.toUpperCase() })}
                                 placeholder="Ej: ABC123456789"
@@ -233,7 +233,7 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
                             <label className="text-xs font-black uppercase tracking-widest text-slate-500">Origen (País)</label>
                             <select
                                 required
-                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-5 py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-4 py-3 md:px-5 md:py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white"
                                 value={formData.origin}
                                 onChange={e => setFormData({ ...formData, origin: e.target.value })}
                             >
@@ -250,7 +250,7 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
                             <label className="text-xs font-black uppercase tracking-widest text-slate-500">Nombre Cliente</label>
                             <input
                                 required
-                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-5 py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-4 py-3 md:px-5 md:py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400"
                                 value={formData.client_name}
                                 onFocus={() => setShowClientResults(true)}
                                 onChange={e => setFormData({ ...formData, client_name: e.target.value })}
@@ -280,7 +280,7 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
                             <label className="text-xs font-black uppercase tracking-widest text-slate-500">Código</label>
                             <input
                                 required
-                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-5 py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-4 py-3 md:px-5 md:py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400"
                                 value={formData.client_code}
                                 onChange={e => setFormData({ ...formData, client_code: e.target.value.toUpperCase() })}
                                 placeholder="Ej: SH-001"
@@ -290,7 +290,7 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
                         <div className="space-y-2 relative">
                             <label className="text-xs font-black uppercase tracking-widest text-slate-500">Categoría</label>
                             <input
-                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-5 py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-4 py-3 md:px-5 md:py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400"
                                 value={formData.category}
                                 onFocus={() => setShowCategoryResults(true)}
                                 onBlur={() => setTimeout(() => setShowCategoryResults(false), 200)}
@@ -323,7 +323,7 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
                             <input
                                 type="number"
                                 step="0.1"
-                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-5 py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-4 py-3 md:px-5 md:py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400"
                                 value={formData.weight}
                                 onChange={e => setFormData({ ...formData, weight: e.target.value })}
                                 placeholder="0.0"
@@ -336,7 +336,7 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
                                 type="number"
                                 min="1"
                                 step="1"
-                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-5 py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-4 py-3 md:px-5 md:py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-400"
                                 value={formData.boxes_count}
                                 onChange={e => setFormData({ ...formData, boxes_count: e.target.value })}
                                 placeholder="1"
@@ -346,7 +346,7 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
                         <div className={`space-y-2 ${isExpandedModal ? 'col-span-1' : 'col-span-2'}`}>
                             <label className="text-xs font-black uppercase tracking-widest text-slate-500">Estado / Status</label>
                             <select
-                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-5 py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-4 py-3 md:px-5 md:py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white"
                                 value={formData.internal_status}
                                 onChange={e => setFormData({ ...formData, internal_status: e.target.value })}
                             >
@@ -358,7 +358,7 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
                             <label className="text-xs font-black uppercase tracking-widest text-slate-500">Fecha de Salida</label>
                             <input
                                 type="date"
-                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-5 py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white font-[Outfit]"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/5 px-4 py-3 md:px-5 md:py-4 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white font-[Outfit]"
                                 value={formData.date_shipped}
                                 onChange={e => setFormData({ ...formData, date_shipped: e.target.value })}
                             />
@@ -386,8 +386,8 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
                                     type="button"
                                     onClick={() => setFormData({ ...formData, quote_mode: opt.value as any })}
                                     className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.quote_mode === opt.value
-                                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                            : 'bg-slate-100 dark:bg-white/5 text-slate-500 hover:bg-slate-200 dark:hover:bg-white/10'
+                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                                        : 'bg-slate-100 dark:bg-white/5 text-slate-500 hover:bg-slate-200 dark:hover:bg-white/10'
                                         }`}
                                 >
                                     {opt.label}

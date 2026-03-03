@@ -132,8 +132,19 @@ body {
   overflow-y: auto;
 }
 
+/* Mobile: start from top so tall modals aren't cut */
+@media (max-width: 640px) {
+  .base-modal-overlay {
+    align-items: flex-start;
+    padding: 8px 6px;
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+}
+
 .base-modal-container {
   max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
   overscroll-behavior: contain;
   border-radius: 24px;
@@ -142,6 +153,15 @@ body {
   background: var(--card-bg, #181D28);
   pointer-events: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile: full width, smaller radius, taller */
+@media (max-width: 640px) {
+  .base-modal-container {
+    width: 100% !important;
+    max-height: calc(100dvh - 16px);
+    border-radius: 16px;
+  }
 }
 
 /* Light mode — only when NOT dark */

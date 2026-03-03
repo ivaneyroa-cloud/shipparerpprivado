@@ -44,7 +44,7 @@ export function ClientDetailModal({ client, onClose, onSaved, getVendorName }: C
     return (
         <BaseModal isOpen={!!client} onClose={() => { onClose(); setEditingClient(null); }} size="lg">
             {/* Header */}
-            <div className="flex items-center gap-4 p-6 border-b" style={{ borderColor: 'var(--card-border)' }}>
+            <div className="flex items-center gap-3 p-4 md:p-6 border-b" style={{ borderColor: 'var(--card-border)' }}>
                 <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-xl font-black ">
                     {client.name.charAt(0)}
                 </div>
@@ -60,7 +60,7 @@ export function ClientDetailModal({ client, onClose, onSaved, getVendorName }: C
             </div>
 
             {/* Editable fields */}
-            <div className="p-6 grid grid-cols-2 gap-4 max-h-[55vh] overflow-y-auto">
+            <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[55vh] overflow-y-auto">
                 {[
                     { label: 'CUIL / CUIT', key: 'cuit', placeholder: '20-12345678-9' },
                     { label: 'Teléfono', key: 'phone', placeholder: '549 11 ...' },
