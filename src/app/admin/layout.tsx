@@ -92,6 +92,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
     }, [isDarkMode]);
 
+    // Si estamos en la página de login, renderizar inmediatamente sin esperar auth
+    if (pathname === '/admin') return <>{children}</>;
+
     if (loading) {
         return (
             <div className="min-h-screen bg-slate-950 flex items-center justify-center">
@@ -99,9 +102,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
         );
     }
-
-    // Si estamos en la página de login, no mostramos el layout
-    if (pathname === '/admin') return <>{children}</>;
 
     // Role-based menu: each item specifies which roles can see it
     const allMenuItems = [
