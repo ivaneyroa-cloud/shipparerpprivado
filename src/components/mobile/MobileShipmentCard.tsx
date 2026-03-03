@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Copy, ChevronDown, Package, Scale, MapPin, Calendar, Save, X, Truck } from 'lucide-react';
+import { Copy, ChevronDown, Package, Scale, MapPin, Calendar, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Shipment, Client } from '@/types';
 
