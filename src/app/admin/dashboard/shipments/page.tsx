@@ -204,7 +204,7 @@ export default function ShipmentsPage() {
 
     const fetchClients = useCallback(async (profile?: UserProfile) => {
         try {
-            let query = supabase.from('clients').select('id, name, code, assigned_to, created_at').order('name');
+            let query = supabase.from('clients').select('id, name, code, assigned_to, tarifa_aplicable, created_at').order('name');
             const currentProfile = profile || userProfile;
             if (currentProfile?.role === 'sales') {
                 query = query.eq('assigned_to', currentProfile.id);

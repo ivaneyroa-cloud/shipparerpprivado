@@ -18,6 +18,7 @@ export interface Client {
     service_type?: string;
     phone?: string;
     email?: string;
+    tarifa_aplicable?: string;
     org_id?: string;
     created_at?: string;
 }
@@ -49,6 +50,8 @@ export interface Shipment {
     updated_at?: string;
 
     // Campos de Cotización (Ventas)
+    quote_mode?: 'manual' | 'pdf' | 'tarifario';
+    quote_pdf_url?: string;
     precio_envio?: number;
     gastos_documentales?: number;
     impuestos?: number;

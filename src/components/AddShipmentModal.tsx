@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Package, ChevronRight, ChevronDown } from 'lucide-react';
+import { X, Package, ChevronRight, ChevronDown, Upload, FileText, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { Client } from '@/types';
@@ -42,25 +42,34 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
         precio_envio: '',
         gastos_documentales: '',
         impuestos: '',
-        observaciones_cotizacion: ''
+        observaciones_cotizacion: '',
+        quote_mode: 'manual' as 'manual' | 'pdf' | 'tarifario'
     });
+    const [quoteFile, setQuoteFile] = useState<File | null>(null);
+    const [uploadingPdf, setUploadingPdf] = useState(false);
+    const [selectedClientTarifa, setSelectedClientTarifa] = useState<string | null>(null);
 
-    const resetForm = () => setFormData({
-        tracking_number: '',
-        client_name: '',
-        client_code: '',
-        client_id: '',
-        category: '',
-        weight: '',
-        boxes_count: '1',
-        internal_status: 'Guía Creada',
-        date_shipped: new Date().toISOString().split('T')[0],
-        origin: 'CHINA',
-        precio_envio: '',
-        gastos_documentales: '',
-        impuestos: '',
-        observaciones_cotizacion: ''
-    });
+    const resetForm = () => {
+        setFormData({
+            tracking_number: '',
+            client_name: '',
+            client_code: '',
+            client_id: '',
+            category: '',
+            weight: '',
+            boxes_count: '1',
+            internal_status: 'Guía Creada',
+            date_shipped: new Date().toISOString().split('T')[0],
+            origin: 'CHINA',
+            precio_envio: '',
+            gastos_documentales: '',
+            impuestos: '',
+            observaciones_cotizacion: '',
+            quote_mode: 'manual'
+        });
+        setQuoteFile(null);
+        setSelectedClientTarifa(null);
+    };
 
     const filteredClients = clients.filter(c =>
         c.name.toLowerCase().includes(formData.client_name.toLowerCase()) ||
@@ -68,11 +77,14 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
     ).slice(0, 8);
 
     const handleSelectClient = (client: Client) => {
+        const hasTarifa = !!(client as any).tarifa_aplicable;
+        setSelectedClientTarifa((client as any).tarifa_aplicable || null);
         setFormData({
             ...formData,
             client_name: client.name,
             client_code: client.code,
-            client_id: client.id
+            client_id: client.id,
+            quote_mode: hasTarifa ? 'tarifario' : 'manual'
         });
         setShowClientResults(false);
     };
@@ -87,6 +99,42 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
             return;
         }
 
+        // --- Quote mode validation ---
+        if (formData.quote_mode === 'manual') {
+            if (!formData.precio_envio || parseFloat(formData.precio_envio) <= 0) {
+                toast.error('El valor de envío es obligatorio en modo Manual');
+                return;
+            }
+        }
+        if (formData.quote_mode === 'pdf' && !quoteFile) {
+            toast.error('Adjuntá el PDF de la cotización');
+            return;
+        }
+
+        // Upload PDF if needed
+        let quotePdfUrl: string | null = null;
+        if (formData.quote_mode === 'pdf' && quoteFile) {
+            setUploadingPdf(true);
+            try {
+                const fileExt = quoteFile.name.split('.').pop();
+                const fileName = `${cleanTracking}_${Date.now()}.${fileExt}`;
+                const filePath = `quotes/${fileName}`;
+                const { error: uploadError } = await supabase.storage
+                    .from('invoices')
+                    .upload(filePath, quoteFile);
+                if (uploadError) throw uploadError;
+                const { data: { publicUrl } } = supabase.storage
+                    .from('invoices')
+                    .getPublicUrl(filePath);
+                quotePdfUrl = publicUrl;
+            } catch (err: any) {
+                toast.error(`Error al subir PDF: ${err.message}`);
+                setUploadingPdf(false);
+                return;
+            }
+            setUploadingPdf(false);
+        }
+
         const payload = {
             tracking_number: cleanTracking,
             client_name: sanitizeLine(formData.client_name),
@@ -98,10 +146,12 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
             internal_status: formData.internal_status,
             date_shipped: formData.date_shipped || null,
             origin: formData.origin || null,
-            precio_envio: parseFloat(formData.precio_envio) || 0,
-            gastos_documentales: parseFloat(formData.gastos_documentales) || 0,
-            impuestos: parseFloat(formData.impuestos) || 0,
+            quote_mode: formData.quote_mode,
+            precio_envio: formData.quote_mode === 'manual' ? (parseFloat(formData.precio_envio) || 0) : 0,
+            gastos_documentales: formData.quote_mode === 'manual' ? (parseFloat(formData.gastos_documentales) || 0) : 0,
+            impuestos: formData.quote_mode === 'manual' ? (parseFloat(formData.impuestos) || 0) : 0,
             observaciones_cotizacion: sanitizeLine(formData.observaciones_cotizacion) || null,
+            quote_pdf_url: quotePdfUrl,
             org_id: orgId,
         };
 
@@ -315,59 +365,151 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
                         </div>
                     </div>
 
-                    {/* Cotización — obligatoria */}
+                    {/* Cotización — 3 modos */}
                     <div className="border border-blue-200 dark:border-blue-500/20 rounded-2xl overflow-hidden bg-blue-50/30 dark:bg-blue-500/5">
-                        <div
-                            className="w-full px-6 py-4 flex items-center justify-between font-black text-slate-700 dark:text-slate-300"
-                        >
+                        <div className="w-full px-6 py-4 flex items-center justify-between font-black text-slate-700 dark:text-slate-300">
                             <div className="flex items-center gap-2">
                                 <span>💰 Cotización</span>
                                 <span className="text-[9px] font-black uppercase tracking-widest text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full">Obligatorio</span>
                             </div>
                         </div>
 
-                        <div className="p-6 pt-2 border-t border-blue-100 dark:border-blue-500/10 grid gap-4 grid-cols-1 md:grid-cols-3">
-                            <div className="space-y-2">
-                                <label className="text-xs font-black uppercase tracking-widest text-slate-500">Valor Envío (USD) <span className="text-red-500">*</span></label>
-                                <input
-                                    required
-                                    type="number" step="0.01" min="0"
-                                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 px-4 py-3 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white"
-                                    value={formData.precio_envio}
-                                    onChange={e => setFormData({ ...formData, precio_envio: e.target.value })}
-                                    placeholder="0.00"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-black uppercase tracking-widest text-slate-500">Gastos Doc. (USD)</label>
-                                <input
-                                    type="number" step="0.01" min="0"
-                                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 px-4 py-3 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white"
-                                    value={formData.gastos_documentales}
-                                    onChange={e => setFormData({ ...formData, gastos_documentales: e.target.value })}
-                                    placeholder="0.00"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-black uppercase tracking-widest text-slate-500">Impuestos (USD)</label>
-                                <input
-                                    type="number" step="0.01" min="0"
-                                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 px-4 py-3 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white"
-                                    value={formData.impuestos}
-                                    onChange={e => setFormData({ ...formData, impuestos: e.target.value })}
-                                    placeholder="0.00"
-                                />
-                            </div>
-                            <div className="space-y-2 md:col-span-3">
-                                <label className="text-xs font-black uppercase tracking-widest text-slate-500">Observaciones</label>
-                                <textarea
-                                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 px-4 py-3 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white resize-none"
-                                    rows={2}
-                                    value={formData.observaciones_cotizacion}
-                                    onChange={e => setFormData({ ...formData, observaciones_cotizacion: e.target.value })}
-                                    placeholder="Ej: Precio especial por volumen..."
-                                />
-                            </div>
+                        {/* Mode selector */}
+                        <div className="px-6 pb-4 flex gap-1 bg-white/50 dark:bg-transparent">
+                            {[
+                                { value: 'manual', label: 'Manual (USD)' },
+                                { value: 'pdf', label: 'Adjuntar PDF' },
+                                { value: 'tarifario', label: 'Tarifario' },
+                            ].map(opt => (
+                                <button
+                                    key={opt.value}
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, quote_mode: opt.value as any })}
+                                    className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.quote_mode === opt.value
+                                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                                            : 'bg-slate-100 dark:bg-white/5 text-slate-500 hover:bg-slate-200 dark:hover:bg-white/10'
+                                        }`}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="p-6 pt-2 border-t border-blue-100 dark:border-blue-500/10">
+                            {/* Mode: Manual */}
+                            {formData.quote_mode === 'manual' && (
+                                <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black uppercase tracking-widest text-slate-500">Valor Envío (USD) <span className="text-red-500">*</span></label>
+                                        <input
+                                            type="number" step="0.01" min="0"
+                                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 px-4 py-3 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white"
+                                            value={formData.precio_envio}
+                                            onChange={e => setFormData({ ...formData, precio_envio: e.target.value })}
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black uppercase tracking-widest text-slate-500">Gastos Doc. (USD)</label>
+                                        <input
+                                            type="number" step="0.01" min="0"
+                                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 px-4 py-3 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white"
+                                            value={formData.gastos_documentales}
+                                            onChange={e => setFormData({ ...formData, gastos_documentales: e.target.value })}
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black uppercase tracking-widest text-slate-500">Impuestos (USD)</label>
+                                        <input
+                                            type="number" step="0.01" min="0"
+                                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 px-4 py-3 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white"
+                                            value={formData.impuestos}
+                                            onChange={e => setFormData({ ...formData, impuestos: e.target.value })}
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                    <div className="space-y-2 md:col-span-3">
+                                        <label className="text-xs font-black uppercase tracking-widest text-slate-500">Observaciones</label>
+                                        <textarea
+                                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 px-4 py-3 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white resize-none"
+                                            rows={2}
+                                            value={formData.observaciones_cotizacion}
+                                            onChange={e => setFormData({ ...formData, observaciones_cotizacion: e.target.value })}
+                                            placeholder="Ej: Precio especial por volumen..."
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Mode: PDF */}
+                            {formData.quote_mode === 'pdf' && (
+                                <div className="space-y-4">
+                                    <div className={`relative border-2 border-dashed rounded-2xl p-6 transition-all flex flex-col items-center justify-center gap-2 ${quoteFile ? 'border-emerald-500 bg-emerald-50/30 dark:bg-emerald-500/5' : 'border-slate-200 dark:border-white/10 hover:border-blue-500 bg-white dark:bg-slate-900'
+                                        }`}>
+                                        <input
+                                            type="file"
+                                            accept=".pdf"
+                                            onChange={(e) => { if (e.target.files?.[0]) setQuoteFile(e.target.files[0]); }}
+                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                        />
+                                        {quoteFile ? (
+                                            <>
+                                                <FileText className="text-emerald-500" size={28} />
+                                                <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 truncate max-w-full">{quoteFile.name}</span>
+                                                <button type="button" onClick={() => setQuoteFile(null)} className="text-[10px] font-black uppercase text-red-500 hover:underline">Quitar</button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Upload className="text-slate-400" size={28} />
+                                                <span className="text-sm font-bold text-slate-500">Seleccionar PDF de cotización</span>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Solo PDF, máx 10MB</span>
+                                            </>
+                                        )}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black uppercase tracking-widest text-slate-500">Notas (opcional)</label>
+                                        <textarea
+                                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 px-4 py-3 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white resize-none"
+                                            rows={2}
+                                            value={formData.observaciones_cotizacion}
+                                            onChange={e => setFormData({ ...formData, observaciones_cotizacion: e.target.value })}
+                                            placeholder="Observaciones sobre la cotización..."
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Mode: Tarifario */}
+                            {formData.quote_mode === 'tarifario' && (
+                                <div className="space-y-3">
+                                    {selectedClientTarifa ? (
+                                        <div className="p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-2xl">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-1">💰 Tarifa del cliente</p>
+                                            <p className="text-lg font-black text-amber-700 dark:text-amber-300">{selectedClientTarifa}</p>
+                                            <p className="text-[10px] font-bold text-slate-500 mt-2">Cobranzas validará el monto final según este tarifario.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl flex gap-3 items-start">
+                                            <AlertCircle className="text-red-500 shrink-0 mt-0.5" size={18} />
+                                            <div>
+                                                <p className="text-sm font-black text-red-600 dark:text-red-400">Este cliente no tiene tarifa cargada</p>
+                                                <p className="text-[10px] font-bold text-slate-500 mt-1">Cargá la tarifa en el perfil del cliente o usá modo Manual / PDF.</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black uppercase tracking-widest text-slate-500">Observaciones (opcional)</label>
+                                        <textarea
+                                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 px-4 py-3 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-slate-900 dark:text-white resize-none"
+                                            rows={2}
+                                            value={formData.observaciones_cotizacion}
+                                            onChange={e => setFormData({ ...formData, observaciones_cotizacion: e.target.value })}
+                                            placeholder="Notas para cobranzas..."
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 

@@ -9,7 +9,7 @@ const FIELD_PERMISSIONS: Record<string, string[]> = {
     super_admin: [
         'internal_status', 'date_shipped', 'date_arrived', 'date_dispatched',
         'origin', 'tracking_number', 'category', 'weight', 'client_id', 'client_name', 'client_code',
-        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion',
+        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion', 'quote_mode', 'quote_pdf_url',
         'costo_flete', 'monto_cobrado', 'estado_cobranza', 'estado_pago_proveedor',
         'payment_proof_url', 'payment_notes',
         'retenido_nota',
@@ -24,7 +24,7 @@ const FIELD_PERMISSIONS: Record<string, string[]> = {
     admin: [
         'internal_status', 'date_shipped', 'date_arrived', 'date_dispatched',
         'origin', 'tracking_number', 'category', 'weight', 'client_id', 'client_name', 'client_code',
-        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion',
+        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion', 'quote_mode', 'quote_pdf_url',
         'costo_flete', 'monto_cobrado', 'estado_cobranza', 'estado_pago_proveedor',
         'payment_proof_url', 'payment_notes',
         'retenido_nota',
@@ -40,7 +40,7 @@ const FIELD_PERMISSIONS: Record<string, string[]> = {
         'internal_status', 'date_shipped', 'date_arrived', 'date_dispatched',
         'origin', 'tracking_number', 'category',
         'weight', 'client_id', 'client_name', 'client_code',
-        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion',
+        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion', 'quote_mode', 'quote_pdf_url',
         'retenido_nota', 'costo_flete',
         // Reception fields
         'delta_kg', 'delta_boxes', 'boxes_count',
@@ -70,7 +70,7 @@ const FIELD_PERMISSIONS: Record<string, string[]> = {
         'internal_status', 'date_arrived',
     ],
     sales: [
-        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion',
+        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion', 'quote_mode', 'quote_pdf_url',
         'client_id', 'client_name', 'client_code',
     ],
 };
