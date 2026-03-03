@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { BaseModal } from '@/components/ui/BaseModal';
 import { supabase } from '@/lib/supabase';
@@ -16,6 +16,11 @@ interface ClientDetailModalProps {
 export function ClientDetailModal({ client, onClose, onSaved, getVendorName }: ClientDetailModalProps) {
     const [editingClient, setEditingClient] = useState<any>(null);
     const [savingClient, setSavingClient] = useState(false);
+
+    // Reset editing state when a different client is opened
+    useEffect(() => {
+        setEditingClient(null);
+    }, [client?.id]);
 
     if (!client) return null;
 

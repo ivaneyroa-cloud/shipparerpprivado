@@ -17,21 +17,26 @@ function InlineTarifaCell({ clientId, value, onSaved }: { clientId: string; valu
     const [editing, setEditing] = React.useState(false);
     const [draft, setDraft] = React.useState(value);
     const inputRef = React.useRef<HTMLInputElement>(null);
+    const savingRef = React.useRef(false);
 
     React.useEffect(() => { if (editing && inputRef.current) inputRef.current.focus(); }, [editing]);
-    React.useEffect(() => { setDraft(value); }, [value]);
+    React.useEffect(() => { if (!editing) setDraft(value); }, [value, editing]);
 
     const save = async () => {
+        if (savingRef.current) return;
+        savingRef.current = true;
         setEditing(false);
-        if (draft === value) return;
-        const { error } = await supabase.from('clients').update({ tarifa_aplicable: draft || null }).eq('id', clientId);
+        const trimmed = draft.trim();
+        if (trimmed === value) { savingRef.current = false; return; }
+        const { error } = await supabase.from('clients').update({ tarifa_aplicable: trimmed || null }).eq('id', clientId);
         if (error) {
             toast.error('Error al guardar tarifa');
             setDraft(value);
         } else {
-            onSaved(draft);
+            onSaved(trimmed);
             toast.success('Tarifa actualizada');
         }
+        savingRef.current = false;
     };
 
     if (editing) {
@@ -42,7 +47,7 @@ function InlineTarifaCell({ clientId, value, onSaved }: { clientId: string; valu
                 value={draft}
                 onChange={e => setDraft(e.target.value)}
                 onBlur={save}
-                onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') { setDraft(value); setEditing(false); } }}
+                onKeyDown={e => { if (e.key === 'Enter') { e.currentTarget.blur(); } if (e.key === 'Escape') { setDraft(value); setEditing(false); } }}
                 placeholder="17*kg, 11.5..."
             />
         );
@@ -50,7 +55,7 @@ function InlineTarifaCell({ clientId, value, onSaved }: { clientId: string; valu
 
     return (
         <span
-            onClick={() => setEditing(true)}
+            onClick={() => { setDraft(value); setEditing(true); }}
             className="text-xs font-black text-amber-600 dark:text-amber-400 cursor-pointer hover:bg-amber-50 dark:hover:bg-amber-500/10 px-1.5 py-0.5 rounded transition-colors"
             title="Click para editar tarifa"
         >
