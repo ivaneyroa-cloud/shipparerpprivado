@@ -182,19 +182,32 @@ export default function ClientsPage() {
                 return;
             }
 
-            // Insert in batches of 50
+            // Insert in batches of 50, retry individually on failure
             let inserted = 0;
+            let errors = 0;
             for (let i = 0; i < rows.length; i += 50) {
                 const batch = rows.slice(i, i + 50);
                 const { error } = await supabase.from('clients').insert(batch);
                 if (error) {
-                    toast.error(`Error en lote ${Math.floor(i / 50) + 1}: ${error.message}`);
-                    break;
+                    // Batch failed — try one by one to skip only the problematic rows
+                    for (const row of batch) {
+                        const { error: singleErr } = await supabase.from('clients').insert([row]);
+                        if (singleErr) {
+                            errors++;
+                        } else {
+                            inserted++;
+                        }
+                    }
+                } else {
+                    inserted += batch.length;
                 }
-                inserted += batch.length;
             }
 
-            toast.success(`✅ ${inserted} clientes importados${skipped > 0 ? ` (${skipped} duplicados omitidos)` : ''}`);
+            if (errors > 0) {
+                toast.warning(`${inserted} importados, ${errors} con errores (posibles duplicados)${skipped > 0 ? `, ${skipped} omitidos por nombre repetido` : ''}`);
+            } else {
+                toast.success(`✅ ${inserted} clientes importados${skipped > 0 ? ` (${skipped} duplicados omitidos)` : ''}`);
+            }
             fetchClients();
         } catch (err: any) {
             toast.error(`Error al importar: ${err.message}`);
