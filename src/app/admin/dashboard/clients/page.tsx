@@ -116,7 +116,7 @@ export default function ClientsPage() {
         setImporting(true);
 
         try {
-            const XLSX = (await import('xlsx')).default;
+            const XLSX = await import('xlsx');
             const buffer = await file.arrayBuffer();
             const workbook = XLSX.read(buffer, { type: 'array' });
             const sheetName = workbook.SheetNames[0];

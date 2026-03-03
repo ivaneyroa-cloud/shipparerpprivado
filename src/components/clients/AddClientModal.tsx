@@ -98,16 +98,16 @@ export function AddClientModal({ isOpen, onClose, onCreated, salesMembers }: Add
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Nombre / Razón Social</label>
-                        <input required style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--card-border)' }}
-                            className="w-full border px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white"
+                        <input required
+                            className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
                             value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
                             placeholder="Ej: Robert Reyes"
                         />
                     </div>
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Código (Auto)</label>
-                        <input required readOnly style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--card-border)' }}
-                            className="w-full border px-5 py-3.5 rounded-xl bg-slate-100 dark:bg-slate-800 opacity-60 outline-none font-black text-sm text-blue-600"
+                        <input required readOnly
+                            className="w-full border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 px-5 py-3.5 rounded-xl opacity-60 outline-none font-black text-sm text-blue-600"
                             value={formData.code}
                         />
                     </div>
@@ -116,16 +116,16 @@ export function AddClientModal({ isOpen, onClose, onCreated, salesMembers }: Add
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">CUIL / CUIT</label>
-                        <input style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--card-border)' }}
-                            className="w-full border px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white"
+                        <input
+                            className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
                             value={formData.cuit} onChange={e => setFormData({ ...formData, cuit: e.target.value })}
                             placeholder="20-95862137-0"
                         />
                     </div>
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Condición IVA</label>
-                        <select style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--card-border)' }}
-                            className="w-full border px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white"
+                        <select
+                            className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white"
                             value={formData.tax_condition} onChange={e => setFormData({ ...formData, tax_condition: e.target.value })}
                         >
                             <option value="Consumidor final">Consumidor final</option>
@@ -138,8 +138,8 @@ export function AddClientModal({ isOpen, onClose, onCreated, salesMembers }: Add
 
                 <div className="space-y-1.5">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Dirección Completa</label>
-                    <input style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--card-border)' }}
-                        className="w-full border px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white"
+                    <input
+                        className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
                         value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })}
                         placeholder="Soler 3369, 1C CABA"
                     />
@@ -148,16 +148,16 @@ export function AddClientModal({ isOpen, onClose, onCreated, salesMembers }: Add
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Email</label>
-                        <input type="email" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--card-border)' }}
-                            className="w-full border px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white"
+                        <input type="email"
+                            className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
                             value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
                             placeholder="ejemplo@correo.com"
                         />
                     </div>
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Teléfono</label>
-                        <input style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--card-border)' }}
-                            className="w-full border px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white"
+                        <input
+                            className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
                             value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })}
                             placeholder="549 11 27864229"
                         />
@@ -167,8 +167,8 @@ export function AddClientModal({ isOpen, onClose, onCreated, salesMembers }: Add
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Preferencia de Servicio</label>
-                        <select style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--card-border)' }}
-                            className="w-full border px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white"
+                        <select
+                            className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white"
                             value={formData.service_type} onChange={e => setFormData({ ...formData, service_type: e.target.value })}
                         >
                             <option value="Retiro">Retiro</option>
@@ -177,8 +177,8 @@ export function AddClientModal({ isOpen, onClose, onCreated, salesMembers }: Add
                     </div>
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Asignar Vendedor</label>
-                        <select style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--card-border)' }}
-                            className="w-full border px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white"
+                        <select
+                            className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 dark:text-white"
                             value={formData.assigned_to} onChange={e => setFormData({ ...formData, assigned_to: e.target.value })}
                         >
                             <option value="">— Sin asignar —</option>
