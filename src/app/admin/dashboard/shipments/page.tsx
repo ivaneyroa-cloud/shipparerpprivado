@@ -135,15 +135,21 @@ export default function ShipmentsPage() {
             // Query 1: Shipments RECEIVED in the selected month (always needed)
             const receivedQuery = buildBase()
                 .gte('date_arrived', monthStart)
-                .lte('date_arrived', `${monthEnd} 23:59:59`);
+                .lte('date_arrived', `${monthEnd}T23:59:59`);
 
             if (isCurrentMonth) {
                 // Query 2: ALL unreceived shipments (they roll forward to current month)
                 const unreceivedQuery = buildBase().is('date_arrived', null);
 
-                const [receivedResult, unreceivedResult] = await Promise.all([
+                // Query 3: Shipments CREATED in the selected month
+                const createdQuery = buildBase()
+                    .gte('created_at', `${monthStart}T00:00:00`)
+                    .lte('created_at', `${monthEnd}T23:59:59`);
+
+                const [receivedResult, unreceivedResult, createdResult] = await Promise.all([
                     receivedQuery,
                     unreceivedQuery,
+                    createdQuery,
                 ]);
 
                 if (receivedResult.error) {
@@ -155,15 +161,17 @@ export default function ShipmentsPage() {
                     return;
                 }
 
-                // Merge & deduplicate (unreceived that aren't also in received + all received)
-                const received = (receivedResult.data || []) as Shipment[];
-                const unreceived = (unreceivedResult.data || []) as Shipment[];
-                const receivedIds = new Set(received.map(s => s.id));
-                const merged = [...received, ...unreceived.filter(s => !receivedIds.has(s.id))];
+                // Merge & deduplicate all three sources
+                const allMap = new Map<string, Shipment>();
+                for (const s of (receivedResult.data || []) as Shipment[]) allMap.set(s.id, s);
+                for (const s of (unreceivedResult.data || []) as Shipment[]) if (!allMap.has(s.id)) allMap.set(s.id, s);
+                for (const s of (createdResult.data || []) as Shipment[]) if (!allMap.has(s.id)) allMap.set(s.id, s);
+                const merged = Array.from(allMap.values());
 
                 setShipments(merged);
 
-                if (isPossiblyTruncated(received.length) || isPossiblyTruncated(unreceived.length)) {
+                const totalFetched = (receivedResult.data?.length || 0) + (unreceivedResult.data?.length || 0) + (createdResult.data?.length || 0);
+                if (isPossiblyTruncated(totalFetched)) {
                     toast.warning('⚠️ Se cargaron +1000 envíos. Puede haber datos no mostrados.', { duration: 6000 });
                 }
             } else {
