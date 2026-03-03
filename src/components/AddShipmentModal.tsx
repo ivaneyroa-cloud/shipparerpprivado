@@ -136,7 +136,11 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
             resetForm();
             onSuccess();
         } else {
-            toast.error(`Error al guardar: ${error.message}`);
+            if (error.message?.includes('shipments_tracking_number_key') || error.message?.includes('duplicate key')) {
+                toast.error(`⚠️ La guía "${cleanTracking}" ya existe. No se puede crear un envío duplicado.`);
+            } else {
+                toast.error(`Error al guardar: ${error.message}`);
+            }
         }
     };
 
