@@ -41,7 +41,7 @@ const STATUS_ACCENT: Record<string, string> = {
     'mercado libre full': '#EAB308',
 };
 
-export function MobileShipmentCard({ s, clients, handleInlineUpdate, statusOptions, deleteShipments, onReceiveShipment, userRole, isDepotView }: MobileShipmentCardProps) {
+export const MobileShipmentCard = React.memo(function MobileShipmentCard({ s, clients, handleInlineUpdate, statusOptions, deleteShipments, onReceiveShipment, userRole, isDepotView }: MobileShipmentCardProps) {
     const [expanded, setExpanded] = useState(false);
     const [pending, setPendingState] = useState<Record<string, any>>({});
     const hasPending = Object.keys(pending).length > 0;
@@ -317,4 +317,4 @@ export function MobileShipmentCard({ s, clients, handleInlineUpdate, statusOptio
             )}
         </div>
     );
-}
+});

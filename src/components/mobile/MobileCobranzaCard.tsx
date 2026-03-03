@@ -23,7 +23,7 @@ interface MobileCobranzaCardProps {
     clientTarifaMap: Record<string, string>;
 }
 
-export function MobileCobranzaCard({
+export const MobileCobranzaCard = React.memo(function MobileCobranzaCard({
     s, draftValues, onDraftChange, onDraftBlur, estadoOpciones,
     handleLocalUpdate, handleInlineUpdate, onPayment, clientTarifaMap
 }: MobileCobranzaCardProps) {
@@ -164,4 +164,4 @@ export function MobileCobranzaCard({
             </div>
         </div>
     );
-}
+});

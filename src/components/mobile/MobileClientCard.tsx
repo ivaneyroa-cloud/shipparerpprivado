@@ -9,7 +9,7 @@ interface MobileClientCardProps {
     onTarifaSave: (clientId: string, val: string) => void;
 }
 
-export function MobileClientCard({ client, onView, onTarifaSave }: MobileClientCardProps) {
+export const MobileClientCard = React.memo(function MobileClientCard({ client, onView, onTarifaSave }: MobileClientCardProps) {
     const [editingTarifa, setEditingTarifa] = React.useState(false);
     const [draft, setDraft] = React.useState(client.tarifa_aplicable || '');
 
@@ -86,4 +86,4 @@ export function MobileClientCard({ client, onView, onTarifaSave }: MobileClientC
             </div>
         </div>
     );
-}
+});
