@@ -19,6 +19,7 @@ import { OperationalRadar } from '@/components/dashboard/OperationalRadar';
 
 export default function DashboardPage() {
     const [userProfile, setUserProfile] = useState<any>(null);
+    const [profileLoading, setProfileLoading] = useState(true);
     const [stats, setStats] = useState({
         monthlyActiveClients: 0,
         pendingCollection: 0,
@@ -28,21 +29,43 @@ export default function DashboardPage() {
     const [showNewClientAlert, setShowNewClientAlert] = useState(false);
     const [teamMembers, setTeamMembers] = useState<any[]>([]);
 
-    // ── Profile fetch ──
+    // ── Profile fetch with retry ──
     useEffect(() => {
-        const fetchProfile = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
+        let cancelled = false;
+        const fetchProfile = async (attempt = 1) => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    // No session yet — retry once after a short delay (mobile can be slow)
+                    if (attempt < 3) {
+                        await new Promise(r => setTimeout(r, 500 * attempt));
+                        if (!cancelled) return fetchProfile(attempt + 1);
+                    }
+                    if (!cancelled) setProfileLoading(false);
+                    return;
+                }
+
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('id, role, org_id, is_active, full_name, email')
                     .eq('id', session.user.id)
                     .single();
 
-                if (profile) setUserProfile(profile);
+                if (!cancelled) {
+                    if (profile) setUserProfile(profile);
+                    setProfileLoading(false);
+                }
+            } catch (err) {
+                console.warn('[Dashboard] Profile fetch failed, attempt', attempt, err);
+                if (attempt < 3 && !cancelled) {
+                    await new Promise(r => setTimeout(r, 800));
+                    return fetchProfile(attempt + 1);
+                }
+                if (!cancelled) setProfileLoading(false);
             }
         };
         fetchProfile();
+        return () => { cancelled = true; };
     }, []);
 
     // ── Load team for tasks modal ──
@@ -121,6 +144,25 @@ export default function DashboardPage() {
     const isAdmin = userProfile?.role === 'admin';
     const isLogistics = userProfile?.role === 'logistics';
     const firstName = userProfile?.full_name?.split(' ')[0] || 'Usuario';
+
+    // ── Show loading skeleton while profile loads ──
+    if (profileLoading) {
+        return (
+            <div className="space-y-5 md:space-y-8 animate-pulse">
+                <div>
+                    <div className="h-8 w-64 rounded-lg" style={{ background: 'var(--input-bg)' }} />
+                    <div className="h-4 w-96 rounded-lg mt-2" style={{ background: 'var(--input-bg)' }} />
+                </div>
+                <div className="erp-card h-14" />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="erp-card p-5 h-20" />
+                    ))}
+                </div>
+                <div className="erp-card h-32" />
+            </div>
+        );
+    }
 
     const salesCards = [
         { label: 'Mis Clientes', value: stats.monthlyActiveClients, icon: <Users size={18} strokeWidth={1.5} />, color: 'blue' },

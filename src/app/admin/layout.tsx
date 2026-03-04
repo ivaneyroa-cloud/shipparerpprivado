@@ -33,7 +33,10 @@ import { useActiveTimeTracker } from '@/hooks/useActiveTimeTracker';
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [session, setSession] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(() => {
+        if (typeof window !== 'undefined') return window.innerWidth >= 1024;
+        return true;
+    });
     const [isDarkMode, setIsDarkMode] = useState(true);
     const [userRole, setUserRole] = useState<string>('admin'); // Default to admin, will update on profile load
     const router = useRouter();

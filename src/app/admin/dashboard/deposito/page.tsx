@@ -44,8 +44,9 @@ export default function DepositoPage() {
         try {
             const { data, error } = await supabase
                 .from('shipments')
-                .select('*')
-                .order('updated_at', { ascending: false });
+                .select('id, tracking_number, client_id, client_name, client_code, internal_status, weight, date_arrived, date_shipped, updated_at, created_at, boxes_count, category, origin, delta_kg, reception_status, estado_cobranza, edited_post_delivery, precio_envio')
+                .order('updated_at', { ascending: false })
+                .limit(1500);
 
             if (error) throw error;
             setShipments((data as Shipment[]) || []);

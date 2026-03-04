@@ -196,7 +196,7 @@ export default function CobranzasPage() {
     }
 
     return (
-        <div className="w-full flex-1 flex flex-col pt-4 overflow-hidden relative bg-[#F4F5F7] dark:bg-slate-900 -m-8 p-8" style={{ height: 'calc(100vh - 80px)' }}>
+        <div className="w-full flex-1 flex flex-col pt-4 overflow-hidden relative bg-[#F4F5F7] dark:bg-slate-900 -mx-3 px-3 md:-mx-6 md:px-6 lg:-mx-8 lg:px-8 -mb-3 pb-3 md:-mb-6 md:pb-6 lg:-mb-8 lg:pb-8" style={{ minHeight: 'calc(100dvh - 80px)' }}>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 shrink-0">
                 <div className="flex items-end gap-4">
                     <div>
