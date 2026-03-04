@@ -103,14 +103,14 @@ export default function GerenciaPage() {
         // Fetch versions
         const { data: v } = await supabase
             .from('reception_versions')
-            .select('*')
+            .select('id, shipment_id, version_number, is_post_delivery, reason, diff_summary, snapshot, created_at')
             .eq('shipment_id', s.id)
             .order('version_number', { ascending: false });
         setVersions((v as ReceptionVersion[]) || []);
         // Fetch audit
         const { data: logs } = await supabase
             .from('activity_logs')
-            .select('*')
+            .select('id, action, details, created_at, user_id')
             .or(`details->>shipment_id.eq.${s.id},details.cs.{"shipment_id":"${s.id}"}`)
             .in('action', ['reception_edit', 'reception_edit_post_delivery'])
             .order('created_at', { ascending: false })

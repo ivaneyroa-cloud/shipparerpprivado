@@ -100,6 +100,15 @@ export default function ShipmentsPage() {
     // ── Data fetching ──
     const SHIPMENT_COLUMNS = 'id, tracking_number, client_id, client_name, client_code, category, weight, internal_status, origin, date_shipped, date_arrived, created_at, updated_at, precio_envio, gastos_documentales, impuestos, observaciones_cotizacion, boxes_count, retenido_nota';
 
+    // Timeout wrapper for mobile resilience
+    const withTimeout = <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> =>
+        Promise.race([
+            promise,
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms))
+        ]);
+
+    const QUERY_TIMEOUT_MS = 15_000; // 15s timeout per query batch
+
     const fetchShipments = useCallback(async (clientIds: string[] | null) => {
         setLoading(true);
         try {
@@ -147,11 +156,11 @@ export default function ShipmentsPage() {
                     .gte('created_at', `${monthStart}T00:00:00`)
                     .lte('created_at', `${monthEnd}T23:59:59`);
 
-                const [receivedResult, unreceivedResult, createdResult] = await Promise.all([
-                    receivedQuery,
-                    unreceivedQuery,
-                    createdQuery,
-                ]);
+                const [receivedResult, unreceivedResult, createdResult] = await withTimeout(
+                    Promise.all([receivedQuery, unreceivedQuery, createdQuery]),
+                    QUERY_TIMEOUT_MS,
+                    'Shipments fetch'
+                );
 
                 if (receivedResult.error) {
                     toast.error(`Error al cargar recepcionados: ${receivedResult.error.message}`);
@@ -177,7 +186,7 @@ export default function ShipmentsPage() {
                 }
             } else {
                 // Past month: only shipments received in that month
-                const result = await receivedQuery;
+                const result = await withTimeout(receivedQuery, QUERY_TIMEOUT_MS, 'Past month fetch');
 
                 if (result.error) {
                     toast.error(`Error al cargar envíos: ${result.error.message}`);
@@ -191,7 +200,8 @@ export default function ShipmentsPage() {
                 }
             }
         } catch (err) {
-            toast.error('Error de red al cargar envíos.');
+            const message = err instanceof Error ? err.message : 'Error de red al cargar envíos.';
+            toast.error(message.includes('timed out') ? '⏱️ La carga de envíos tardó demasiado. Intentá de nuevo.' : `Error de red: ${message}`);
         } finally {
             setLoading(false);
         }

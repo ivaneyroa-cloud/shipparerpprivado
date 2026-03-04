@@ -43,17 +43,23 @@ export default function DepositoPage() {
     const fetchAllShipments = useCallback(async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
+            const queryPromise = supabase
                 .from('shipments')
                 .select('id, tracking_number, client_id, client_name, client_code, internal_status, weight, date_arrived, date_shipped, updated_at, created_at, boxes_count, category, origin, delta_kg, reception_status, estado_cobranza, edited_post_delivery, precio_envio')
                 .order('updated_at', { ascending: false })
-                .limit(1500);
+                .limit(800);
+
+            const { data, error } = await Promise.race([
+                queryPromise,
+                new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Depósito query timeout')), 12_000))
+            ]);
 
             if (error) throw error;
             setShipments((data as Shipment[]) || []);
         } catch (error: any) {
             console.error('Error fetching shipments for depot:', error);
-            toast.error('Error al cargar envíos para depósito');
+            const msg = error?.message?.includes('timeout') ? '⏱️ La carga del depósito tardó demasiado.' : 'Error al cargar envíos para depósito';
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
