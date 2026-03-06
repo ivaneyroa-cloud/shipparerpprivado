@@ -75,7 +75,7 @@ export default function DashboardPage() {
         const { data: profiles } = await supabase
             .from('profiles')
             .select('id, full_name, email, role')
-            .neq('id', session.user.id);
+            .eq('is_active', true);
         if (profiles) setTeamMembers(profiles);
     }, []);
 
