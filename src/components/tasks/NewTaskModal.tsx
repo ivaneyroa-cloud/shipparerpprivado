@@ -104,7 +104,7 @@ export function NewTaskModal({ onClose, onCreated, currentUser, teamMembers }: N
                 <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
                     <div>
                         <h2 className="text-lg font-black text-white">Nueva Tarea</h2>
-                        <p className="text-xs text-slate-500 mt-0.5">Asignala a un integrante del equipo</p>
+                        <p className="text-xs text-slate-500 mt-0.5">Asignala a un integrante del equipo o a vos mismo</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
                         <X size={16} className="text-slate-400" />
@@ -140,18 +140,37 @@ export function NewTaskModal({ onClose, onCreated, currentUser, teamMembers }: N
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">Asignar a *</label>
-                            <select
-                                value={assignedTo}
-                                onChange={e => setAssignedTo(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white outline-none focus:border-blue-500/50 transition-colors"
-                            >
-                                <option value="" className="bg-[#1c1c1e]">Seleccionar...</option>
-                                {teamMembers.map(m => (
-                                    <option key={m.id} value={m.id} className="bg-[#1c1c1e]">
-                                        {m.name || m.email}
-                                    </option>
-                                ))}
-                            </select>
+                            <div className="flex gap-1.5">
+                                <select
+                                    value={assignedTo}
+                                    onChange={e => setAssignedTo(e.target.value)}
+                                    className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white outline-none focus:border-blue-500/50 transition-colors"
+                                >
+                                    <option value="" className="bg-[#1c1c1e]">Seleccionar...</option>
+                                    {/* Current user first */}
+                                    {currentUser && (
+                                        <option value={currentUser.id} className="bg-[#1c1c1e]">
+                                            👤 {currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'Yo'} (yo)
+                                        </option>
+                                    )}
+                                    {teamMembers.filter(m => m.id !== currentUser?.id).map(m => (
+                                        <option key={m.id} value={m.id} className="bg-[#1c1c1e]">
+                                            {m.name || m.email}
+                                        </option>
+                                    ))}
+                                </select>
+                                <button
+                                    type="button"
+                                    onClick={() => setAssignedTo(currentUser?.id || '')}
+                                    className={`shrink-0 px-2.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 border ${assignedTo === currentUser?.id
+                                            ? 'bg-blue-600/20 border-blue-500/30 text-blue-400'
+                                            : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:border-white/20'
+                                        }`}
+                                    title="Asignarme a mí mismo"
+                                >
+                                    🙋 Yo
+                                </button>
+                            </div>
                         </div>
 
                         <div>
