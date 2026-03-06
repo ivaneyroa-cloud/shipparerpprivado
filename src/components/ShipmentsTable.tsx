@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { Search, Loader2, Filter, CheckCircle2 } from 'lucide-react';
+import React, { useRef, useState, useMemo } from 'react';
+import { Search, Loader2, Filter, CheckCircle2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { ShipmentRow } from '@/components/ShipmentRow';
 import { FilterDropdown } from '@/components/FilterDropdown';
 import { DateFilterPopup } from '@/components/DateFilterPopup';
@@ -98,6 +98,54 @@ export function ShipmentsTable({
     const dateShippedRef = useRef<HTMLDivElement>(null);
     const dateArrivedRef = useRef<HTMLDivElement>(null);
 
+    // ── Sorting state ──
+    type SortField = 'client_name' | 'tracking_number' | 'date_shipped' | 'date_arrived' | 'created_at' | 'weight' | 'precio_envio' | 'origin' | 'internal_status' | null;
+    type SortDir = 'asc' | 'desc';
+    const [sortField, setSortField] = useState<SortField>(null);
+    const [sortDir, setSortDir] = useState<SortDir>('desc');
+
+    const handleSort = (field: SortField) => {
+        if (sortField === field) {
+            if (sortDir === 'desc') setSortDir('asc');
+            else { setSortField(null); setSortDir('desc'); } // third click resets
+        } else {
+            setSortField(field);
+            setSortDir('desc');
+        }
+    };
+
+    const SortIcon = ({ field }: { field: SortField }) => {
+        if (sortField !== field) return <ArrowUpDown size={10} className="opacity-30 group-hover/sort:opacity-70 transition-opacity" />;
+        return sortDir === 'desc'
+            ? <ArrowDown size={10} className="text-[#2E7BFF]" />
+            : <ArrowUp size={10} className="text-[#2E7BFF]" />;
+    };
+
+    const sortedShipments = useMemo(() => {
+        if (!sortField) return filteredShipments;
+        return [...filteredShipments].sort((a, b) => {
+            let valA: any = (a as any)[sortField] ?? '';
+            let valB: any = (b as any)[sortField] ?? '';
+            // Numeric fields
+            if (sortField === 'weight' || sortField === 'precio_envio') {
+                valA = Number(valA) || 0;
+                valB = Number(valB) || 0;
+            }
+            // Date fields
+            if (['date_shipped', 'date_arrived', 'created_at'].includes(sortField)) {
+                valA = valA ? new Date(valA).getTime() : 0;
+                valB = valB ? new Date(valB).getTime() : 0;
+            }
+            // String comparison
+            if (typeof valA === 'string') valA = valA.toLowerCase();
+            if (typeof valB === 'string') valB = valB.toLowerCase();
+
+            if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+            if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }, [filteredShipments, sortField, sortDir]);
+
     const handleToggleDropdown = (type: string) => {
         setOpenFilterDropdown(openFilterDropdown === type ? null : type);
     };
@@ -140,16 +188,21 @@ export function ShipmentsTable({
                             <th className="px-3 py-3 text-[9px] font-extrabold uppercase tracking-[0.1em] w-24 text-left whitespace-nowrap select-none" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--card-border)' }}>
                                 <FilterDropdown label="Código" type="code" options={uniqueCodes} selectedValues={selectedCodes} isOpen={openFilterDropdown === 'code'} onToggleOpen={handleToggleDropdown} onToggleOption={toggleFilter} width="w-48" />
                             </th>
-                            <th className="px-3 py-3 text-[9px] font-extrabold uppercase tracking-[0.1em] w-56 min-w-[200px] text-left whitespace-nowrap" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--card-border)' }}>Número de Guía</th>
+                            <th className="px-3 py-3 text-[9px] font-extrabold uppercase tracking-[0.1em] w-56 min-w-[200px] text-left whitespace-nowrap cursor-pointer group/sort" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--card-border)' }} onClick={() => handleSort('tracking_number')}>
+                                <div className="flex items-center gap-1">Número de Guía <SortIcon field="tracking_number" /></div>
+                            </th>
                             {!isDepotView && (
                                 <th className="px-3 py-3 text-[9px] font-extrabold uppercase tracking-[0.1em] w-40 text-left whitespace-nowrap select-none" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--card-border)' }}>
                                     <FilterDropdown label="Status Importación" type="status" options={statusOptions} selectedValues={selectedStatuses} isOpen={openFilterDropdown === 'status'} onToggleOpen={handleToggleDropdown} onToggleOption={toggleFilter} />
                                 </th>
                             )}
                             <th className="px-3 py-3 text-[9px] font-extrabold uppercase tracking-[0.1em] w-28 text-left whitespace-nowrap select-none" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--card-border)' }}>
-                                <div ref={dateShippedRef} className={`flex items-center gap-1 cursor-pointer transition-colors ${(dateShippedFrom || dateShippedTo) ? "text-[#2E7BFF]" : "hover:text-[var(--text-primary)]"}`} onClick={() => handleToggleDropdown('dateShipped')}>
-                                    F. de Salida
-                                    <Filter size={10} strokeWidth={1.5} className={(dateShippedFrom || dateShippedTo) ? "fill-[#2E7BFF] text-[#2E7BFF]" : ""} />
+                                <div className="flex items-center gap-1">
+                                    <div ref={dateShippedRef} className={`flex items-center gap-1 cursor-pointer transition-colors ${(dateShippedFrom || dateShippedTo) ? "text-[#2E7BFF]" : "hover:text-[var(--text-primary)]"}`} onClick={() => handleToggleDropdown('dateShipped')}>
+                                        F. de Salida
+                                        <Filter size={10} strokeWidth={1.5} className={(dateShippedFrom || dateShippedTo) ? "fill-[#2E7BFF] text-[#2E7BFF]" : ""} />
+                                    </div>
+                                    <span className="cursor-pointer group/sort" onClick={(e) => { e.stopPropagation(); handleSort('date_shipped'); }}><SortIcon field="date_shipped" /></span>
                                 </div>
                                 <DateFilterPopup isOpen={openFilterDropdown === 'dateShipped'} onClose={() => setOpenFilterDropdown(null)} anchorRef={dateShippedRef} title="Rango de Fecha Salida" dateFrom={dateShippedFrom} setDateFrom={setDateShippedFrom} dateTo={dateShippedTo} setDateTo={setDateShippedTo} />
                             </th>
@@ -172,8 +225,12 @@ export function ShipmentsTable({
                                     <FilterDropdown label="Categoría" type="category" options={uniqueCategories} selectedValues={selectedCategories} isOpen={openFilterDropdown === 'category'} onToggleOpen={handleToggleDropdown} onToggleOption={toggleFilter} width="w-48" />
                                 </th>
                             )}
-                            <th className="px-3 py-3 text-[9px] font-extrabold uppercase tracking-[0.1em] w-24 text-right whitespace-nowrap" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--card-border)' }}>Cotizado</th>
-                            <th className="px-3 py-3 text-[9px] font-extrabold uppercase tracking-[0.1em] w-20 text-right whitespace-nowrap" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--card-border)' }}>Peso</th>
+                            <th className="px-3 py-3 text-[9px] font-extrabold uppercase tracking-[0.1em] w-24 text-right whitespace-nowrap cursor-pointer group/sort" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--card-border)' }} onClick={() => handleSort('precio_envio')}>
+                                <div className="flex items-center justify-end gap-1">Cotizado <SortIcon field="precio_envio" /></div>
+                            </th>
+                            <th className="px-3 py-3 text-[9px] font-extrabold uppercase tracking-[0.1em] w-20 text-right whitespace-nowrap cursor-pointer group/sort" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--card-border)' }} onClick={() => handleSort('weight')}>
+                                <div className="flex items-center justify-end gap-1">Peso <SortIcon field="weight" /></div>
+                            </th>
                             <th className="px-3 py-3 text-[9px] font-extrabold uppercase tracking-[0.1em] w-24 text-right whitespace-nowrap select-none" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--card-border)' }}>
                                 <FilterDropdown label="Origen" type="origin" options={uniqueOrigins} selectedValues={selectedOrigins} isOpen={openFilterDropdown === 'origin'} onToggleOpen={handleToggleDropdown} onToggleOption={toggleFilter} align="right" width="w-48" />
                             </th>
@@ -194,7 +251,7 @@ export function ShipmentsTable({
                                 </td>
                             </tr>
                         ) : (
-                            filteredShipments.slice(0, visibleCount).map((s: Shipment) => (
+                            sortedShipments.slice(0, visibleCount).map((s: Shipment) => (
                                 <ShipmentRow
                                     key={s.id}
                                     s={s}
@@ -216,13 +273,13 @@ export function ShipmentsTable({
                     </tbody>
                 </table>
 
-                {visibleCount < filteredShipments.length && (
+                {visibleCount < sortedShipments.length && (
                     <div className="py-6 flex justify-center w-full relative z-10">
                         <button
                             onClick={() => setVisibleCount((v) => v + 50)}
                             className="erp-btn erp-btn-secondary text-[10px] tracking-wider"
                         >
-                            VER {Math.min(50, filteredShipments.length - visibleCount)} MÁS... ({filteredShipments.length - visibleCount} restantes)
+                            VER {Math.min(50, sortedShipments.length - visibleCount)} MÁS... ({sortedShipments.length - visibleCount} restantes)
                         </button>
                     </div>
                 )}
