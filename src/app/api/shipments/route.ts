@@ -43,6 +43,15 @@ const FIELD_PERMISSIONS: Record<string, string[]> = {
         'costo_flete', 'monto_cobrado',
         'precio_envio', 'gastos_documentales', 'impuestos',
         'payment_proof_url', 'payment_notes',
+        // Reception / Depot fields (billing can receive shipments)
+        'internal_status', 'date_arrived', 'date_dispatched',
+        'delta_kg', 'delta_boxes', 'boxes_count',
+        'reception_status', 'received_at', 'received_by', 'received_weight',
+        'has_weight_anomaly', 'anomaly_percentage', 'anomaly_absolute',
+        'bultos', 'peso_computable', 'weight',
+        'invoice_photo_1', 'invoice_photo_2',
+        'reception_version_count', 'current_version_id',
+        'edited_post_delivery', 'post_delivery_edit', 'edit_count',
     ],
     sales: [
         'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion',
@@ -69,10 +78,10 @@ const STATUS_ROLE_PERMISSIONS: Record<string, string[]> = {
     'Guía creada': ['admin', 'logistics', 'sales'],
     'Pendiente expo': ['admin', 'logistics'],
     'En tránsito': ['admin', 'logistics'],
-    'Recibido en Oficina': ['admin', 'logistics', 'operator'],
-    'Retirado': ['admin', 'operator'],
-    'Despachado': ['admin', 'operator'],
-    'Mercado Libre full': ['admin', 'operator'],
+    'Recibido en Oficina': ['admin', 'logistics', 'operator', 'billing'],
+    'Retirado': ['admin', 'operator', 'billing'],
+    'Despachado': ['admin', 'operator', 'billing'],
+    'Mercado Libre full': ['admin', 'operator', 'billing'],
     'Retenido': ['admin', 'logistics', 'operator'],
 };
 
