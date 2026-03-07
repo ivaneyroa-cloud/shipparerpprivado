@@ -742,145 +742,145 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
         card: '#111d32',
         cardBorder: '#1e2d47',
         accent: '#3b82f6',
-        text: '#e2e8f0',
-        muted: '#64748b',
-        dim: '#475569',
+        text: '#f1f5f9',
+        muted: '#94a3b8',
+        dim: '#cbd5e1',
         white: '#ffffff',
-        amber: '#f59e0b',
-        green: '#22c55e',
+        amber: '#d4a574',
+        green: '#4ade80',
     };
 
     return (
         <div style={{ maxWidth: '580px', margin: '0 auto' }}>
-            <div ref={ref} style={{ fontFamily: "'Inter', system-ui, sans-serif", background: S.bg, color: S.text, borderRadius: '12px', overflow: 'hidden' }}>
+            <div ref={ref} style={{ fontFamily: "'Inter', system-ui, sans-serif", background: S.bg, color: S.text, borderRadius: '10px', overflow: 'hidden' }}>
 
                 {/* ── HEADER ── */}
-                <div style={{ padding: '28px 28px 22px', borderBottom: `1px solid ${S.cardBorder}` }}>
+                <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${S.cardBorder}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
-                            <img src="/logo-dark.png" alt="Shippar" style={{ height: '24px' }} />
-                            <p style={{ fontSize: '8px', fontWeight: 600, color: S.muted, letterSpacing: '0.15em', textTransform: 'uppercase', marginTop: '4px' }}>Tu socio en comercio internacional</p>
+                            <img src="/logo-dark.png" alt="Shippar" style={{ height: '22px' }} />
+                            <p style={{ fontSize: '7px', fontWeight: 600, color: S.muted, letterSpacing: '0.15em', textTransform: 'uppercase', marginTop: '3px' }}>Tu socio en comercio internacional</p>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                            <p style={{ fontSize: '8px', fontWeight: 700, color: S.muted, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Cotización</p>
-                            <p style={{ fontSize: '12px', fontWeight: 800, color: S.white, marginTop: '2px' }}>{today}</p>
-                            <p style={{ fontSize: '8px', fontWeight: 600, color: S.dim, marginTop: '2px' }}>Válida por 72hs</p>
+                            <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Cotización</p>
+                            <p style={{ fontSize: '11px', fontWeight: 800, color: S.white, marginTop: '1px' }}>{today}</p>
+                            <p style={{ fontSize: '7px', fontWeight: 600, color: S.muted, marginTop: '1px' }}>Válida por 72hs</p>
                         </div>
                     </div>
                 </div>
 
                 {/* ── INFO CARDS ── */}
-                <div style={{ padding: '16px 28px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-                    <div style={{ background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '8px', padding: '12px' }}>
-                        <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '4px' }}>Cliente</p>
-                        <p style={{ fontSize: '11px', fontWeight: 800, color: S.white, lineHeight: 1.2 }}>{form.clientName.toUpperCase()}</p>
-                        {form.clientCode && <p style={{ fontSize: '9px', fontWeight: 700, color: S.accent, marginTop: '2px' }}>{form.clientCode}</p>}
+                <div style={{ padding: '10px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
+                    <div style={{ background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '6px', padding: '10px' }}>
+                        <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '3px' }}>Cliente</p>
+                        <p style={{ fontSize: '10px', fontWeight: 800, color: S.white, lineHeight: 1.2 }}>{form.clientName.toUpperCase()}</p>
+                        {form.clientCode && <p style={{ fontSize: '8px', fontWeight: 700, color: S.accent, marginTop: '1px' }}>{form.clientCode}</p>}
                     </div>
-                    <div style={{ background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '8px', padding: '12px' }}>
-                        <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '4px' }}>Ruta</p>
-                        <p style={{ fontSize: '11px', fontWeight: 800, color: S.white }}>{originInfo?.label?.toUpperCase()}</p>
-                        <p style={{ fontSize: '9px', fontWeight: 600, color: S.dim }}>→ Buenos Aires</p>
+                    <div style={{ background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '6px', padding: '10px' }}>
+                        <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '3px' }}>Ruta</p>
+                        <p style={{ fontSize: '10px', fontWeight: 800, color: S.white }}>{originInfo?.label?.toUpperCase()}</p>
+                        <p style={{ fontSize: '8px', fontWeight: 600, color: S.dim }}>→ Buenos Aires</p>
                     </div>
-                    <div style={{ background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '8px', padding: '12px' }}>
-                        <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '4px' }}>Servicio</p>
-                        <p style={{ fontSize: '11px', fontWeight: 800, color: S.white }}>{form.serviceType} Air</p>
-                        <p style={{ fontSize: '9px', fontWeight: 600, color: S.dim }}>{deliveryDays} días hábiles</p>
+                    <div style={{ background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '6px', padding: '10px' }}>
+                        <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '3px' }}>Servicio</p>
+                        <p style={{ fontSize: '10px', fontWeight: 800, color: S.white }}>{form.serviceType} Air</p>
+                        <p style={{ fontSize: '8px', fontWeight: 600, color: S.dim }}>{deliveryDays} días hábiles</p>
                     </div>
                 </div>
 
-                <div style={{ padding: '0 28px 16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    <div style={{ background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '8px', padding: '14px', textAlign: 'center' }}>
-                        <p style={{ fontSize: '24px', fontWeight: 900, color: S.white }}>{form.weightKg}</p>
-                        <p style={{ fontSize: '8px', fontWeight: 700, color: S.muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: '2px' }}>KG Totales</p>
+                <div style={{ padding: '0 24px 10px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                    <div style={{ background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '6px', padding: '10px', textAlign: 'center' }}>
+                        <p style={{ fontSize: '20px', fontWeight: 900, color: S.white }}>{form.weightKg}</p>
+                        <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: '1px' }}>KG Totales</p>
                     </div>
-                    <div style={{ background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '8px', padding: '14px', textAlign: 'center' }}>
-                        <p style={{ fontSize: '24px', fontWeight: 900, color: S.accent }}>${form.tarifaPerKg}</p>
-                        <p style={{ fontSize: '8px', fontWeight: 700, color: S.muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: '2px' }}>USD / KG</p>
+                    <div style={{ background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '6px', padding: '10px', textAlign: 'center' }}>
+                        <p style={{ fontSize: '20px', fontWeight: 900, color: S.accent }}>${form.tarifaPerKg}</p>
+                        <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: '1px' }}>USD / KG</p>
                     </div>
                 </div>
 
                 {/* ── DETALLE DE ENVÍO ── */}
-                <div style={{ margin: '0 28px', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '8px', padding: '16px' }}>
-                    <p style={{ fontSize: '8px', fontWeight: 800, color: S.muted, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '10px' }}>Detalle de envío</p>
+                <div style={{ margin: '0 24px', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '6px', padding: '12px 14px' }}>
+                    <p style={{ fontSize: '7px', fontWeight: 800, color: S.muted, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '8px' }}>Detalle de envío</p>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
                         <span style={{ fontSize: '10px', fontWeight: 600, color: S.dim }}>Transporte aéreo</span>
                         <span style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(shippingCost)}</span>
                     </div>
                     {gastoDoc > 0 && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderTop: `1px solid ${S.cardBorder}` }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderTop: `1px solid ${S.cardBorder}` }}>
                             <span style={{ fontSize: '10px', fontWeight: 600, color: S.dim }}>Gasto documental</span>
                             <span style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(gastoDoc)}</span>
                         </div>
                     )}
                     {form.guiaAerea > 0 && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderTop: `1px solid ${S.cardBorder}` }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderTop: `1px solid ${S.cardBorder}` }}>
                             <span style={{ fontSize: '10px', fontWeight: 600, color: S.dim }}>Guía aérea</span>
                             <span style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(form.guiaAerea)}</span>
                         </div>
                     )}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0 2px', borderTop: `2px solid ${S.accent}`, marginTop: '4px' }}>
-                        <span style={{ fontSize: '9px', fontWeight: 800, color: S.accent, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Subtotal Envío</span>
-                        <span style={{ fontSize: '12px', fontWeight: 900, color: S.white }}>${formatMoney(subtotalLogistico)}</span>
+                    <div style={{ borderTop: `2px solid ${S.accent}`, marginTop: '6px', paddingTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '8px', fontWeight: 800, color: S.accent, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Subtotal Envío</span>
+                        <span style={{ fontSize: '14px', fontWeight: 900, color: S.white }}>${formatMoney(subtotalLogistico)}</span>
                     </div>
                 </div>
 
                 {/* ── IMPUESTOS ── */}
                 {form.includeTaxes && totalTaxes > 0 && (
-                    <div style={{ margin: '10px 28px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderLeft: `3px solid ${S.amber}`, borderRadius: '8px', padding: '16px' }}>
-                        <p style={{ fontSize: '8px', fontWeight: 800, color: S.amber, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '10px' }}>Impuestos estimados</p>
+                    <div style={{ margin: '8px 24px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderLeft: `2px solid ${S.amber}`, borderRadius: '6px', padding: '12px 14px' }}>
+                        <p style={{ fontSize: '7px', fontWeight: 800, color: S.amber, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '8px' }}>Impuestos estimados</p>
 
                         {form.valorFob && (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', marginBottom: '6px' }}>
-                                <span style={{ fontSize: '9px', fontWeight: 600, color: S.dim }}>Valor FOB declarado</span>
-                                <span style={{ fontSize: '9px', fontWeight: 800, color: S.muted }}>${formatMoney(form.valorFob)}</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', marginBottom: '4px' }}>
+                                <span style={{ fontSize: '9px', fontWeight: 600, color: S.muted }}>Valor FOB declarado</span>
+                                <span style={{ fontSize: '9px', fontWeight: 800, color: S.dim }}>${formatMoney(form.valorFob)}</span>
                             </div>
                         )}
                         {derechosAmount > 0 && (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
                                 <span style={{ fontSize: '10px', fontWeight: 600, color: S.dim }}>Derechos ({form.derechosPct}%)</span>
                                 <span style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(derechosAmount)}</span>
                             </div>
                         )}
                         {tasaAmount > 0 && (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
                                 <span style={{ fontSize: '10px', fontWeight: 600, color: S.dim }}>Tasa estadística ({form.tasaEstadisticaPct}%)</span>
                                 <span style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(tasaAmount)}</span>
                             </div>
                         )}
                         {iva105Amount > 0 && (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
                                 <span style={{ fontSize: '10px', fontWeight: 600, color: S.dim }}>IVA Aduana ({form.ivaAduana105Pct}%)</span>
                                 <span style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(iva105Amount)}</span>
                             </div>
                         )}
                         {iva21Amount > 0 && (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
                                 <span style={{ fontSize: '10px', fontWeight: 600, color: S.dim }}>IVA Aduana ({form.ivaAduana21Pct}%)</span>
                                 <span style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(iva21Amount)}</span>
                             </div>
                         )}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0 2px', borderTop: `1px solid rgba(245,158,11,0.3)`, marginTop: '4px' }}>
-                            <span style={{ fontSize: '9px', fontWeight: 800, color: S.amber, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Total Impuestos</span>
+                        <div style={{ borderTop: `1px solid rgba(212,165,116,0.25)`, marginTop: '4px', paddingTop: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '8px', fontWeight: 800, color: S.amber, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Total Impuestos</span>
                             <span style={{ fontSize: '12px', fontWeight: 900, color: S.amber }}>${formatMoney(totalTaxes)}</span>
                         </div>
-                        <p style={{ fontSize: '7px', fontWeight: 500, color: S.dim, marginTop: '8px' }}>* Los impuestos son estimados y pueden variar según la determinación final de Aduana.</p>
+                        <p style={{ fontSize: '7px', fontWeight: 500, color: S.muted, marginTop: '6px' }}>* Estimados, pueden variar según determinación de Aduana.</p>
                     </div>
                 )}
 
                 {/* ── RESUMEN ── */}
                 {form.includeTaxes && totalTaxes > 0 && (
-                    <div style={{ margin: '10px 28px 0', display: 'grid', gridTemplateColumns: '1fr auto 1fr auto 1fr', gap: '4px', alignItems: 'center', padding: '10px 12px', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '8px' }}>
+                    <div style={{ margin: '8px 24px 0', display: 'grid', gridTemplateColumns: '1fr auto 1fr auto 1fr', gap: '4px', alignItems: 'center', padding: '8px 10px', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '6px' }}>
                         <div style={{ textAlign: 'center' }}>
-                            <p style={{ fontSize: '7px', fontWeight: 700, color: S.dim, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Envío</p>
+                            <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Envío</p>
                             <p style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(subtotalLogistico)}</p>
                         </div>
-                        <span style={{ fontSize: '10px', color: S.dim, fontWeight: 700 }}>+</span>
+                        <span style={{ fontSize: '10px', color: S.muted, fontWeight: 700 }}>+</span>
                         <div style={{ textAlign: 'center' }}>
-                            <p style={{ fontSize: '7px', fontWeight: 700, color: S.dim, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Impuestos</p>
+                            <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Impuestos</p>
                             <p style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(totalTaxes)}</p>
                         </div>
-                        <span style={{ fontSize: '10px', color: S.dim, fontWeight: 700 }}>=</span>
+                        <span style={{ fontSize: '10px', color: S.muted, fontWeight: 700 }}>=</span>
                         <div style={{ textAlign: 'center' }}>
                             <p style={{ fontSize: '7px', fontWeight: 700, color: S.accent, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</p>
                             <p style={{ fontSize: '11px', fontWeight: 900, color: S.white }}>${formatMoney(totalUSD)}</p>
@@ -889,49 +889,43 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                 )}
 
                 {/* ── TOTAL GRANDE ── */}
-                <div style={{ margin: '14px 28px 0', background: `linear-gradient(135deg, #1a2744 0%, #0f1d35 100%)`, border: `1px solid ${S.accent}33`, borderRadius: '10px', padding: '24px 20px', textAlign: 'center' }}>
-                    <p style={{ fontSize: '8px', fontWeight: 700, color: S.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '6px' }}>Costo Total Estimado</p>
-                    <p style={{ fontSize: '28px', fontWeight: 900, color: S.white, letterSpacing: '-0.02em', lineHeight: 1 }}>
-                        ${formatMoney(totalUSD)} <span style={{ fontSize: '14px', fontWeight: 700, color: S.accent }}>USD</span>
+                <div style={{ margin: '10px 24px 0', background: `linear-gradient(135deg, #1a2744 0%, #0f1d35 100%)`, border: `1px solid ${S.accent}33`, borderRadius: '8px', padding: '18px 16px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '4px' }}>Costo Total Estimado</p>
+                    <p style={{ fontSize: '26px', fontWeight: 900, color: S.white, letterSpacing: '-0.02em', lineHeight: 1 }}>
+                        ${formatMoney(totalUSD)} <span style={{ fontSize: '13px', fontWeight: 700, color: S.accent }}>USD</span>
                     </p>
                     {totalARS && exchangeRate && (
-                        <p style={{ fontSize: '10px', fontWeight: 600, color: S.muted, marginTop: '8px' }}>
+                        <p style={{ fontSize: '10px', fontWeight: 600, color: S.dim, marginTop: '6px' }}>
                             Equivalente ARS {new Intl.NumberFormat('es-AR').format(Math.round(totalARS))}
                         </p>
                     )}
                     {exchangeRate && (
-                        <p style={{ fontSize: '8px', fontWeight: 500, color: S.dim, marginTop: '4px' }}>
+                        <p style={{ fontSize: '7px', fontWeight: 500, color: S.muted, marginTop: '3px' }}>
                             TC Oficial BCRA: ${exchangeRate} — {exchangeDate}
                         </p>
                     )}
                 </div>
 
                 {/* ── QUÉ INCLUYE ── */}
-                <div style={{ margin: '14px 28px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '8px', padding: '14px 16px' }}>
-                    <p style={{ fontSize: '8px', fontWeight: 800, color: S.muted, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '10px' }}>Incluye</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                <div style={{ margin: '8px 24px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '6px', padding: '10px 14px' }}>
+                    <p style={{ fontSize: '7px', fontWeight: 800, color: S.muted, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '6px' }}>Incluye</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
                         {SERVICE_INCLUDES.map(item => (
-                            <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <CheckCircle2 size={10} style={{ color: S.green, flexShrink: 0 }} />
-                                <span style={{ fontSize: '9px', fontWeight: 600, color: S.dim }}>{item}</span>
+                            <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                <CheckCircle2 size={9} style={{ color: S.green, flexShrink: 0 }} />
+                                <span style={{ fontSize: '8px', fontWeight: 600, color: S.dim }}>{item}</span>
                             </div>
                         ))}
                     </div>
                 </div>
 
                 {/* ── DISCLAIMERS ── */}
-                <div style={{ padding: '14px 28px 20px' }}>
-                    <div style={{ borderTop: `1px solid ${S.cardBorder}`, paddingTop: '12px' }}>
-                        <p style={{ fontSize: '7px', fontWeight: 500, color: S.dim, lineHeight: 1.7, marginBottom: '3px' }}>
-                            Los costos de envío quedan sujetos a los kilogramos efectivamente recepcionados en origen.
+                <div style={{ padding: '10px 24px 16px' }}>
+                    <div style={{ borderTop: `1px solid ${S.cardBorder}`, paddingTop: '8px' }}>
+                        <p style={{ fontSize: '7px', fontWeight: 500, color: S.muted, lineHeight: 1.6, marginBottom: '2px' }}>
+                            Costos sujetos a KG efectivamente recepcionados. Cobro en ARS al TC venta BNA del día de llegada (puede variar). Propuesta aproximada de costos finales.
                         </p>
-                        <p style={{ fontSize: '7px', fontWeight: 500, color: S.dim, lineHeight: 1.7, marginBottom: '3px' }}>
-                            El cobro se realiza en pesos al tipo de cambio venta Banco Nación del día de llegada. El monto en ARS puede variar.
-                        </p>
-                        <p style={{ fontSize: '7px', fontWeight: 500, color: S.dim, lineHeight: 1.7 }}>
-                            La presente propuesta refleja una aproximación de los costos finales.
-                        </p>
-                        <p style={{ fontSize: '7px', fontWeight: 600, color: S.muted, marginTop: '10px' }}>
+                        <p style={{ fontSize: '7px', fontWeight: 600, color: S.muted, marginTop: '6px' }}>
                             Cotización generada por Shippar · {today}
                         </p>
                     </div>
