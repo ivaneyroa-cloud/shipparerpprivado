@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -40,6 +40,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [isDarkMode, setIsDarkMode] = useState(true);
     const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
     const [userRole, setUserRole] = useState<string>('admin'); // Default to admin, will update on profile load
+    const [unreadMessages, setUnreadMessages] = useState(0);
+    const lastReadRef = useRef<string>(new Date().toISOString());
     const router = useRouter();
     const pathname = usePathname();
 
@@ -75,6 +77,51 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return () => subscription.unsubscribe();
     }, [router, pathname]);
 
+    // ── Unread messages polling for sidebar badge ──
+    const fetchUnreadMessages = useCallback(async () => {
+        if (!session?.user?.id) return;
+        // If user is on comunicacion page, mark as read
+        if (pathname?.includes('/comunicacion')) {
+            lastReadRef.current = new Date().toISOString();
+            setUnreadMessages(0);
+            return;
+        }
+        const { count } = await supabase
+            .from('team_messages')
+            .select('id', { count: 'exact', head: true })
+            .neq('user_id', session.user.id)
+            .gte('created_at', lastReadRef.current);
+        setUnreadMessages(count || 0);
+    }, [session?.user?.id, pathname]);
+
+    useEffect(() => {
+        fetchUnreadMessages();
+        const interval = setInterval(fetchUnreadMessages, 15000);
+        return () => clearInterval(interval);
+    }, [fetchUnreadMessages]);
+
+    // Reset unread when navigating to comunicacion
+    useEffect(() => {
+        if (pathname?.includes('/comunicacion')) {
+            lastReadRef.current = new Date().toISOString();
+            setUnreadMessages(0);
+        }
+    }, [pathname]);
+
+    // Realtime subscription for instant notification
+    useEffect(() => {
+        if (!session?.user?.id) return;
+        const channel = supabase
+            .channel('team_messages_notify')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'team_messages' }, (payload) => {
+                if (payload.new && (payload.new as any).user_id !== session.user.id && !pathname?.includes('/comunicacion')) {
+                    setUnreadMessages(prev => prev + 1);
+                }
+            })
+            .subscribe();
+        return () => { supabase.removeChannel(channel); };
+    }, [session?.user?.id, pathname]);
+
     useEffect(() => {
         if (isDarkMode) {
             document.documentElement.classList.add('dark');
@@ -108,7 +155,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         { icon: <Users size={18} strokeWidth={1.5} />, label: 'Clientes', href: '/admin/dashboard/clients', roles: ['admin', 'logistics', 'sales'] },
         { icon: <BarChart3 size={18} strokeWidth={1.5} />, label: 'Reportes', href: '/admin/dashboard/reports', roles: ['admin'] },
-        { icon: <Radio size={18} strokeWidth={1.5} />, label: 'Comunicación', href: '/admin/dashboard/comunicacion', roles: ['admin', 'logistics', 'sales', 'billing', 'operator'] },
+        { icon: <Radio size={18} strokeWidth={1.5} />, label: 'Comunicación', href: '/admin/dashboard/comunicacion', roles: ['admin', 'logistics', 'sales', 'billing', 'operator'], badge: unreadMessages },
         { icon: <UsersRound size={18} strokeWidth={1.5} />, label: 'Equipo', href: '/admin/dashboard/team', roles: ['admin'] },
         { icon: <Settings size={18} strokeWidth={1.5} />, label: 'Ajustes', href: '/admin/dashboard/settings', roles: ['admin', 'logistics'] },
     ];
@@ -176,6 +223,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         {item.icon}
                                     </span>
                                     {item.label}
+
+                                    {/* Notification badge */}
+                                    {'badge' in item && (item as any).badge > 0 && (
+                                        <span className="ml-auto bg-red-500 text-white text-[9px] font-black min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 shadow-lg shadow-red-500/30 animate-pulse">
+                                            {(item as any).badge > 9 ? '9+' : (item as any).badge}
+                                        </span>
+                                    )}
 
                                     {/* Hover Glow Background */}
                                     {!isActive && (
