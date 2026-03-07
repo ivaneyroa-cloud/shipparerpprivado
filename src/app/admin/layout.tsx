@@ -33,13 +33,16 @@ import { useActiveTimeTracker } from '@/hooks/useActiveTimeTracker';
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [session, setSession] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(() => {
+        if (typeof window !== 'undefined') return window.innerWidth >= 1024;
+        return true;
+    });
     const [isDarkMode, setIsDarkMode] = useState(true);
-    const [userRole, setUserRole] = useState<string>(''); // Empty until profile loads
+    const [userRole, setUserRole] = useState<string>('admin'); // Default to admin, will update on profile load
     const router = useRouter();
     const pathname = usePathname();
 
-    // Track real active time
+    // Track real active time (clicks, keys, scroll — not idle)
     useActiveTimeTracker();
 
     useEffect(() => {
@@ -53,9 +56,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         if (data?.role) setUserRole(data.role);
                     });
             }
-            setLoading(false);
-        }).catch(() => {
-            // Network error — just stop loading, don't redirect
             setLoading(false);
         });
 
@@ -74,17 +74,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return () => subscription.unsubscribe();
     }, [router, pathname]);
 
-    // Open sidebar by default only on desktop
-    useEffect(() => {
-        if (typeof window !== 'undefined' && window.innerWidth >= 1024) setSidebarOpen(true);
-    }, []);
-
-    // Safety: stop spinner after 2s no matter what
-    useEffect(() => {
-        const t = setTimeout(() => setLoading(false), 2000);
-        return () => clearTimeout(t);
-    }, []);
-
     useEffect(() => {
         if (isDarkMode) {
             document.documentElement.classList.add('dark');
@@ -95,9 +84,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
     }, [isDarkMode]);
 
-    // Si estamos en la página de login, renderizar inmediatamente sin esperar auth
-    if (pathname === '/admin') return <>{children}</>;
-
     if (loading) {
         return (
             <div className="min-h-screen bg-slate-950 flex items-center justify-center">
@@ -106,27 +92,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         );
     }
 
+    // Si estamos en la página de login, no mostramos el layout
+    if (pathname === '/admin') return <>{children}</>;
+
     // Role-based menu: each item specifies which roles can see it
     const allMenuItems = [
-        { icon: <LayoutDashboard size={18} strokeWidth={1.5} />, label: 'Dashboard', href: '/admin/dashboard', roles: ['super_admin', 'admin', 'logistics', 'sales', 'billing', 'operator'] },
-        { icon: <Package size={18} strokeWidth={1.5} />, label: 'Envíos', href: '/admin/dashboard/shipments', roles: ['super_admin', 'admin', 'logistics', 'sales', 'billing'] },
-        { icon: <Box size={18} strokeWidth={1.5} />, label: 'Depósito', href: '/admin/dashboard/deposito', roles: ['super_admin', 'admin', 'logistics', 'operator', 'billing'] },
-        { icon: <Activity size={18} strokeWidth={1.5} />, label: 'Operaciones', href: '/admin/dashboard/operations', roles: ['super_admin', 'admin', 'logistics', 'operator'] },
-        { icon: <Shield size={18} strokeWidth={1.5} />, label: 'Gerencia', href: '/admin/dashboard/gerencia', roles: ['super_admin', 'admin'] },
-        { icon: <DollarSign size={18} strokeWidth={1.5} />, label: 'Cobranzas', href: '/admin/dashboard/cobranzas', roles: ['super_admin', 'admin', 'billing'] },
-        { icon: <TrendingUp size={18} strokeWidth={1.5} />, label: 'Finanzas', href: '/admin/dashboard/finanzas', roles: ['super_admin', 'admin', 'billing'] },
+        { icon: <LayoutDashboard size={18} strokeWidth={1.5} />, label: 'Dashboard', href: '/admin/dashboard', roles: ['admin', 'logistics', 'sales', 'billing', 'operator'] },
+        { icon: <Package size={18} strokeWidth={1.5} />, label: 'Envíos', href: '/admin/dashboard/shipments', roles: ['admin', 'logistics', 'sales', 'billing'] },
+        { icon: <Box size={18} strokeWidth={1.5} />, label: 'Depósito', href: '/admin/dashboard/deposito', roles: ['admin', 'logistics', 'operator', 'billing'] },
+        { icon: <Activity size={18} strokeWidth={1.5} />, label: 'Operaciones', href: '/admin/dashboard/operations', roles: ['admin', 'logistics', 'operator'] },
+        { icon: <Shield size={18} strokeWidth={1.5} />, label: 'Gerencia', href: '/admin/dashboard/gerencia', roles: ['admin'] },
+        { icon: <DollarSign size={18} strokeWidth={1.5} />, label: 'Cobranzas', href: '/admin/dashboard/cobranzas', roles: ['admin', 'billing'] },
+        { icon: <TrendingUp size={18} strokeWidth={1.5} />, label: 'Finanzas', href: '/admin/dashboard/finanzas', roles: ['admin', 'billing'] },
 
-        { icon: <Users size={18} strokeWidth={1.5} />, label: 'Clientes', href: '/admin/dashboard/clients', roles: ['super_admin', 'admin', 'logistics', 'sales'] },
-        { icon: <BarChart3 size={18} strokeWidth={1.5} />, label: 'Reportes', href: '/admin/dashboard/reports', roles: ['super_admin', 'admin'] },
-        { icon: <Radio size={18} strokeWidth={1.5} />, label: 'Comunicación', href: '/admin/dashboard/comunicacion', roles: ['super_admin', 'admin', 'logistics', 'sales', 'billing', 'operator'] },
-        { icon: <UsersRound size={18} strokeWidth={1.5} />, label: 'Equipo', href: '/admin/dashboard/team', roles: ['super_admin', 'admin'] },
-        { icon: <Settings size={18} strokeWidth={1.5} />, label: 'Ajustes', href: '/admin/dashboard/settings', roles: ['super_admin', 'admin', 'logistics'] },
+        { icon: <Users size={18} strokeWidth={1.5} />, label: 'Clientes', href: '/admin/dashboard/clients', roles: ['admin', 'logistics', 'sales'] },
+        { icon: <BarChart3 size={18} strokeWidth={1.5} />, label: 'Reportes', href: '/admin/dashboard/reports', roles: ['admin'] },
+        { icon: <Radio size={18} strokeWidth={1.5} />, label: 'Comunicación', href: '/admin/dashboard/comunicacion', roles: ['admin', 'logistics', 'sales', 'billing', 'operator'] },
+        { icon: <UsersRound size={18} strokeWidth={1.5} />, label: 'Equipo', href: '/admin/dashboard/team', roles: ['admin'] },
+        { icon: <Settings size={18} strokeWidth={1.5} />, label: 'Ajustes', href: '/admin/dashboard/settings', roles: ['admin', 'logistics'] },
     ];
 
-    // While role is loading, show all items so user isn't stuck with empty sidebar
-    const menuItems = userRole
-        ? allMenuItems.filter(item => item.roles.includes(userRole))
-        : allMenuItems;
+    const menuItems = allMenuItems.filter(item => item.roles.includes(userRole));
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -134,7 +120,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     };
 
     return (
-        <div className={`min-h-screen flex ${isDarkMode ? 'dark' : ''}`} style={{ backgroundColor: isDarkMode ? '#0B0F17' : '#F5F7FB', color: isDarkMode ? '#F0F4F8' : '#0F172A' }}>
+        <div className={`min-h-screen flex ${isDarkMode ? 'dark' : ''}`} style={{ backgroundColor: isDarkMode ? '#0B0F17' : '#F4F6FA', color: isDarkMode ? '#F0F4F8' : '#1a1f36' }}>
             <div className="erp-noise" />
             <Toaster position="bottom-right" theme={isDarkMode ? 'dark' : 'light'} />
 
@@ -150,7 +136,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <aside className={`
                 fixed inset-y-0 left-0 z-50 w-72 transition-transform duration-300 transform
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-                ${isDarkMode ? 'bg-[#0D1117]/95 backdrop-blur-xl border-r border-white/[0.06]' : 'bg-[#F2F6FF] border-r border-[#E3E8F2]'}
+                ${isDarkMode ? 'bg-[#0D1117]/95 backdrop-blur-xl border-r border-white/[0.06]' : 'bg-white/95 backdrop-blur-xl border-r border-slate-200/80'}
                 lg:relative lg:translate-x-0
             `}>
                 <div className="h-full flex flex-col p-6">
@@ -173,10 +159,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     className={`
                         group relative flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-[13px] transition-all duration-250
                                         ${isActive
-                                            ? isDarkMode
-                                                ? 'text-white bg-gradient-to-r from-blue-600/20 to-blue-500/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)]'
-                                                : 'text-[#2563EB] bg-[#E8F0FF] font-bold'
-                                            : isDarkMode ? 'text-slate-500 hover:bg-white/[0.04] hover:text-slate-200' : 'text-slate-600 hover:bg-[#E8F0FF] hover:text-slate-900'
+                                            ? 'text-white bg-gradient-to-r from-blue-600/20 to-blue-500/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)]'
+                                            : isDarkMode ? 'text-slate-500 hover:bg-white/[0.04] hover:text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                                         }
                                     `}
                                 >
@@ -185,7 +169,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         <div className="absolute left-0 w-[3px] h-5 bg-[#2E7BFF] rounded-full shadow-[0_0_12px_rgba(46,123,255,0.7)]" />
                                     )}
 
-                                    <span className={`${isActive ? (isDarkMode ? 'text-[#2E7BFF]' : 'text-[#2563EB]') : isDarkMode ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-400 group-hover:text-slate-700'} transition-colors duration-250`}>
+                                    <span className={`${isActive ? 'text-[#2E7BFF]' : isDarkMode ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-400 group-hover:text-slate-700'} transition-colors duration-250`}>
                                         {item.icon}
                                     </span>
                                     {item.label}
@@ -213,11 +197,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </aside>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex-1 flex flex-col">
                 {/* Topbar */}
                 <header className={`
           h-14 md:h-16 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40
-          ${isDarkMode ? 'bg-[#0B0F17]/70 backdrop-blur-xl border-b border-white/[0.04]' : 'bg-[#F5F7FB]/90 backdrop-blur-xl border-b border-[#E3E8F2]'}
+          ${isDarkMode ? 'bg-[#0B0F17]/70 backdrop-blur-xl border-b border-white/[0.04]' : 'bg-[#F4F6FA]/80 backdrop-blur-xl border-b border-slate-200/60'}
         `}>
                     <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden text-slate-400">
                         {sidebarOpen ? <X /> : <Menu />}

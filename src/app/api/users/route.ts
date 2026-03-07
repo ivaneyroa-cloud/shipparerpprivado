@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
             .eq('id', requestingUser.id)
             .single();
 
-        if (!profile || !['admin', 'super_admin'].includes(profile.role)) {
+        if (!profile || profile.role !== 'admin') {
             return NextResponse.json({ error: 'Solo administradores pueden crear usuarios' }, { status: 403 });
         }
 
@@ -162,16 +162,17 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 });
         }
 
-        const isAdmin = ['admin', 'super_admin'].includes(reqProfile.role);
+        const isAdmin = reqProfile.role === 'admin';
 
-        // Admins get full profile data; others get limited fields for task assignment
+        // Admin gets full details; other roles get minimal data for task assignment
         const columns = isAdmin
             ? 'id, email, full_name, role, is_active, created_at, org_id'
-            : 'id, full_name, email, role';
+            : 'id, full_name, role';
 
         const query = supabaseAdmin
             .from('profiles')
             .select(columns)
+            .eq('is_active', true)
             .order('created_at', { ascending: true });
 
         if (reqProfile.org_id) {
@@ -215,7 +216,7 @@ export async function PATCH(req: NextRequest) {
             .eq('id', requestingUser.id)
             .single();
 
-        if (!profile || !['admin', 'super_admin'].includes(profile.role)) {
+        if (!profile || profile.role !== 'admin') {
             return NextResponse.json({ error: 'Solo administradores pueden modificar usuarios' }, { status: 403 });
         }
 
@@ -227,7 +228,7 @@ export async function PATCH(req: NextRequest) {
         }
 
         // ── FIELD WHITELIST — only these fields can be updated ──
-        const ALLOWED_FIELDS = ['role', 'is_active', 'full_name', 'password'] as const;
+        const ALLOWED_FIELDS = ['role', 'is_active', 'full_name'] as const;
         type AllowedField = (typeof ALLOWED_FIELDS)[number];
 
         const sanitized: Partial<Record<AllowedField, any>> = {};
@@ -237,23 +238,14 @@ export async function PATCH(req: NextRequest) {
             }
         }
 
-        // Handle password separately (not a profile field)
-        const newPassword = sanitized.password;
-        delete sanitized.password;
-
-        if (Object.keys(sanitized).length === 0 && !newPassword) {
+        if (Object.keys(sanitized).length === 0) {
             return NextResponse.json({ error: 'No se enviaron campos válidos para actualizar' }, { status: 400 });
         }
 
         // Validate role value if present
-        const VALID_ROLES = ['super_admin', 'admin', 'logistics', 'sales', 'billing', 'operator'];
+        const VALID_ROLES = ['admin', 'logistics', 'sales', 'billing', 'operator'];
         if (sanitized.role && !VALID_ROLES.includes(sanitized.role)) {
             return NextResponse.json({ error: 'Rol inválido' }, { status: 400 });
-        }
-
-        // Only super_admin can assign super_admin role
-        if (sanitized.role === 'super_admin' && profile.role !== 'super_admin') {
-            return NextResponse.json({ error: 'Solo un super administrador puede asignar ese rol' }, { status: 403 });
         }
 
         // Sanitize full_name if present
@@ -270,7 +262,7 @@ export async function PATCH(req: NextRequest) {
         }
 
         // SUPER ADMIN PROTECTION — env var with fallback
-        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || '';
+        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || 'ivaneyroa@shippar.net';
 
         const { data: targetProfile } = await supabaseAdmin
             .from('profiles')
@@ -279,12 +271,8 @@ export async function PATCH(req: NextRequest) {
             .single();
 
         // Nobody can modify the super admin
-        if (SUPER_ADMIN_EMAIL && targetProfile?.email === SUPER_ADMIN_EMAIL) {
+        if (targetProfile?.email === SUPER_ADMIN_EMAIL) {
             return NextResponse.json({ error: 'El super administrador no puede ser modificado' }, { status: 403 });
-        }
-        // Role-based fallback: also protect any super_admin
-        if (targetProfile?.role === 'super_admin' && profile.role !== 'super_admin') {
-            return NextResponse.json({ error: 'No podés modificar un super administrador' }, { status: 403 });
         }
 
         // Admins cannot change their OWN role (prevents locking yourself out)
@@ -298,31 +286,13 @@ export async function PATCH(req: NextRequest) {
         }
 
         // Update profile — only whitelisted fields
-        if (Object.keys(sanitized).length > 0) {
-            const { error } = await supabaseAdmin
-                .from('profiles')
-                .update(sanitized)
-                .eq('id', userId);
+        const { error } = await supabaseAdmin
+            .from('profiles')
+            .update(sanitized)
+            .eq('id', userId);
 
-            if (error) {
-                return NextResponse.json({ error: error.message }, { status: 500 });
-            }
-        }
-
-        // Update password in auth if requested
-        if (newPassword) {
-            if (typeof newPassword !== 'string' || newPassword.length < 8) {
-                return NextResponse.json({ error: 'Contraseña debe tener mín. 8 caracteres' }, { status: 400 });
-            }
-            if (!/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
-                return NextResponse.json({ error: 'Contraseña debe incluir al menos una mayúscula y un número' }, { status: 400 });
-            }
-            const { error: pwError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-                password: newPassword
-            });
-            if (pwError) {
-                return NextResponse.json({ error: pwError.message }, { status: 500 });
-            }
+        if (error) {
+            return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
         // If deactivating, also disable auth user
@@ -340,98 +310,11 @@ export async function PATCH(req: NextRequest) {
         await logAudit({
             actorId: requestingUser.id,
             actorEmail: requestingUser.email || '',
-            action: sanitized.role ? 'update_user_role' : sanitized.is_active !== undefined ? 'toggle_user_active' : newPassword ? 'reset_password' : 'update_user',
+            action: sanitized.role ? 'update_user_role' : sanitized.is_active !== undefined ? 'toggle_user_active' : 'update_user',
             targetTable: 'profiles',
             targetId: userId,
             oldValues: { role: targetProfile?.role },
             newValues: sanitized,
-        });
-
-        return NextResponse.json({ success: true });
-
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message || 'Error interno' }, { status: 500 });
-    }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// DELETE /api/users — Delete a user completely
-// ═══════════════════════════════════════════════════════════════
-export async function DELETE(req: NextRequest) {
-    try {
-        const token = req.headers.get('authorization')?.replace('Bearer ', '');
-        if (!token) {
-            return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-        }
-
-        const { data: { user: requestingUser } } = await supabaseAdmin.auth.getUser(token);
-        if (!requestingUser) {
-            return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-        }
-
-        const { data: profile } = await supabaseAdmin
-            .from('profiles')
-            .select('role')
-            .eq('id', requestingUser.id)
-            .single();
-
-        if (!profile || !['admin', 'super_admin'].includes(profile.role)) {
-            return NextResponse.json({ error: 'Solo administradores pueden eliminar usuarios' }, { status: 403 });
-        }
-
-        const body = await req.json();
-        const { userId } = body;
-
-        if (!userId || typeof userId !== 'string') {
-            return NextResponse.json({ error: 'userId es obligatorio' }, { status: 400 });
-        }
-
-        // Cannot delete yourself
-        if (userId === requestingUser.id) {
-            return NextResponse.json({ error: 'No podés eliminarte a vos mismo' }, { status: 403 });
-        }
-
-        // SUPER ADMIN PROTECTION
-        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || '';
-        const { data: targetProfile } = await supabaseAdmin
-            .from('profiles')
-            .select('email, full_name')
-            .eq('id', userId)
-            .single();
-
-        if (SUPER_ADMIN_EMAIL && targetProfile?.email === SUPER_ADMIN_EMAIL) {
-            return NextResponse.json({ error: 'El super administrador no puede ser eliminado' }, { status: 403 });
-        }
-        // Role-based fallback: also protect any super_admin
-        const { data: targetRole } = await supabaseAdmin.from('profiles').select('role').eq('id', userId).single();
-        if (targetRole?.role === 'super_admin') {
-            return NextResponse.json({ error: 'No se puede eliminar un super administrador' }, { status: 403 });
-        }
-
-        // Clean up dependent records first (nullify references)
-        await supabaseAdmin.from('shipments').update({ user_id: null }).eq('user_id', userId);
-        await supabaseAdmin.from('shipments').update({ seller_id: null }).eq('seller_id', userId);
-
-        // Delete profile first, then auth user
-        const { error: profileError } = await supabaseAdmin.from('profiles').delete().eq('id', userId);
-        if (profileError) {
-            return NextResponse.json({ error: 'Error borrando perfil: ' + profileError.message }, { status: 500 });
-        }
-
-        const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
-        if (authError) {
-            return NextResponse.json({ error: 'Error borrando auth: ' + authError.message }, { status: 500 });
-        }
-
-        // Audit
-        await logAudit({
-            actorId: requestingUser.id,
-            actorEmail: requestingUser.email || '',
-            action: 'delete_user',
-            targetTable: 'profiles',
-            targetId: userId,
-            oldValues: { email: targetProfile?.email, full_name: targetProfile?.full_name },
-            newValues: {},
         });
 
         return NextResponse.json({ success: true });

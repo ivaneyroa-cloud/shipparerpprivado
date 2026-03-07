@@ -238,13 +238,30 @@ export function DashboardTasksWidget({ userProfile, teamMembers }: DashboardTask
                                     value={newTask.description} onChange={e => setNewTask(p => ({ ...p, description: e.target.value }))}
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:border-blue-500/50 resize-none"
                                 />
-                                <select
-                                    value={newTask.assignedTo} onChange={e => setNewTask(p => ({ ...p, assignedTo: e.target.value }))}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-300 outline-none focus:border-blue-500/50 appearance-none"
-                                >
-                                    <option value="">Asignar a... *</option>
-                                    {teamMembers.map((m: any) => <option key={m.id} value={m.id}>{m.full_name || m.email}</option>)}
-                                </select>
+                                <div className="flex gap-1.5">
+                                    <select
+                                        value={newTask.assignedTo} onChange={e => setNewTask(p => ({ ...p, assignedTo: e.target.value }))}
+                                        className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-300 outline-none focus:border-blue-500/50 appearance-none"
+                                    >
+                                        <option value="">Asignar a... *</option>
+                                        {/* Current user first */}
+                                        {userProfile && (
+                                            <option value={userProfile.id}>👤 {userProfile.full_name || userProfile.email} (yo)</option>
+                                        )}
+                                        {teamMembers.filter((m: any) => m.id !== userProfile?.id).map((m: any) => <option key={m.id} value={m.id}>{m.full_name || m.email}</option>)}
+                                    </select>
+                                    <button
+                                        type="button"
+                                        onClick={() => setNewTask(p => ({ ...p, assignedTo: userProfile?.id || '' }))}
+                                        className={`shrink-0 px-2.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 border ${newTask.assignedTo === userProfile?.id
+                                                ? 'bg-blue-600/20 border-blue-500/30 text-blue-400'
+                                                : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:border-white/20'
+                                            }`}
+                                        title="Asignarme a mí mismo"
+                                    >
+                                        🙋 Yo
+                                    </button>
+                                </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <select
                                         value={newTask.priority} onChange={e => setNewTask(p => ({ ...p, priority: e.target.value }))}

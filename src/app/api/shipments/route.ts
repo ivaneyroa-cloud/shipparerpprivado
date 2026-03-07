@@ -6,25 +6,10 @@ import { getAuthContext, unauthorized, forbidden } from '@/lib/server-auth';
 // FIELD WHITELIST PER ROLE
 // ═══════════════════════════════════════════════════════════════
 const FIELD_PERMISSIONS: Record<string, string[]> = {
-    super_admin: [
-        'internal_status', 'date_shipped', 'date_arrived', 'date_dispatched',
-        'origin', 'tracking_number', 'category', 'weight', 'client_id', 'client_name', 'client_code',
-        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion', 'quote_mode', 'quote_pdf_url',
-        'costo_flete', 'monto_cobrado', 'estado_cobranza', 'estado_pago_proveedor',
-        'payment_proof_url', 'payment_notes',
-        'retenido_nota',
-        'delta_kg', 'delta_boxes', 'boxes_count',
-        'reception_status', 'received_at', 'received_by', 'received_weight',
-        'has_weight_anomaly', 'anomaly_percentage', 'anomaly_absolute',
-        'bultos', 'peso_computable',
-        'invoice_photo_1', 'invoice_photo_2',
-        'reception_version_count', 'current_version_id',
-        'edited_post_delivery', 'post_delivery_edit', 'edit_count',
-    ],
     admin: [
         'internal_status', 'date_shipped', 'date_arrived', 'date_dispatched',
         'origin', 'tracking_number', 'category', 'weight', 'client_id', 'client_name', 'client_code',
-        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion', 'quote_mode', 'quote_pdf_url',
+        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion',
         'costo_flete', 'monto_cobrado', 'estado_cobranza', 'estado_pago_proveedor',
         'payment_proof_url', 'payment_notes',
         'retenido_nota',
@@ -37,19 +22,10 @@ const FIELD_PERMISSIONS: Record<string, string[]> = {
         'edited_post_delivery', 'post_delivery_edit', 'edit_count',
     ],
     logistics: [
-        'internal_status', 'date_shipped', 'date_arrived', 'date_dispatched',
-        'origin', 'tracking_number', 'category',
+        'internal_status', 'date_shipped', 'origin', 'tracking_number', 'category',
         'weight', 'client_id', 'client_name', 'client_code',
-        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion', 'quote_mode', 'quote_pdf_url',
-        'retenido_nota', 'costo_flete',
-        // Reception fields
-        'delta_kg', 'delta_boxes', 'boxes_count',
-        'reception_status', 'received_at', 'received_by', 'received_weight',
-        'has_weight_anomaly', 'anomaly_percentage', 'anomaly_absolute',
-        'bultos', 'peso_computable',
-        'invoice_photo_1', 'invoice_photo_2',
-        'reception_version_count', 'current_version_id',
-        'edited_post_delivery', 'post_delivery_edit', 'edit_count',
+        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion',
+        'retenido_nota',
     ],
     operator: [
         'internal_status', 'date_arrived', 'date_dispatched',
@@ -67,10 +43,18 @@ const FIELD_PERMISSIONS: Record<string, string[]> = {
         'costo_flete', 'monto_cobrado',
         'precio_envio', 'gastos_documentales', 'impuestos',
         'payment_proof_url', 'payment_notes',
-        'internal_status', 'date_arrived',
+        // Reception / Depot fields (billing can receive shipments)
+        'internal_status', 'date_arrived', 'date_dispatched',
+        'delta_kg', 'delta_boxes', 'boxes_count',
+        'reception_status', 'received_at', 'received_by', 'received_weight',
+        'has_weight_anomaly', 'anomaly_percentage', 'anomaly_absolute',
+        'bultos', 'peso_computable', 'weight',
+        'invoice_photo_1', 'invoice_photo_2',
+        'reception_version_count', 'current_version_id',
+        'edited_post_delivery', 'post_delivery_edit', 'edit_count',
     ],
     sales: [
-        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion', 'quote_mode', 'quote_pdf_url',
+        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion',
         'client_id', 'client_name', 'client_code',
     ],
 };
@@ -91,14 +75,14 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
 
 // Roles that can set each status
 const STATUS_ROLE_PERMISSIONS: Record<string, string[]> = {
-    'Guía creada': ['super_admin', 'admin', 'logistics', 'sales'],
-    'Pendiente expo': ['super_admin', 'admin', 'logistics'],
-    'En tránsito': ['super_admin', 'admin', 'logistics'],
-    'Recibido en Oficina': ['super_admin', 'admin', 'logistics', 'operator'],
-    'Retirado': ['super_admin', 'admin', 'operator'],
-    'Despachado': ['super_admin', 'admin', 'operator'],
-    'Mercado Libre full': ['super_admin', 'admin', 'operator'],
-    'Retenido': ['super_admin', 'admin', 'logistics', 'operator'],
+    'Guía creada': ['admin', 'logistics', 'sales'],
+    'Pendiente expo': ['admin', 'logistics'],
+    'En tránsito': ['admin', 'logistics'],
+    'Recibido en Oficina': ['admin', 'logistics', 'operator', 'billing'],
+    'Retirado': ['admin', 'operator', 'billing'],
+    'Despachado': ['admin', 'operator', 'billing'],
+    'Mercado Libre full': ['admin', 'operator', 'billing'],
+    'Retenido': ['admin', 'logistics', 'operator'],
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -214,7 +198,7 @@ export async function PATCH(req: NextRequest) {
 
                 if (allowed && allowed.length > 0 && !allowed.includes(newStatus)) {
                     // Admin can override terminal states
-                    if (role !== 'admin' && role !== 'super_admin') {
+                    if (role !== 'admin') {
                         return NextResponse.json(
                             { error: `Transición inválida: "${currentStatus}" → "${newStatus}". Transiciones válidas: ${allowed.join(', ')}` },
                             { status: 400 }
@@ -229,25 +213,15 @@ export async function PATCH(req: NextRequest) {
         // ── Always set updated_at ──
         sanitized.updated_at = new Date().toISOString();
 
-        // ── Execute update (scoped to user's org) ──
-        let updateQuery = supabaseAdmin
+        // ── Execute update ──
+        const { error } = await supabaseAdmin
             .from('shipments')
             .update(sanitized)
             .eq('id', shipmentId);
 
-        // Org isolation: prevent cross-org access
-        if (ctx.profile.org_id) {
-            updateQuery = updateQuery.eq('org_id', ctx.profile.org_id);
-        }
-
-        const { error } = await updateQuery;
-
         if (error) {
             console.error('[API /shipments PATCH] DB error:', error);
-            return NextResponse.json(
-                { error: process.env.NODE_ENV === 'development' ? error.message : 'Error al actualizar el envío' },
-                { status: 500 }
-            );
+            return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
         // ── Audit log ──

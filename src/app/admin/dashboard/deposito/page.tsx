@@ -8,7 +8,6 @@ import { toast } from 'sonner';
 import { format, differenceInDays, differenceInHours } from 'date-fns';
 import { ReceiveShipmentModal } from '@/components/ReceiveShipmentModal';
 import { QuickReceiveScreen } from '@/components/QuickReceiveScreen';
-import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
 import type { Shipment } from '@/types';
 
 type DepotTab = 'transit' | 'ready' | 'delivered';
@@ -40,33 +39,24 @@ export default function DepositoPage() {
         fetchAllShipments();
     }, []);
 
-    const fetchAllShipments = useCallback(async () => {
+    const fetchAllShipments = async () => {
         setLoading(true);
         try {
-            const queryPromise = supabase
+            const { data, error } = await supabase
                 .from('shipments')
                 .select('id, tracking_number, client_id, client_name, client_code, internal_status, weight, date_arrived, date_shipped, updated_at, created_at, boxes_count, category, origin, delta_kg, reception_status, estado_cobranza, edited_post_delivery, precio_envio')
                 .order('updated_at', { ascending: false })
-                .limit(800);
-
-            const { data, error } = await Promise.race([
-                queryPromise,
-                new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Depósito query timeout')), 12_000))
-            ]);
+                .limit(1500);
 
             if (error) throw error;
             setShipments((data as Shipment[]) || []);
         } catch (error: any) {
             console.error('Error fetching shipments for depot:', error);
-            const msg = error?.message?.includes('timeout') ? '⏱️ La carga del depósito tardó demasiado.' : 'Error al cargar envíos para depósito';
-            toast.error(msg);
+            toast.error('Error al cargar envíos para depósito');
         } finally {
             setLoading(false);
         }
-    }, []);
-
-    // ── Realtime sync ──
-    useRealtimeRefresh('shipments', fetchAllShipments);
+    };
 
     // ── Actions ──
     const handleDispatch = async (id: string, newStatus: 'Retirado' | 'Despachado' | 'Mercado Libre full' = 'Retirado') => {

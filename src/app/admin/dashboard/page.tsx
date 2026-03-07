@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, lazy, Suspense } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import {
     Plus, ArrowUpRight, TrendingUp, Package, Users,
@@ -9,22 +9,13 @@ import {
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-// ── Eagerly loaded (lightweight / above-the-fold) ──
+// ── Extracted components ──
 import { DashboardTasksWidget } from '@/components/dashboard/DashboardTasksWidget';
 import { DashboardAlerts } from '@/components/dashboard/DashboardAlerts';
 import { NewClientAlertModal } from '@/components/dashboard/NewClientAlertModal';
-
-// ── Lazy-loaded (heavy / below-the-fold — each makes multiple Supabase queries) ──
-const DailyProgressPanel = lazy(() => import('@/components/dashboard/DailyProgressPanel').then(m => ({ default: m.DailyProgressPanel })));
-const ManagerPerformancePanel = lazy(() => import('@/components/dashboard/ManagerPerformancePanel').then(m => ({ default: m.ManagerPerformancePanel })));
-const OperationalRadar = lazy(() => import('@/components/dashboard/OperationalRadar').then(m => ({ default: m.OperationalRadar })));
-
-const LazyFallback = () => (
-    <div className="erp-card p-5 animate-pulse">
-        <div className="h-4 rounded w-1/3 mb-4" style={{ background: 'var(--input-bg)' }} />
-        <div className="h-16 rounded-xl" style={{ background: 'var(--input-bg)' }} />
-    </div>
-);
+import { DailyProgressPanel } from '@/components/dashboard/DailyProgressPanel';
+import { ManagerPerformancePanel } from '@/components/dashboard/ManagerPerformancePanel';
+import { OperationalRadar } from '@/components/dashboard/OperationalRadar';
 
 export default function DashboardPage() {
     const [userProfile, setUserProfile] = useState<any>(null);
@@ -38,27 +29,14 @@ export default function DashboardPage() {
     const [showNewClientAlert, setShowNewClientAlert] = useState(false);
     const [teamMembers, setTeamMembers] = useState<any[]>([]);
 
-    // ── Profile fetch with retry for mobile + hard timeout ──
+    // ── Profile fetch with retry ──
     useEffect(() => {
         let cancelled = false;
-
-        // HARD TIMEOUT: Force skeleton off after 10s no matter what
-        const hardTimeout = setTimeout(() => {
-            if (!cancelled) {
-                console.warn('[Dashboard] Profile hard timeout — forcing skeleton off');
-                setProfileLoading(false);
-            }
-        }, 10_000);
-
         const fetchProfile = async (attempt = 1) => {
             try {
-                // Wrap getSession in its own timeout for mobile resilience
-                const sessionResult = await Promise.race([
-                    supabase.auth.getSession(),
-                    new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Session timeout')), 5000))
-                ]);
-                const session = sessionResult.data?.session;
+                const { data: { session } } = await supabase.auth.getSession();
                 if (!session) {
+                    // No session yet — retry once after a short delay (mobile can be slow)
                     if (attempt < 3) {
                         await new Promise(r => setTimeout(r, 500 * attempt));
                         if (!cancelled) return fetchProfile(attempt + 1);
@@ -66,11 +44,13 @@ export default function DashboardPage() {
                     if (!cancelled) setProfileLoading(false);
                     return;
                 }
+
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('id, role, org_id, is_active, full_name, email')
                     .eq('id', session.user.id)
                     .single();
+
                 if (!cancelled) {
                     if (profile) setUserProfile(profile);
                     setProfileLoading(false);
@@ -85,28 +65,18 @@ export default function DashboardPage() {
             }
         };
         fetchProfile();
-        return () => { cancelled = true; clearTimeout(hardTimeout); };
+        return () => { cancelled = true; };
     }, []);
 
     // ── Load team for tasks modal ──
     const loadTeamMembers = useCallback(async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
-        try {
-            const res = await fetch('/api/users', {
-                headers: { 'Authorization': `Bearer ${session.access_token}` }
-            });
-            if (res.ok) {
-                const body = await res.json();
-                const users = body.users || body;
-                if (Array.isArray(users)) {
-                    // Exclude current user from the list
-                    setTeamMembers(users.filter((u: any) => u.id !== session.user.id));
-                }
-            }
-        } catch (e) {
-            console.error('Error loading team members:', e);
-        }
+        const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, full_name, email, role')
+            .eq('is_active', true);
+        if (profiles) setTeamMembers(profiles);
     }, []);
 
     useEffect(() => { loadTeamMembers(); }, [loadTeamMembers]);
@@ -171,7 +141,7 @@ export default function DashboardPage() {
     }, [userProfile]);
 
     const isSales = userProfile?.role === 'sales';
-    const isAdmin = userProfile?.role === 'admin' || userProfile?.role === 'super_admin';
+    const isAdmin = userProfile?.role === 'admin';
     const isLogistics = userProfile?.role === 'logistics';
     const firstName = userProfile?.full_name?.split(' ')[0] || 'Usuario';
 
@@ -181,7 +151,7 @@ export default function DashboardPage() {
             <div className="space-y-5 md:space-y-8 animate-pulse">
                 <div>
                     <div className="h-8 w-64 rounded-lg" style={{ background: 'var(--input-bg)' }} />
-                    <div className="h-4 w-96 max-w-full rounded-lg mt-2" style={{ background: 'var(--input-bg)' }} />
+                    <div className="h-4 w-96 rounded-lg mt-2" style={{ background: 'var(--input-bg)' }} />
                 </div>
                 <div className="erp-card h-14" />
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
@@ -226,11 +196,7 @@ export default function DashboardPage() {
             </div>
 
             {/* ═══ OPERATIONAL RADAR — Before metrics ═══ */}
-            {!isSales && (
-                <Suspense fallback={<LazyFallback />}>
-                    <OperationalRadar />
-                </Suspense>
-            )}
+            {!isSales && <OperationalRadar />}
 
             {/* Stats Cards */}
             <div className={`grid grid-cols-2 ${isSales ? 'md:grid-cols-3' : 'md:grid-cols-4'} gap-3 md:gap-4 erp-stagger`}>
@@ -274,9 +240,7 @@ export default function DashboardPage() {
 
                     {/* Manager Performance Panel — admin only */}
                     {isAdmin && (
-                        <Suspense fallback={<LazyFallback />}>
-                            <ManagerPerformancePanel />
-                        </Suspense>
+                        <ManagerPerformancePanel />
                     )}
 
                     {/* Sales: Aviso de Nuevo Cliente */}
@@ -312,11 +276,7 @@ export default function DashboardPage() {
                 {/* Sidebar */}
                 <div className={`${isSales ? 'lg:col-span-5' : 'lg:col-span-4'} space-y-4`}>
                     {/* Daily Progress — visible to operators/logistics/admin */}
-                    {!isSales && (
-                        <Suspense fallback={<LazyFallback />}>
-                            <DailyProgressPanel />
-                        </Suspense>
-                    )}
+                    {!isSales && <DailyProgressPanel />}
                     <div className="erp-card p-6 h-full">
                         <h3 className="erp-kpi-label mb-5">Acceso Rápido</h3>
                         <div className="grid grid-cols-1 gap-3">

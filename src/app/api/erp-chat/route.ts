@@ -4,7 +4,12 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 import { getAuthContext, unauthorized, forbidden } from '@/lib/server-auth';
 import { checkRateLimit } from '@/lib/rate-limit';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+let _openai: OpenAI | null = null;
+function getOpenAI() {
+    if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    return _openai;
+}
+
 
 // Explicit column whitelist — only what the tools actually need
 const SHIPMENT_COLUMNS = [
@@ -293,7 +298,7 @@ Sé conciso pero completo. Usá bullet points cuando sea útil.`;
             { role: 'user', content: question },
         ];
 
-        const firstResponse = await openai.chat.completions.create({
+        const firstResponse = await getOpenAI().chat.completions.create({
             model: 'gpt-4o-mini',
             messages,
             tools,
@@ -330,7 +335,7 @@ Sé conciso pero completo. Usá bullet points cuando sea útil.`;
             },
         ];
 
-        const secondResponse = await openai.chat.completions.create({
+        const secondResponse = await getOpenAI().chat.completions.create({
             model: 'gpt-4o-mini',
             messages: secondMessages,
             temperature: 0.3,
