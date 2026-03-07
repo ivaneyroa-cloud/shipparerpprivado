@@ -168,6 +168,7 @@ export const ShipmentRow = React.memo(function ShipmentRow({
     const statusAccent = (() => {
         const st = (s.internal_status || '').toLowerCase();
         if (st === 'retenido') return '#EF4444';
+        if (st === 'guía creada' || st === 'guia creada') return '#6B7280'; // gray
         if (st === 'pendiente expo') return '#FFB020';
         if (st.includes('recibido') || st === 'retirado' || st === 'despachado') return '#10B981';
         return '#2E7BFF'; // transit default

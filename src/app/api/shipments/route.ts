@@ -6,6 +6,21 @@ import { getAuthContext, unauthorized, forbidden } from '@/lib/server-auth';
 // FIELD WHITELIST PER ROLE
 // ═══════════════════════════════════════════════════════════════
 const FIELD_PERMISSIONS: Record<string, string[]> = {
+    super_admin: [
+        'internal_status', 'date_shipped', 'date_arrived', 'date_dispatched',
+        'origin', 'tracking_number', 'category', 'weight', 'client_id', 'client_name', 'client_code',
+        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion',
+        'costo_flete', 'monto_cobrado', 'estado_cobranza', 'estado_pago_proveedor',
+        'payment_proof_url', 'payment_notes',
+        'retenido_nota',
+        'delta_kg', 'delta_boxes', 'boxes_count',
+        'reception_status', 'received_at', 'received_by', 'received_weight',
+        'has_weight_anomaly', 'anomaly_percentage', 'anomaly_absolute',
+        'bultos', 'peso_computable',
+        'invoice_photo_1', 'invoice_photo_2',
+        'reception_version_count', 'current_version_id',
+        'edited_post_delivery', 'post_delivery_edit', 'edit_count',
+    ],
     admin: [
         'internal_status', 'date_shipped', 'date_arrived', 'date_dispatched',
         'origin', 'tracking_number', 'category', 'weight', 'client_id', 'client_name', 'client_code',
@@ -43,12 +58,13 @@ const FIELD_PERMISSIONS: Record<string, string[]> = {
         'costo_flete', 'monto_cobrado',
         'precio_envio', 'gastos_documentales', 'impuestos',
         'payment_proof_url', 'payment_notes',
+        'tracking_number', 'weight',
         // Reception / Depot fields (billing can receive shipments)
         'internal_status', 'date_arrived', 'date_dispatched',
         'delta_kg', 'delta_boxes', 'boxes_count',
         'reception_status', 'received_at', 'received_by', 'received_weight',
         'has_weight_anomaly', 'anomaly_percentage', 'anomaly_absolute',
-        'bultos', 'peso_computable', 'weight',
+        'bultos', 'peso_computable',
         'invoice_photo_1', 'invoice_photo_2',
         'reception_version_count', 'current_version_id',
         'edited_post_delivery', 'post_delivery_edit', 'edit_count',
@@ -75,14 +91,14 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
 
 // Roles that can set each status
 const STATUS_ROLE_PERMISSIONS: Record<string, string[]> = {
-    'Guía creada': ['admin', 'logistics', 'sales'],
-    'Pendiente expo': ['admin', 'logistics'],
-    'En tránsito': ['admin', 'logistics'],
-    'Recibido en Oficina': ['admin', 'logistics', 'operator', 'billing'],
-    'Retirado': ['admin', 'operator', 'billing'],
-    'Despachado': ['admin', 'operator', 'billing'],
-    'Mercado Libre full': ['admin', 'operator', 'billing'],
-    'Retenido': ['admin', 'logistics', 'operator'],
+    'Guía creada': ['super_admin', 'admin', 'logistics', 'sales'],
+    'Pendiente expo': ['super_admin', 'admin', 'logistics'],
+    'En tránsito': ['super_admin', 'admin', 'logistics'],
+    'Recibido en Oficina': ['super_admin', 'admin', 'logistics', 'operator', 'billing'],
+    'Retirado': ['super_admin', 'admin', 'operator', 'billing'],
+    'Despachado': ['super_admin', 'admin', 'operator', 'billing'],
+    'Mercado Libre full': ['super_admin', 'admin', 'operator', 'billing'],
+    'Retenido': ['super_admin', 'admin', 'logistics', 'operator'],
 };
 
 // ═══════════════════════════════════════════════════════════════
