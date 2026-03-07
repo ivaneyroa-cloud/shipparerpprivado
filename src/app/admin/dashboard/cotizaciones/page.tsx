@@ -211,27 +211,68 @@ export default function CotizacionesPage() {
 
     // Download PDF
     const downloadPDF = async () => {
-        if (!previewRef.current) return;
+        if (!previewRef.current) {
+            toast.error('Preview no disponible');
+            return;
+        }
         try {
-            const html2canvas = (await import('html2canvas')).default;
-            const jsPDF = (await import('jspdf')).default;
+            // Clone the preview content into a new window for clean PDF printing
+            const printWindow = window.open('', '_blank', 'width=800,height=1100');
+            if (!printWindow) {
+                toast.error('Habilitá las ventanas emergentes para descargar el PDF');
+                return;
+            }
 
-            const canvas = await html2canvas(previewRef.current, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: '#ffffff',
-            });
+            const content = previewRef.current.innerHTML;
 
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Cotización ${form.clientName} - Shippar</title>
+                    <link rel="preconnect" href="https://fonts.googleapis.com">
+                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body {
+                            font-family: 'Inter', 'Outfit', system-ui, sans-serif;
+                            background: #fff;
+                            color: #1a1f36;
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                        }
+                        .quote-container {
+                            max-width: 700px;
+                            margin: 0 auto;
+                            background: white;
+                        }
+                        @media print {
+                            body { margin: 0; }
+                            .quote-container { max-width: 100%; }
+                            .no-print { display: none !important; }
+                        }
+                    </style>
+                    <script src="https://cdn.tailwindcss.com"><\/script>
+                </head>
+                <body>
+                    <div class="quote-container">
+                        ${content}
+                    </div>
+                    <div class="no-print" style="text-align:center;padding:20px;">
+                        <button onclick="window.print()" style="background:#2563eb;color:white;padding:12px 32px;border:none;border-radius:12px;font-weight:900;font-size:14px;cursor:pointer;font-family:Inter,sans-serif;">
+                            📥 Descargar PDF
+                        </button>
+                        <p style="color:#999;font-size:11px;margin-top:8px;">Seleccioná "Guardar como PDF" en el diálogo de impresión</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
 
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save(`Cotizacion_${form.clientName.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`);
-            toast.success('PDF descargado');
-        } catch (err) {
-            toast.error('Error al generar PDF');
+            toast.success('Ventana de PDF abierta — usá "Guardar como PDF"');
+        } catch (err: any) {
+            console.error('PDF Error:', err);
+            toast.error(`Error al generar PDF: ${err.message || 'desconocido'}`);
         }
     };
 
