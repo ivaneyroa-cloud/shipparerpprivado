@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     FileText, Download, Eye, ArrowRight, Package, Plane, Scale,
     DollarSign, AlertTriangle, CheckCircle2, Search, X, ChevronDown,
-    Globe, Clock, Shield
+    Globe, Clock, Shield, Settings, Plus, Trash2, Pencil
 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
@@ -90,7 +90,14 @@ export default function CotizacionesPage() {
     const [showPreview, setShowPreview] = useState(false);
     const [saving, setSaving] = useState(false);
     const [taxCategories, setTaxCategories] = useState<any[]>([]);
+    const [showTaxManager, setShowTaxManager] = useState(false);
     const previewRef = useRef<HTMLDivElement>(null);
+
+    const refreshTaxCategories = () => {
+        supabase.from('tax_categories').select('*').order('name').then(({ data }) => {
+            if (data) setTaxCategories(data);
+        });
+    };
 
     // Fetch clients for autocomplete
     useEffect(() => {
@@ -340,6 +347,7 @@ export default function CotizacionesPage() {
                                 canPreview={canPreview}
                                 cifValue={cifValue}
                                 taxCategories={taxCategories}
+                                onOpenTaxManager={() => setShowTaxManager(true)}
                                 onPreview={() => setShowPreview(true)}
                             />
                         </motion.div>
@@ -366,6 +374,15 @@ export default function CotizacionesPage() {
                     )}
                 </AnimatePresence>
             </div>
+
+            {/* Tax Category Manager Modal */}
+            {showTaxManager && (
+                <TaxCategoryManager
+                    categories={taxCategories}
+                    onClose={() => setShowTaxManager(false)}
+                    onRefresh={refreshTaxCategories}
+                />
+            )}
         </div>
     );
 }
@@ -376,7 +393,7 @@ export default function CotizacionesPage() {
 function QuoteForm({
     form, setField, clientSearch, setClientSearch, showClientDropdown, setShowClientDropdown,
     filteredClients, selectClient, shippingCost, gastoDoc, subtotalLogistico, totalTaxes, totalUSD, totalARS,
-    exchangeRate, deliveryDays, canPreview, cifValue, taxCategories, onPreview
+    exchangeRate, deliveryDays, canPreview, cifValue, taxCategories, onOpenTaxManager, onPreview
 }: any) {
     const formatMoney = (n: number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 
@@ -629,6 +646,11 @@ function QuoteForm({
                                         className={inputClass}
                                         defaultValue=""
                                         onChange={(e) => {
+                                            if (e.target.value === '__manage__') {
+                                                onOpenTaxManager();
+                                                e.target.value = '';
+                                                return;
+                                            }
                                             const cat = taxCategories.find((c: any) => c.id === e.target.value);
                                             if (cat) {
                                                 setField('derechosPct', cat.derechos_pct || 0);
@@ -639,6 +661,7 @@ function QuoteForm({
                                         }}
                                     >
                                         <option value="" disabled>Seleccionar categoría...</option>
+                                        <option value="__manage__">⚙️ Gestionar categorías...</option>
                                         {taxCategories.map((cat: any) => (
                                             <option key={cat.id} value={cat.id}>
                                                 {cat.name} — Der. {cat.derechos_pct}% / Tasa {cat.tasa_estadistica_pct}% / IVA {cat.iva_pct}%
@@ -917,3 +940,163 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
         </div>
     );
 });
+
+// ═══════════════════════════════════════════════════════════════
+// TAX CATEGORY MANAGER MODAL
+// ═══════════════════════════════════════════════════════════════
+function TaxCategoryManager({ categories, onClose, onRefresh }: { categories: any[]; onClose: () => void; onRefresh: () => void }) {
+    const [newName, setNewName] = useState('');
+    const [newDerechos, setNewDerechos] = useState(0);
+    const [newTasa, setNewTasa] = useState(3);
+    const [newIva, setNewIva] = useState(21);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [saving, setSaving] = useState(false);
+
+    const inputClass = "w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all text-sm font-bold text-slate-800 dark:text-white placeholder:text-slate-400";
+
+    const handleSave = async () => {
+        if (!newName.trim()) return;
+        setSaving(true);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const { data: profile } = await supabase.from('profiles').select('org_id').eq('id', session?.user.id).single();
+
+            if (editingId) {
+                await supabase.from('tax_categories').update({
+                    name: newName,
+                    derechos_pct: newDerechos,
+                    tasa_estadistica_pct: newTasa,
+                    iva_pct: newIva,
+                }).eq('id', editingId);
+                toast.success('Categoría actualizada');
+            } else {
+                await supabase.from('tax_categories').insert({
+                    name: newName,
+                    derechos_pct: newDerechos,
+                    tasa_estadistica_pct: newTasa,
+                    iva_pct: newIva,
+                    org_id: profile?.org_id,
+                });
+                toast.success('Categoría creada');
+            }
+            setNewName('');
+            setNewDerechos(0);
+            setNewTasa(3);
+            setNewIva(21);
+            setEditingId(null);
+            onRefresh();
+        } catch (err: any) {
+            toast.error(err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('¿Eliminar esta categoría?')) return;
+        await supabase.from('tax_categories').delete().eq('id', id);
+        toast.success('Eliminada');
+        onRefresh();
+    };
+
+    const startEdit = (cat: any) => {
+        setEditingId(cat.id);
+        setNewName(cat.name);
+        setNewDerechos(cat.derechos_pct);
+        setNewTasa(cat.tasa_estadistica_pct);
+        setNewIva(cat.iva_pct);
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-xl max-h-[80vh] overflow-hidden"
+            >
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                    <div>
+                        <h3 className="text-sm font-black text-slate-800 dark:text-white">Categorías Arancelarias</h3>
+                        <p className="text-[10px] text-slate-400 font-bold">Creá y gestioná tus categorías con porcentajes predefinidos</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                        <X size={16} className="text-slate-500" />
+                    </button>
+                </div>
+
+                <div className="p-6 space-y-4 overflow-y-auto max-h-[60vh]">
+                    {/* Add/Edit form */}
+                    <div className="bg-slate-50 dark:bg-slate-700/30 rounded-xl p-4 space-y-3">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                            {editingId ? '✏️ Editando categoría' : '➕ Nueva categoría'}
+                        </p>
+                        <input
+                            className={inputClass}
+                            placeholder="Nombre (ej: Electrónica, Indumentaria...)"
+                            value={newName}
+                            onChange={(e) => setNewName(e.target.value)}
+                        />
+                        <div className="grid grid-cols-3 gap-3">
+                            <div>
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-1">Derechos %</label>
+                                <input type="number" step="0.1" className={`${inputClass} text-center`} value={newDerechos} onChange={(e) => setNewDerechos(parseFloat(e.target.value) || 0)} />
+                            </div>
+                            <div>
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-1">Tasa Est. %</label>
+                                <input type="number" step="0.1" className={`${inputClass} text-center`} value={newTasa} onChange={(e) => setNewTasa(parseFloat(e.target.value) || 0)} />
+                            </div>
+                            <div>
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block mb-1">IVA %</label>
+                                <input type="number" step="0.1" className={`${inputClass} text-center`} value={newIva} onChange={(e) => setNewIva(parseFloat(e.target.value) || 0)} />
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleSave}
+                                disabled={saving || !newName.trim()}
+                                className="flex-1 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:bg-slate-300 text-white text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                            >
+                                {editingId ? <><Pencil size={12} /> Actualizar</> : <><Plus size={12} /> Agregar</>}
+                            </button>
+                            {editingId && (
+                                <button
+                                    onClick={() => { setEditingId(null); setNewName(''); setNewDerechos(0); setNewTasa(3); setNewIva(21); }}
+                                    className="px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 text-xs font-black text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all"
+                                >
+                                    Cancelar
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* List */}
+                    {categories.length === 0 ? (
+                        <p className="text-center text-xs font-bold text-slate-400 py-6">No hay categorías creadas aún</p>
+                    ) : (
+                        <div className="space-y-2">
+                            {categories.map((cat) => (
+                                <div key={cat.id} className="flex items-center justify-between bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3">
+                                    <div>
+                                        <p className="text-xs font-black text-slate-800 dark:text-white">{cat.name}</p>
+                                        <p className="text-[9px] font-bold text-slate-400 mt-0.5">
+                                            Derechos {cat.derechos_pct}% · Tasa {cat.tasa_estadistica_pct}% · IVA {cat.iva_pct}%
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-1.5">
+                                        <button onClick={() => startEdit(cat)} className="p-1.5 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors">
+                                            <Pencil size={13} className="text-blue-500" />
+                                        </button>
+                                        <button onClick={() => handleDelete(cat.id)} className="p-1.5 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
+                                            <Trash2 size={13} className="text-red-400" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </motion.div>
+        </div>
+    );
+}
