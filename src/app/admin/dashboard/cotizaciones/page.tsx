@@ -936,9 +936,10 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                     <p style={{ fontSize: '6px', fontWeight: 400, color: S.muted, lineHeight: 1.4, fontStyle: 'italic' }}>
                         Costos sujetos a KG efectivamente recepcionados. Cobro en ARS al TC venta BNA del día de llegada (puede variar). Propuesta aproximada de costos finales.
                     </p>
-                    <p style={{ fontSize: '6px', fontWeight: 500, color: S.muted, marginTop: '3px' }}>
-                        Cotización generada por Shippar · {today}
-                    </p>
+                    <div style={{ marginTop: '10px', textAlign: 'center', borderTop: `1px solid ${S.cardBorder}`, paddingTop: '10px' }}>
+                        <p style={{ fontSize: '7px', fontWeight: 600, color: S.dim, letterSpacing: '0.05em' }}>Shippar Global Logistics S.R.L.</p>
+                        <p style={{ fontSize: '6.5px', fontWeight: 400, color: S.muted, fontStyle: 'italic', marginTop: '2px' }}>Comercio sin fronteras.</p>
+                    </div>
                 </div>
 
             </div>
