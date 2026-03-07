@@ -248,7 +248,7 @@ export default function CotizacionesPage() {
             const canvas = await html2canvas(previewRef.current, {
                 scale: 2,
                 useCORS: true,
-                backgroundColor: '#ffffff',
+                backgroundColor: '#070d19',
                 logging: false,
             });
 
@@ -260,12 +260,20 @@ export default function CotizacionesPage() {
             let position = 0;
             const pageHeight = 297; // A4 height mm
 
+            // Fill entire page with dark background
+            pdf.setFillColor(7, 13, 25); // #070d19
+            pdf.rect(0, 0, 210, 297, 'F');
+
             // Handle multi-page if content is taller than A4
             if (imgHeight <= pageHeight) {
                 pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
             } else {
                 let remaining = imgHeight;
                 while (remaining > 0) {
+                    if (position < 0) {
+                        pdf.setFillColor(7, 13, 25);
+                        pdf.rect(0, 0, 210, 297, 'F');
+                    }
                     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
                     remaining -= pageHeight;
                     position -= pageHeight;
@@ -762,7 +770,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                 <div style={{ height: '3px', background: `linear-gradient(90deg, ${S.accent} 0%, ${S.green} 100%)` }} />
 
                 {/* ── HEADER ── */}
-                <div style={{ padding: '14px 20px 10px', background: S.bg, borderBottom: `1px solid ${S.cardBorder}` }}>
+                <div style={{ padding: '18px 20px 14px', background: S.bg, borderBottom: `1px solid ${S.cardBorder}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
                             <img src="/logo-dark.png" alt="Shippar" style={{ height: '20px' }} />
@@ -777,7 +785,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                 </div>
 
                 {/* ── INFO CARDS (single grid) ── */}
-                <div style={{ padding: '8px 20px', background: S.bg, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '5px' }}>
+                <div style={{ padding: '10px 20px', background: S.bg, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '5px' }}>
                     <div style={{ background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '5px', padding: '8px' }}>
                         <p style={{ fontSize: '6px', fontWeight: 700, color: S.muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '2px' }}>Cliente</p>
                         <p style={{ fontSize: '9px', fontWeight: 800, color: S.white, lineHeight: 1.2 }}>{form.clientName.toUpperCase()}</p>
@@ -804,7 +812,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                 </div>
 
                 {/* ── DETALLE DE ENVÍO (blue accent) ── */}
-                <div style={{ margin: '2px 20px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderLeft: `2px solid ${S.accent}`, borderRadius: '5px', padding: '10px 12px' }}>
+                <div style={{ margin: '8px 20px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderLeft: `2px solid ${S.accent}`, borderRadius: '5px', padding: '10px 12px' }}>
                     <p style={{ fontSize: '6.5px', fontWeight: 800, color: S.accent, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '6px' }}>Detalle de envío</p>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
@@ -831,7 +839,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
 
                 {/* ── IMPUESTOS (amber accent) ── */}
                 {form.includeTaxes && totalTaxes > 0 && (
-                    <div style={{ margin: '6px 20px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderLeft: `2px solid ${S.amber}`, borderRadius: '5px', padding: '10px 12px' }}>
+                    <div style={{ margin: '10px 20px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderLeft: `2px solid ${S.amber}`, borderRadius: '5px', padding: '10px 12px' }}>
                         <p style={{ fontSize: '6.5px', fontWeight: 800, color: S.amber, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '6px' }}>Impuestos estimados</p>
 
                         {form.valorFob && (
@@ -874,7 +882,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
 
                 {/* ── RESUMEN ── */}
                 {form.includeTaxes && totalTaxes > 0 && (
-                    <div style={{ margin: '6px 20px 0', display: 'grid', gridTemplateColumns: '1fr auto 1fr auto 1fr', gap: '3px', alignItems: 'center', padding: '6px 8px', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '5px' }}>
+                    <div style={{ margin: '10px 20px 0', display: 'grid', gridTemplateColumns: '1fr auto 1fr auto 1fr', gap: '3px', alignItems: 'center', padding: '8px 8px', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '5px' }}>
                         <div style={{ textAlign: 'center' }}>
                             <p style={{ fontSize: '6px', fontWeight: 700, color: S.accent, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Envío</p>
                             <p style={{ fontSize: '9px', fontWeight: 800, color: S.white }}>${formatMoney(subtotalLogistico)}</p>
@@ -893,7 +901,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                 )}
 
                 {/* ── TOTAL GRANDE (green accent) ── */}
-                <div style={{ margin: '6px 20px 0', background: `linear-gradient(135deg, #0f3f2c 0%, #1a5e40 100%)`, border: `1px solid rgba(74,222,128,0.2)`, borderLeft: `3px solid ${S.green}`, borderRadius: '6px', padding: '12px', textAlign: 'center' }}>
+                <div style={{ margin: '10px 20px 0', background: `linear-gradient(135deg, #0f3f2c 0%, #1a5e40 100%)`, border: `1px solid rgba(74,222,128,0.2)`, borderLeft: `3px solid ${S.green}`, borderRadius: '6px', padding: '14px', textAlign: 'center' }}>
                     <p style={{ fontSize: '6.5px', fontWeight: 700, color: S.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '2px' }}>Costo Total Estimado</p>
                     <p style={{ fontSize: '24px', fontWeight: 900, color: S.green, letterSpacing: '-0.02em', lineHeight: 1 }}>
                         ${formatMoney(totalUSD)} <span style={{ fontSize: '11px', fontWeight: 700, color: S.greenDim }}>USD</span>
@@ -911,7 +919,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                 </div>
 
                 {/* ── QUÉ INCLUYE ── */}
-                <div style={{ margin: '6px 20px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '5px', padding: '7px 12px' }}>
+                <div style={{ margin: '10px 20px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '5px', padding: '10px 14px' }}>
                     <p style={{ fontSize: '6.5px', fontWeight: 800, color: S.muted, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px', textAlign: 'center' }}>Incluye</p>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px' }}>
                         {SERVICE_INCLUDES.map(item => (
@@ -924,7 +932,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                 </div>
 
                 {/* ── DISCLAIMERS ── */}
-                <div style={{ padding: '6px 20px 10px' }}>
+                <div style={{ padding: '10px 20px 16px' }}>
                     <p style={{ fontSize: '6px', fontWeight: 500, color: S.muted, lineHeight: 1.4 }}>
                         Costos sujetos a KG efectivamente recepcionados. Cobro en ARS al TC venta BNA del día de llegada (puede variar). Propuesta aproximada de costos finales.
                     </p>
