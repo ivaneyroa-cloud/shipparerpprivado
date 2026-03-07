@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Settings, User, Bell, Lock, Globe, Shield, MapPin, Box, Plus, Trash2, Loader2, AlertTriangle, Layers } from 'lucide-react';
+import { Settings, User, Bell, Lock, Globe, Shield, MapPin, Box, Plus, Trash2, Loader2, AlertTriangle, Layers, Pencil, Scale } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function SettingsPage() {
@@ -15,6 +15,12 @@ export default function SettingsPage() {
 
     const [newOrigin, setNewOrigin] = useState({ name: '', code: '' });
     const [newCategory, setNewCategory] = useState({ name: '', description: '' });
+
+    // Tax categories state
+    const [taxCategories, setTaxCategories] = useState<any[]>([]);
+    const [loadingTaxCats, setLoadingTaxCats] = useState(true);
+    const [newTaxCat, setNewTaxCat] = useState({ name: '', derechos_pct: 0, tasa_estadistica_pct: 3, iva_pct: 21 });
+    const [editingTaxId, setEditingTaxId] = useState<string | null>(null);
 
     const fetchOrigins = async () => {
         setLoadingOrigins(true);
@@ -33,6 +39,7 @@ export default function SettingsPage() {
     useEffect(() => {
         fetchOrigins();
         fetchCategories();
+        fetchTaxCategories();
 
         // Auto-select tab based on URL param if present
         if (typeof window !== 'undefined') {
@@ -78,6 +85,60 @@ export default function SettingsPage() {
         if (!confirm(`¿Estás seguro de que querés borrar '${name}'?`)) return;
         await supabase.from('categories').delete().eq('id', id);
         fetchCategories();
+    };
+
+    // Tax categories handlers
+    const fetchTaxCategories = async () => {
+        setLoadingTaxCats(true);
+        const { data, error } = await supabase.from('tax_categories').select('*').order('name');
+        if (!error && data) setTaxCategories(data);
+        setLoadingTaxCats(false);
+    };
+
+    const handleSaveTaxCat = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newTaxCat.name) return;
+        const { data: { session } } = await supabase.auth.getSession();
+        const { data: profile } = await supabase.from('profiles').select('org_id').eq('id', session?.user.id).single();
+
+        if (editingTaxId) {
+            const { error } = await supabase.from('tax_categories').update({
+                name: newTaxCat.name,
+                derechos_pct: newTaxCat.derechos_pct,
+                tasa_estadistica_pct: newTaxCat.tasa_estadistica_pct,
+                iva_pct: newTaxCat.iva_pct,
+            }).eq('id', editingTaxId);
+            if (!error) {
+                setEditingTaxId(null);
+                setNewTaxCat({ name: '', derechos_pct: 0, tasa_estadistica_pct: 3, iva_pct: 21 });
+                fetchTaxCategories();
+            }
+        } else {
+            const { error } = await supabase.from('tax_categories').insert([{
+                name: newTaxCat.name,
+                derechos_pct: newTaxCat.derechos_pct,
+                tasa_estadistica_pct: newTaxCat.tasa_estadistica_pct,
+                iva_pct: newTaxCat.iva_pct,
+                org_id: profile?.org_id,
+            }]);
+            if (!error) {
+                setNewTaxCat({ name: '', derechos_pct: 0, tasa_estadistica_pct: 3, iva_pct: 21 });
+                fetchTaxCategories();
+            } else {
+                alert(`Error: ${error.message}`);
+            }
+        }
+    };
+
+    const handleDeleteTaxCat = async (id: string, name: string) => {
+        if (!confirm(`¿Eliminar la categoría '${name}'?`)) return;
+        await supabase.from('tax_categories').delete().eq('id', id);
+        fetchTaxCategories();
+    };
+
+    const startEditTaxCat = (cat: any) => {
+        setEditingTaxId(cat.id);
+        setNewTaxCat({ name: cat.name, derechos_pct: cat.derechos_pct, tasa_estadistica_pct: cat.tasa_estadistica_pct, iva_pct: cat.iva_pct });
     };
 
     const sections = [
@@ -246,6 +307,88 @@ export default function SettingsPage() {
                                     </motion.div>
                                 ))}
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Tax Categories Panel - Full Width */}
+                    <div className="bg-[#0f172a] border border-white/10 rounded-[32px] overflow-hidden shadow-2xl flex flex-col">
+                        <div className="p-8 border-b border-white/5 bg-slate-900/50">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400">
+                                    <Scale size={20} strokeWidth={1.5} />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-black text-white">Categorías Arancelarias</h2>
+                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">({taxCategories.length} Registradas) — Se usan en el cotizador</p>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleSaveTaxCat} className="space-y-3 relative z-10">
+                                <div className="flex gap-3">
+                                    <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl flex items-center px-4 py-1 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500/50 transition-all">
+                                        <input
+                                            className="w-full bg-transparent text-white outline-none font-bold placeholder:text-slate-600 text-sm"
+                                            placeholder="Nombre (ej: Electrónica, Indumentaria)"
+                                            value={newTaxCat.name}
+                                            onChange={e => setNewTaxCat({ ...newTaxCat, name: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-6 rounded-2xl font-black transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 text-xs uppercase tracking-widest">
+                                        {editingTaxId ? <><Pencil size={14} /> Actualizar</> : <><Plus size={18} strokeWidth={1.5} /></>}
+                                    </button>
+                                    {editingTaxId && (
+                                        <button type="button" onClick={() => { setEditingTaxId(null); setNewTaxCat({ name: '', derechos_pct: 0, tasa_estadistica_pct: 3, iva_pct: 21 }); }} className="px-4 rounded-2xl border border-white/10 text-slate-400 hover:text-white hover:border-white/30 transition-all text-xs font-black">
+                                            Cancelar
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 focus-within:border-blue-500 transition-all">
+                                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block">Derechos %</label>
+                                        <input type="number" step="0.1" className="w-full bg-transparent text-white outline-none font-black text-sm text-center" value={newTaxCat.derechos_pct} onChange={e => setNewTaxCat({ ...newTaxCat, derechos_pct: parseFloat(e.target.value) || 0 })} />
+                                    </div>
+                                    <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 focus-within:border-blue-500 transition-all">
+                                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block">Tasa Est. %</label>
+                                        <input type="number" step="0.1" className="w-full bg-transparent text-white outline-none font-black text-sm text-center" value={newTaxCat.tasa_estadistica_pct} onChange={e => setNewTaxCat({ ...newTaxCat, tasa_estadistica_pct: parseFloat(e.target.value) || 0 })} />
+                                    </div>
+                                    <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 focus-within:border-blue-500 transition-all">
+                                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block">IVA %</label>
+                                        <input type="number" step="0.1" className="w-full bg-transparent text-white outline-none font-black text-sm text-center" value={newTaxCat.iva_pct} onChange={e => setNewTaxCat({ ...newTaxCat, iva_pct: parseFloat(e.target.value) || 0 })} />
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div className="flex-1 p-6 overflow-y-auto space-y-3 relative max-h-[400px]">
+                            {loadingTaxCats ? (
+                                <div className="flex justify-center p-10"><Loader2 className="animate-spin text-blue-500 z-10 relative" size={32} /></div>
+                            ) : taxCategories.length === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center opacity-50 relative z-10 py-10">
+                                    <Scale size={32} strokeWidth={1} className="text-slate-500 mb-4 opacity-50" />
+                                    <p className="text-center text-slate-500 font-medium tracking-tight">Sin categorías arancelarias — Cargá las de tus productos más comunes</p>
+                                </div>
+                            ) : taxCategories.map((tc, i) => (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                                    key={tc.id} className="bg-white/5 border border-white/5 p-5 rounded-[20px] flex items-center justify-between hover:bg-blue-500/5 hover:border-blue-500/30 transition-all group relative z-10"
+                                >
+                                    <div>
+                                        <p className="font-black text-white tracking-wide uppercase">{tc.name}</p>
+                                        <p className="text-xs font-bold text-slate-500 mt-0.5">
+                                            Derechos {tc.derechos_pct}% · Tasa {tc.tasa_estadistica_pct}% · IVA {tc.iva_pct}%
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button onClick={() => startEditTaxCat(tc)} className="p-3 bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white rounded-xl transition-all scale-90 group-hover:scale-100">
+                                            <Pencil size={14} strokeWidth={1.5} />
+                                        </button>
+                                        <button onClick={() => handleDeleteTaxCat(tc.id, tc.name)} className="p-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all scale-90 group-hover:scale-100">
+                                            <Trash2 size={14} strokeWidth={1.5} />
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            ))}
                         </div>
                     </div>
                 </div>
