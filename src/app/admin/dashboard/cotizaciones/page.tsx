@@ -901,20 +901,24 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                 )}
 
                 {/* ── TOTAL GRANDE (green accent) ── */}
-                <div style={{ margin: '10px 20px 0', background: `linear-gradient(135deg, #0f3f2c 0%, #1a5e40 100%)`, border: `1px solid rgba(74,222,128,0.2)`, borderLeft: `3px solid ${S.green}`, borderRadius: '6px', padding: '14px', textAlign: 'center' }}>
-                    <p style={{ fontSize: '6.5px', fontWeight: 600, color: S.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '2px' }}>Costo Total Estimado</p>
-                    <p style={{ fontSize: '24px', fontWeight: 800, color: S.green, letterSpacing: '-0.02em', lineHeight: 1 }}>
+                <div style={{ margin: '10px 20px 0', background: `linear-gradient(135deg, #0f3f2c 0%, #1a5e40 100%)`, border: `1px solid rgba(74,222,128,0.2)`, borderLeft: `3px solid ${S.green}`, borderRadius: '6px', padding: '18px 14px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '6.5px', fontWeight: 600, color: S.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '4px' }}>Costo Total Estimado</p>
+                    <p style={{ fontSize: '26px', fontWeight: 800, color: S.green, letterSpacing: '-0.02em', lineHeight: 1 }}>
                         ${formatMoney(totalUSD)} <span style={{ fontSize: '11px', fontWeight: 600, color: S.greenDim }}>USD</span>
                     </p>
-                    {totalARS && exchangeRate && (
-                        <p style={{ fontSize: '8px', fontWeight: 400, color: S.dim, marginTop: '3px' }}>
-                            Equivalente ARS {new Intl.NumberFormat('es-AR').format(Math.round(totalARS))}
-                        </p>
-                    )}
-                    {exchangeRate && (
-                        <p style={{ fontSize: '6.5px', fontWeight: 400, color: S.muted, marginTop: '1px', fontStyle: 'italic' }}>
-                            TC Oficial BCRA: ${exchangeRate} — {exchangeDate}
-                        </p>
+                    {(totalARS || exchangeRate) && (
+                        <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(74,222,128,0.12)' }}>
+                            {totalARS && exchangeRate && (
+                                <p style={{ fontSize: '7.5px', fontWeight: 400, color: 'rgba(203,213,225,0.7)', lineHeight: 1 }}>
+                                    Equivalente ARS {new Intl.NumberFormat('es-AR').format(Math.round(totalARS))}
+                                </p>
+                            )}
+                            {exchangeRate && (
+                                <p style={{ fontSize: '6px', fontWeight: 400, color: 'rgba(168,184,204,0.6)', marginTop: '3px', fontStyle: 'italic' }}>
+                                    TC Oficial BCRA: ${exchangeRate} — {exchangeDate}
+                                </p>
+                            )}
+                        </div>
                     )}
                 </div>
 
