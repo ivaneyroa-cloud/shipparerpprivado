@@ -25,7 +25,8 @@ import {
     TrendingUp,
     Shield,
     CheckSquare,
-    Activity
+    Activity,
+    FileText
 } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useActiveTimeTracker } from '@/hooks/useActiveTimeTracker';
@@ -154,6 +155,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { icon: <Shield size={18} strokeWidth={1.5} />, label: 'Gerencia', href: '/admin/dashboard/gerencia', roles: ['admin'] },
         { icon: <DollarSign size={18} strokeWidth={1.5} />, label: 'Cobranzas', href: '/admin/dashboard/cobranzas', roles: ['admin', 'billing'] },
         { icon: <TrendingUp size={18} strokeWidth={1.5} />, label: 'Finanzas', href: '/admin/dashboard/finanzas', roles: ['admin', 'billing'] },
+        { icon: <FileText size={18} strokeWidth={1.5} />, label: 'Cotizaciones', href: '/admin/dashboard/cotizaciones', roles: ['admin', 'logistics', 'sales', 'billing'] },
 
         { icon: <Users size={18} strokeWidth={1.5} />, label: 'Clientes', href: '/admin/dashboard/clients', roles: ['admin', 'logistics', 'sales'] },
         { icon: <BarChart3 size={18} strokeWidth={1.5} />, label: 'Reportes', href: '/admin/dashboard/reports', roles: ['admin'] },
