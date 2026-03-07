@@ -38,6 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return true;
     });
     const [isDarkMode, setIsDarkMode] = useState(true);
+    const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
     const [userRole, setUserRole] = useState<string>('admin'); // Default to admin, will update on profile load
     const router = useRouter();
     const pathname = usePathname();
@@ -214,11 +215,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         >
                             {isDarkMode ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />}
                         </button>
-                        <div className={`w-10 h-10 rounded-xl overflow-hidden shadow-inner ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'}`}>
-                            <img
-                                src={`https://ui-avatars.com/api/?name=${session?.user?.email}&background=2563eb&color=fff&bold=true`}
-                                alt="Avatar"
-                            />
+                        <div className="relative">
+                            <button
+                                onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
+                                className={`w-10 h-10 rounded-xl overflow-hidden shadow-inner cursor-pointer transition-all hover:ring-2 hover:ring-blue-500/50 active:scale-95 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'}`}
+                            >
+                                <img
+                                    src={`https://ui-avatars.com/api/?name=${session?.user?.email}&background=2563eb&color=fff&bold=true`}
+                                    alt="Avatar"
+                                />
+                            </button>
+                            {avatarMenuOpen && (
+                                <>
+                                    <div className="fixed inset-0 z-50" onClick={() => setAvatarMenuOpen(false)} />
+                                    <div className={`absolute right-0 top-12 z-50 w-64 rounded-2xl border shadow-2xl p-3 ${isDarkMode ? 'bg-[#1C1C1E] border-white/10' : 'bg-white border-slate-200'}`}>
+                                        <div className="px-3 py-2 mb-1">
+                                            <p className={`text-xs font-black truncate ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{session?.user?.email}</p>
+                                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{userRole}</p>
+                                        </div>
+                                        <div className={`border-t ${isDarkMode ? 'border-white/10' : 'border-slate-100'} my-1`} />
+                                        <button
+                                            onClick={handleLogout}
+                                            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-bold transition-all ${isDarkMode ? 'text-red-400 hover:bg-red-500/10' : 'text-red-500 hover:bg-red-50'}`}
+                                        >
+                                            <LogOut size={15} strokeWidth={2} />
+                                            Cerrar Sesión
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </header>

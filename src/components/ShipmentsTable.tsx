@@ -116,10 +116,10 @@ export function ShipmentsTable({
     };
 
     const SortIcon = ({ field }: { field: SortField }) => {
-        if (sortField !== field) return <ArrowUpDown size={10} className="opacity-30 group-hover/sort:opacity-70 transition-opacity" />;
+        if (sortField !== field) return <ArrowUpDown size={11} className="text-cyan-500/60 group-hover/sort:text-cyan-400 transition-colors" />;
         return sortDir === 'desc'
-            ? <ArrowDown size={10} className="text-[#2E7BFF]" />
-            : <ArrowUp size={10} className="text-[#2E7BFF]" />;
+            ? <ArrowDown size={12} className="text-[#00D4FF] drop-shadow-[0_0_4px_#00D4FF]" />
+            : <ArrowUp size={12} className="text-[#00D4FF] drop-shadow-[0_0_4px_#00D4FF]" />;
     };
 
     const sortedShipments = useMemo(() => {
