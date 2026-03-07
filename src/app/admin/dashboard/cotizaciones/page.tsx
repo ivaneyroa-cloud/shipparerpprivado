@@ -737,25 +737,31 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
     const originInfo = ORIGINS.find(o => o.value === form.origin);
     const today = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
+    // Color system: blue=logistics, amber=taxes, green=result
     const S = {
-        bg: '#0B1628',
-        card: '#111d32',
+        base: '#070d19',      // deepest layer
+        bg: '#0B1628',        // main background
+        card: '#111d32',      // card surfaces
         cardBorder: '#1e2d47',
-        accent: '#3b82f6',
-        text: '#f1f5f9',
-        muted: '#94a3b8',
-        dim: '#cbd5e1',
+        accent: '#3b82f6',    // blue - logistics
+        text: '#f1f5f9',      // primary text
+        muted: '#94a3b8',     // labels, section titles
+        dim: '#cbd5e1',       // secondary text (LIGHT for legibility)
         white: '#ffffff',
-        amber: '#d4a574',
-        green: '#4ade80',
+        amber: '#d4a574',     // warm gold - taxes
+        green: '#4ADE80',     // fintech green - total
+        greenDim: '#2a9d5c',  // muted green
     };
 
     return (
         <div style={{ maxWidth: '580px', margin: '0 auto' }}>
-            <div ref={ref} style={{ fontFamily: "'Inter', system-ui, sans-serif", background: S.bg, color: S.text, borderRadius: '10px', overflow: 'hidden' }}>
+            <div ref={ref} style={{ fontFamily: "'Inter', system-ui, sans-serif", background: S.base, color: S.text, borderRadius: '10px', overflow: 'hidden' }}>
+
+                {/* ── TOP ACCENT BAR ── */}
+                <div style={{ height: '3px', background: `linear-gradient(90deg, ${S.accent} 0%, ${S.green} 100%)` }} />
 
                 {/* ── HEADER ── */}
-                <div style={{ padding: '20px 24px 16px', borderBottom: `1px solid ${S.cardBorder}` }}>
+                <div style={{ padding: '18px 24px 14px', background: S.bg, borderBottom: `1px solid ${S.cardBorder}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
                             <img src="/logo-dark.png" alt="Shippar" style={{ height: '22px' }} />
@@ -770,7 +776,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                 </div>
 
                 {/* ── INFO CARDS ── */}
-                <div style={{ padding: '10px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
+                <div style={{ padding: '10px 24px', background: S.bg, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
                     <div style={{ background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '6px', padding: '10px' }}>
                         <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '3px' }}>Cliente</p>
                         <p style={{ fontSize: '10px', fontWeight: 800, color: S.white, lineHeight: 1.2 }}>{form.clientName.toUpperCase()}</p>
@@ -788,7 +794,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                     </div>
                 </div>
 
-                <div style={{ padding: '0 24px 10px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                <div style={{ padding: '0 24px 10px', background: S.bg, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
                     <div style={{ background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '6px', padding: '10px', textAlign: 'center' }}>
                         <p style={{ fontSize: '20px', fontWeight: 900, color: S.white }}>{form.weightKg}</p>
                         <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: '1px' }}>KG Totales</p>
@@ -799,33 +805,38 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                     </div>
                 </div>
 
-                {/* ── DETALLE DE ENVÍO ── */}
-                <div style={{ margin: '0 24px', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '6px', padding: '12px 14px' }}>
-                    <p style={{ fontSize: '7px', fontWeight: 800, color: S.muted, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '8px' }}>Detalle de envío</p>
+                {/* ── DETALLE DE ENVÍO (blue accent) ── */}
+                <div style={{ margin: '0 24px', background: S.card, border: `1px solid ${S.cardBorder}`, borderLeft: `2px solid ${S.accent}`, borderRadius: '6px', padding: '12px 14px' }}>
+                    <p style={{ fontSize: '7px', fontWeight: 800, color: S.accent, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '8px' }}>Detalle de envío</p>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
                         <span style={{ fontSize: '10px', fontWeight: 600, color: S.dim }}>Transporte aéreo</span>
-                        <span style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(shippingCost)}</span>
+                        <span style={{ fontSize: '10px', fontWeight: 800, color: S.white }}>${formatMoney(shippingCost)}</span>
                     </div>
                     {gastoDoc > 0 && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderTop: `1px solid ${S.cardBorder}` }}>
                             <span style={{ fontSize: '10px', fontWeight: 600, color: S.dim }}>Gasto documental</span>
-                            <span style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(gastoDoc)}</span>
+                            <span style={{ fontSize: '10px', fontWeight: 800, color: S.white }}>${formatMoney(gastoDoc)}</span>
                         </div>
                     )}
                     {form.guiaAerea > 0 && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderTop: `1px solid ${S.cardBorder}` }}>
                             <span style={{ fontSize: '10px', fontWeight: 600, color: S.dim }}>Guía aérea</span>
-                            <span style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(form.guiaAerea)}</span>
+                            <span style={{ fontSize: '10px', fontWeight: 800, color: S.white }}>${formatMoney(form.guiaAerea)}</span>
                         </div>
                     )}
-                    <div style={{ borderTop: `2px solid ${S.accent}`, marginTop: '6px', paddingTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ borderTop: `2px solid ${S.accent}`, marginTop: '6px', paddingTop: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: '8px', fontWeight: 800, color: S.accent, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Subtotal Envío</span>
                         <span style={{ fontSize: '14px', fontWeight: 900, color: S.white }}>${formatMoney(subtotalLogistico)}</span>
                     </div>
                 </div>
 
-                {/* ── IMPUESTOS ── */}
+                {/* ── SEPARADOR ── */}
+                {form.includeTaxes && totalTaxes > 0 && (
+                    <div style={{ margin: '8px 48px 0', height: '1px', background: `linear-gradient(90deg, transparent 0%, ${S.cardBorder} 50%, transparent 100%)` }} />
+                )}
+
+                {/* ── IMPUESTOS (amber accent) ── */}
                 {form.includeTaxes && totalTaxes > 0 && (
                     <div style={{ margin: '8px 24px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderLeft: `2px solid ${S.amber}`, borderRadius: '6px', padding: '12px 14px' }}>
                         <p style={{ fontSize: '7px', fontWeight: 800, color: S.amber, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '8px' }}>Impuestos estimados</p>
@@ -839,25 +850,25 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                         {derechosAmount > 0 && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
                                 <span style={{ fontSize: '10px', fontWeight: 600, color: S.dim }}>Derechos ({form.derechosPct}%)</span>
-                                <span style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(derechosAmount)}</span>
+                                <span style={{ fontSize: '10px', fontWeight: 800, color: S.white }}>${formatMoney(derechosAmount)}</span>
                             </div>
                         )}
                         {tasaAmount > 0 && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
                                 <span style={{ fontSize: '10px', fontWeight: 600, color: S.dim }}>Tasa estadística ({form.tasaEstadisticaPct}%)</span>
-                                <span style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(tasaAmount)}</span>
+                                <span style={{ fontSize: '10px', fontWeight: 800, color: S.white }}>${formatMoney(tasaAmount)}</span>
                             </div>
                         )}
                         {iva105Amount > 0 && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
                                 <span style={{ fontSize: '10px', fontWeight: 600, color: S.dim }}>IVA Aduana ({form.ivaAduana105Pct}%)</span>
-                                <span style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(iva105Amount)}</span>
+                                <span style={{ fontSize: '10px', fontWeight: 800, color: S.white }}>${formatMoney(iva105Amount)}</span>
                             </div>
                         )}
                         {iva21Amount > 0 && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
                                 <span style={{ fontSize: '10px', fontWeight: 600, color: S.dim }}>IVA Aduana ({form.ivaAduana21Pct}%)</span>
-                                <span style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(iva21Amount)}</span>
+                                <span style={{ fontSize: '10px', fontWeight: 800, color: S.white }}>${formatMoney(iva21Amount)}</span>
                             </div>
                         )}
                         <div style={{ borderTop: `1px solid rgba(212,165,116,0.25)`, marginTop: '4px', paddingTop: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -872,27 +883,27 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                 {form.includeTaxes && totalTaxes > 0 && (
                     <div style={{ margin: '8px 24px 0', display: 'grid', gridTemplateColumns: '1fr auto 1fr auto 1fr', gap: '4px', alignItems: 'center', padding: '8px 10px', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '6px' }}>
                         <div style={{ textAlign: 'center' }}>
-                            <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Envío</p>
-                            <p style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(subtotalLogistico)}</p>
+                            <p style={{ fontSize: '7px', fontWeight: 700, color: S.accent, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Envío</p>
+                            <p style={{ fontSize: '10px', fontWeight: 800, color: S.white }}>${formatMoney(subtotalLogistico)}</p>
                         </div>
                         <span style={{ fontSize: '10px', color: S.muted, fontWeight: 700 }}>+</span>
                         <div style={{ textAlign: 'center' }}>
-                            <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Impuestos</p>
-                            <p style={{ fontSize: '10px', fontWeight: 800, color: S.text }}>${formatMoney(totalTaxes)}</p>
+                            <p style={{ fontSize: '7px', fontWeight: 700, color: S.amber, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Impuestos</p>
+                            <p style={{ fontSize: '10px', fontWeight: 800, color: S.white }}>${formatMoney(totalTaxes)}</p>
                         </div>
                         <span style={{ fontSize: '10px', color: S.muted, fontWeight: 700 }}>=</span>
                         <div style={{ textAlign: 'center' }}>
-                            <p style={{ fontSize: '7px', fontWeight: 700, color: S.accent, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</p>
-                            <p style={{ fontSize: '11px', fontWeight: 900, color: S.white }}>${formatMoney(totalUSD)}</p>
+                            <p style={{ fontSize: '7px', fontWeight: 700, color: S.green, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</p>
+                            <p style={{ fontSize: '11px', fontWeight: 900, color: S.green }}>${formatMoney(totalUSD)}</p>
                         </div>
                     </div>
                 )}
 
-                {/* ── TOTAL GRANDE ── */}
-                <div style={{ margin: '10px 24px 0', background: `linear-gradient(135deg, #1a2744 0%, #0f1d35 100%)`, border: `1px solid ${S.accent}33`, borderRadius: '8px', padding: '18px 16px', textAlign: 'center' }}>
+                {/* ── TOTAL GRANDE (green accent) ── */}
+                <div style={{ margin: '10px 24px 0', background: `linear-gradient(135deg, #0d2818 0%, #0a1f14 100%)`, border: `1px solid rgba(74,222,128,0.15)`, borderLeft: `3px solid ${S.green}`, borderRadius: '8px', padding: '16px', textAlign: 'center' }}>
                     <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '4px' }}>Costo Total Estimado</p>
-                    <p style={{ fontSize: '26px', fontWeight: 900, color: S.white, letterSpacing: '-0.02em', lineHeight: 1 }}>
-                        ${formatMoney(totalUSD)} <span style={{ fontSize: '13px', fontWeight: 700, color: S.accent }}>USD</span>
+                    <p style={{ fontSize: '28px', fontWeight: 900, color: S.green, letterSpacing: '-0.02em', lineHeight: 1 }}>
+                        ${formatMoney(totalUSD)} <span style={{ fontSize: '13px', fontWeight: 700, color: S.greenDim }}>USD</span>
                     </p>
                     {totalARS && exchangeRate && (
                         <p style={{ fontSize: '10px', fontWeight: 600, color: S.dim, marginTop: '6px' }}>
@@ -906,8 +917,11 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                     )}
                 </div>
 
-                {/* ── QUÉ INCLUYE ── */}
-                <div style={{ margin: '8px 24px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '6px', padding: '10px 14px' }}>
+                {/* ── SEPARADOR PÁGINA ── */}
+                <div style={{ margin: '12px 24px 0', height: '1px', background: `linear-gradient(90deg, transparent 0%, ${S.cardBorder} 50%, transparent 100%)` }} />
+
+                {/* ── QUÉ INCLUYE (page 2 content) ── */}
+                <div style={{ margin: '10px 24px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '6px', padding: '10px 14px' }}>
                     <p style={{ fontSize: '7px', fontWeight: 800, color: S.muted, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '6px' }}>Incluye</p>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
                         {SERVICE_INCLUDES.map(item => (
