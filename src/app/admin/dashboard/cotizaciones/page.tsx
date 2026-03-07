@@ -639,18 +639,13 @@ function QuoteForm({
                             </div>
 
                             {/* Tax category selector */}
-                            {taxCategories.length > 0 && (
-                                <div>
-                                    <label className={labelClass}>Categoría (auto-rellena %)</label>
+                            <div>
+                                <label className={labelClass}>Categoría Arancelaria (auto-rellena %)</label>
+                                {taxCategories.length > 0 ? (
                                     <select
                                         className={inputClass}
                                         defaultValue=""
                                         onChange={(e) => {
-                                            if (e.target.value === '__manage__') {
-                                                onOpenTaxManager();
-                                                e.target.value = '';
-                                                return;
-                                            }
                                             const cat = taxCategories.find((c: any) => c.id === e.target.value);
                                             if (cat) {
                                                 setField('derechosPct', cat.derechos_pct || 0);
@@ -661,15 +656,18 @@ function QuoteForm({
                                         }}
                                     >
                                         <option value="" disabled>Seleccionar categoría...</option>
-                                        <option value="__manage__">⚙️ Gestionar categorías...</option>
                                         {taxCategories.map((cat: any) => (
                                             <option key={cat.id} value={cat.id}>
                                                 {cat.name} — Der. {cat.derechos_pct}% / Tasa {cat.tasa_estadistica_pct}% / IVA {cat.iva_pct}%
                                             </option>
                                         ))}
                                     </select>
-                                </div>
-                            )}
+                                ) : (
+                                    <p className="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-700/50 px-4 py-3 rounded-xl">
+                                        No hay categorías cargadas. Andá a <a href="/admin/dashboard/settings" className="text-blue-500 underline hover:text-blue-400">Ajustes → Sistema Logístico</a> para crear tus categorías arancelarias.
+                                    </p>
+                                )}
+                            </div>
 
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 {[
