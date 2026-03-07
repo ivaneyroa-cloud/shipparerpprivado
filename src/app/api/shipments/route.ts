@@ -10,7 +10,7 @@ const FIELD_PERMISSIONS: Record<string, string[]> = {
         'internal_status', 'date_shipped', 'date_arrived', 'date_dispatched',
         'origin', 'tracking_number', 'category', 'weight', 'client_id', 'client_name', 'client_code',
         'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion',
-        'costo_flete', 'monto_cobrado', 'estado_cobranza', 'estado_pago_proveedor',
+        'costo_flete', 'costo_impuestos_proveedor', 'monto_cobrado', 'estado_cobranza', 'estado_pago_proveedor',
         'payment_proof_url', 'payment_notes',
         'retenido_nota',
         'delta_kg', 'delta_boxes', 'boxes_count',
@@ -25,7 +25,7 @@ const FIELD_PERMISSIONS: Record<string, string[]> = {
         'internal_status', 'date_shipped', 'date_arrived', 'date_dispatched',
         'origin', 'tracking_number', 'category', 'weight', 'client_id', 'client_name', 'client_code',
         'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion',
-        'costo_flete', 'monto_cobrado', 'estado_cobranza', 'estado_pago_proveedor',
+        'costo_flete', 'costo_impuestos_proveedor', 'monto_cobrado', 'estado_cobranza', 'estado_pago_proveedor',
         'payment_proof_url', 'payment_notes',
         'retenido_nota',
         'delta_kg', 'delta_boxes', 'boxes_count',
@@ -49,13 +49,13 @@ const FIELD_PERMISSIONS: Record<string, string[]> = {
         'has_weight_anomaly', 'anomaly_percentage', 'anomaly_absolute',
         'bultos', 'peso_computable', 'weight',
         'invoice_photo_1', 'invoice_photo_2',
-        'retenido_nota', 'costo_flete',
+        'retenido_nota', 'costo_flete', 'costo_impuestos_proveedor',
         'reception_version_count', 'current_version_id',
         'edited_post_delivery', 'post_delivery_edit', 'edit_count',
     ],
     billing: [
         'estado_cobranza', 'estado_pago_proveedor',
-        'costo_flete', 'monto_cobrado',
+        'costo_flete', 'costo_impuestos_proveedor', 'monto_cobrado',
         'precio_envio', 'gastos_documentales', 'impuestos',
         'payment_proof_url', 'payment_notes',
         'tracking_number', 'weight',
@@ -106,14 +106,14 @@ const STATUS_ROLE_PERMISSIONS: Record<string, string[]> = {
 // ═══════════════════════════════════════════════════════════════
 const NUMERIC_FIELDS = [
     'weight', 'precio_envio', 'gastos_documentales', 'impuestos',
-    'costo_flete', 'monto_cobrado', 'delta_kg', 'delta_boxes',
+    'costo_flete', 'costo_impuestos_proveedor', 'monto_cobrado', 'delta_kg', 'delta_boxes',
     'boxes_count', 'peso_computable', 'received_weight',
     'anomaly_percentage', 'anomaly_absolute',
 ];
 
 const NON_NEGATIVE_FIELDS = [
     'weight', 'precio_envio', 'gastos_documentales', 'impuestos',
-    'costo_flete', 'monto_cobrado', 'boxes_count', 'peso_computable', 'received_weight',
+    'costo_flete', 'costo_impuestos_proveedor', 'monto_cobrado', 'boxes_count', 'peso_computable', 'received_weight',
 ];
 
 // ═══════════════════════════════════════════════════════════════

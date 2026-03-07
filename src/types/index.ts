@@ -85,6 +85,7 @@ export interface Shipment {
     estado_cobranza?: string;
     estado_pago_proveedor?: string;
     costo_flete?: number;
+    costo_impuestos_proveedor?: number;
     monto_cobrado?: number;
     invoice_photo_1?: string;
     invoice_photo_2?: string;
@@ -118,7 +119,7 @@ export interface ReceptionVersion {
 export type ShipmentCobranzasRow = Pick<Shipment,
     'id' | 'tracking_number' | 'client_id' | 'client_name' | 'internal_status' | 'bultos' |
     'invoice_photo_1' | 'invoice_photo_2' | 'peso_computable' | 'weight' |
-    'precio_envio' | 'costo_flete' | 'gastos_documentales' | 'impuestos' | 'monto_cobrado' |
+    'precio_envio' | 'costo_flete' | 'costo_impuestos_proveedor' | 'gastos_documentales' | 'impuestos' | 'monto_cobrado' |
     'estado_cobranza' | 'estado_pago_proveedor' | 'updated_at' | 'payment_proof_url' | 'payment_notes' |
     'quote_mode' | 'quote_pdf_url'
 >;

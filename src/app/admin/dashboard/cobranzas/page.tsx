@@ -28,7 +28,7 @@ export default function CobranzasPage() {
 
             let query = supabase
                 .from('shipments')
-                .select('id, tracking_number, client_id, client_name, internal_status, bultos, invoice_photo_1, invoice_photo_2, peso_computable, weight, precio_envio, costo_flete, gastos_documentales, impuestos, monto_cobrado, estado_cobranza, estado_pago_proveedor, updated_at, payment_proof_url, payment_notes, quote_mode, quote_pdf_url')
+                .select('id, tracking_number, client_id, client_name, internal_status, bultos, invoice_photo_1, invoice_photo_2, peso_computable, weight, precio_envio, costo_flete, costo_impuestos_proveedor, gastos_documentales, impuestos, monto_cobrado, estado_cobranza, estado_pago_proveedor, updated_at, payment_proof_url, payment_notes, quote_mode, quote_pdf_url')
                 .in('internal_status', allowedStatuses)
                 .order('updated_at', { ascending: false });
 
@@ -96,6 +96,7 @@ export default function CobranzasPage() {
         'estado_cobranza',
         'estado_pago_proveedor',
         'costo_flete',
+        'costo_impuestos_proveedor',
         'monto_cobrado',
         'precio_envio',
         'gastos_documentales',
@@ -113,7 +114,7 @@ export default function CobranzasPage() {
         }
 
         const normalizedValue =
-            ['precio_envio', 'costo_flete', 'monto_cobrado', 'gastos_documentales', 'impuestos'].includes(field as string)
+            ['precio_envio', 'costo_flete', 'costo_impuestos_proveedor', 'monto_cobrado', 'gastos_documentales', 'impuestos'].includes(field as string)
                 ? (value === '' || value === null ? null : Number(value))
                 : value;
 
@@ -163,7 +164,7 @@ export default function CobranzasPage() {
 
             // Pendientes de Abonar = items where estado_pago_proveedor is NOT Pagado/Abonado
             if (s.estado_pago_proveedor !== 'Pagado/Abonado') {
-                const costo = Number(s.costo_flete) || 0;
+                const costo = (Number(s.costo_flete) || 0) + (Number(s.costo_impuestos_proveedor) || 0);
                 result.pendientesAbonar += costo;
             }
         });

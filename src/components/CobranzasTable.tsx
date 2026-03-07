@@ -154,13 +154,15 @@ export function CobranzasTable({ shipments, loading, handleInlineUpdate, handleL
                                 const envio = Number(s.precio_envio) || 0;
                                 const gastos = Number(s.gastos_documentales) || 0;
                                 const imp = Number(s.impuestos) || 0;
-                                const costo_prov = Number(s.costo_flete) || 0;
+                                const costo_prov_flete = Number(s.costo_flete) || 0;
+                                const costo_prov_imp = Number(s.costo_impuestos_proveedor) || 0;
+                                const costo_prov_total = costo_prov_flete + costo_prov_imp;
                                 const cobrado_real = Number(s.monto_cobrado) || 0;
 
                                 const totalEstimadoRef = envio + gastos + imp;
 
                                 // Ganancia only when there's real money collected
-                                const ganancia = cobrado_real > 0 ? cobrado_real - costo_prov : 0;
+                                const ganancia = cobrado_real > 0 ? cobrado_real - costo_prov_total : 0;
 
                                 return (
                                     <tr key={s.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group">
@@ -177,16 +179,43 @@ export function CobranzasTable({ shipments, loading, handleInlineUpdate, handleL
                                             <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest">KG Computables</p>
                                         </td>
 
-                                        <td className="px-4 py-3 align-top min-w-[140px]">
-                                            <EditableCurrencyCell
-                                                placeholder="0.00"
-                                                value={s.costo_flete}
-                                                isDraft={draftValues[`${s.id}-costo_flete`]}
-                                                onDraftChange={(val) => handleDraftChange(s.id, 'costo_flete', val)}
-                                                onDraftBlur={(val) => handleDraftBlur(s, 'costo_flete', val)}
-                                                className="text-red-600 dark:text-red-400"
-                                                prefix="-"
-                                            />
+                                        <td className="px-4 py-3 align-top min-w-[180px]">
+                                            <div className="flex flex-col gap-1.5">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="text-[9px] font-bold uppercase text-slate-400 whitespace-nowrap">Flete:</span>
+                                                    <div className="w-[110px]">
+                                                        <EditableCurrencyCell
+                                                            placeholder="0.00"
+                                                            value={s.costo_flete}
+                                                            isDraft={draftValues[`${s.id}-costo_flete`]}
+                                                            onDraftChange={(val) => handleDraftChange(s.id, 'costo_flete', val)}
+                                                            onDraftBlur={(val) => handleDraftBlur(s, 'costo_flete', val)}
+                                                            className="text-red-600 dark:text-red-400"
+                                                            prefix="-"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="text-[9px] font-bold uppercase text-slate-400 whitespace-nowrap">Impuestos:</span>
+                                                    <div className="w-[110px]">
+                                                        <EditableCurrencyCell
+                                                            placeholder="0.00"
+                                                            value={s.costo_impuestos_proveedor}
+                                                            isDraft={draftValues[`${s.id}-costo_impuestos_proveedor`]}
+                                                            onDraftChange={(val) => handleDraftChange(s.id, 'costo_impuestos_proveedor', val)}
+                                                            onDraftBlur={(val) => handleDraftBlur(s, 'costo_impuestos_proveedor', val)}
+                                                            className="text-red-600 dark:text-red-400"
+                                                            prefix="-"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="mt-0.5 pt-1.5 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2">
+                                                    <span className="text-[9px] font-black uppercase text-slate-400">Total Prov:</span>
+                                                    <span className={`text-[11px] font-black tracking-tight ${costo_prov_total > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-400'}`}>
+                                                        {costo_prov_total > 0 ? `- ${formatMoney(costo_prov_total)}` : formatMoney(0)}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </td>
 
                                         <td className="px-4 py-3 align-top">
