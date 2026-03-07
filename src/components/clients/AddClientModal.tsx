@@ -107,10 +107,12 @@ export function AddClientModal({ isOpen, onClose, onCreated, salesMembers }: Add
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Código (Auto)</label>
-                        <input required readOnly
-                            className="w-full border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 px-5 py-3.5 rounded-xl opacity-60 outline-none font-black text-sm text-blue-600"
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Código SH <span className="text-slate-400 normal-case">(auto o manual)</span></label>
+                        <input required
+                            className="w-full border border-blue-200 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-500/5 px-5 py-3.5 rounded-xl outline-none focus:border-blue-500 transition-all font-black text-sm text-blue-600 dark:text-blue-400 uppercase"
                             value={formData.code}
+                            onChange={e => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                            placeholder="SH-001"
                         />
                     </div>
                 </div>

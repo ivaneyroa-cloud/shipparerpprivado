@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import {
     Plus, Search, UserPlus, MoreVertical, User,
-    TrendingUp, X, UserCog, Check, Upload
+    TrendingUp, X, UserCog, Check, Upload, Edit2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -61,6 +61,59 @@ function InlineTarifaCell({ clientId, value, onSaved }: { clientId: string; valu
             title="Click para editar tarifa"
         >
             {value || '—'}
+        </span>
+    );
+}
+
+function InlineCodeCell({ clientId, value, onSaved }: { clientId: string; value: string; onSaved: (val: string) => void }) {
+    const [editing, setEditing] = React.useState(false);
+    const [draft, setDraft] = React.useState(value);
+    const inputRef = React.useRef<HTMLInputElement>(null);
+    const savingRef = React.useRef(false);
+
+    React.useEffect(() => { if (editing && inputRef.current) inputRef.current.focus(); }, [editing]);
+    React.useEffect(() => { if (!editing) setDraft(value); }, [value, editing]);
+
+    const save = async () => {
+        if (savingRef.current) return;
+        savingRef.current = true;
+        setEditing(false);
+        const trimmed = draft.trim().toUpperCase();
+        if (trimmed === value) { savingRef.current = false; return; }
+        if (!trimmed) { toast.error('El código no puede estar vacío'); setDraft(value); savingRef.current = false; return; }
+        const { error } = await supabase.from('clients').update({ code: trimmed }).eq('id', clientId);
+        if (error) {
+            toast.error('Error al guardar código (¿duplicado?)');
+            setDraft(value);
+        } else {
+            onSaved(trimmed);
+            toast.success('Código actualizado');
+        }
+        savingRef.current = false;
+    };
+
+    if (editing) {
+        return (
+            <input
+                ref={inputRef}
+                className="w-24 bg-blue-50 dark:bg-blue-500/10 border-b-2 border-blue-500 outline-none py-1 px-2 text-sm font-black text-blue-700 dark:text-blue-300 uppercase tracking-wide"
+                value={draft}
+                onChange={e => setDraft(e.target.value)}
+                onBlur={save}
+                onKeyDown={e => { if (e.key === 'Enter') { e.currentTarget.blur(); } if (e.key === 'Escape') { setDraft(value); setEditing(false); } }}
+                placeholder="SH-001"
+            />
+        );
+    }
+
+    return (
+        <span
+            onClick={() => { setDraft(value); setEditing(true); }}
+            className="text-sm font-black text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 px-3 py-1.5 rounded-lg tracking-wide cursor-pointer hover:ring-2 hover:ring-blue-400/30 transition-all group/code inline-flex items-center gap-1.5"
+            title="Click para editar código"
+        >
+            {value}
+            <Edit2 size={10} className="opacity-0 group-hover/code:opacity-100 transition-opacity" />
         </span>
     );
 }
@@ -417,7 +470,15 @@ export default function ClientsPage() {
                                     return (
                                         <tr key={client.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group relative">
                                             <td className="px-5 py-3"><span className="font-black text-sm text-slate-800 dark:text-white uppercase tracking-tight">{client.name}</span></td>
-                                            <td className="px-5 py-3"><span className="text-sm font-black text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 px-3 py-1.5 rounded-lg tracking-wide">{client.code}</span></td>
+                                            <td className="px-5 py-3">
+                                                <InlineCodeCell
+                                                    clientId={client.id}
+                                                    value={client.code || ''}
+                                                    onSaved={(val) => {
+                                                        setClients(prev => prev.map(c => c.id === client.id ? { ...c, code: val } : c));
+                                                    }}
+                                                />
+                                            </td>
                                             <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500">{client.cuit || '—'}</span></td>
                                             <td className="px-5 py-3"><span className="text-xs font-bold text-slate-500">{client.tax_condition || '—'}</span></td>
                                             <td className="px-5 py-3">
