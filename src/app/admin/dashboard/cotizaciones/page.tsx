@@ -89,12 +89,17 @@ export default function CotizacionesPage() {
     const [exchangeDate, setExchangeDate] = useState('');
     const [showPreview, setShowPreview] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [taxCategories, setTaxCategories] = useState<any[]>([]);
     const previewRef = useRef<HTMLDivElement>(null);
 
     // Fetch clients for autocomplete
     useEffect(() => {
         supabase.from('clients').select('id, name, code, tarifa_aplicable').order('name').then(({ data }) => {
             if (data) setClients(data);
+        });
+        // Fetch tax categories
+        supabase.from('tax_categories').select('*').order('name').then(({ data }) => {
+            if (data) setTaxCategories(data);
         });
     }, []);
 
@@ -127,10 +132,20 @@ export default function CotizacionesPage() {
     const gastoDoc = form.valorFob ? calcGastoDocumental(form.valorFob) : form.gastoDocumental;
     const subtotalLogistico = shippingCost + gastoDoc + form.guiaAerea;
 
-    const derechosAmount = form.includeTaxes && form.valorFob ? (form.valorFob * form.derechosPct / 100) : 0;
-    const tasaAmount = form.includeTaxes && form.valorFob ? (form.valorFob * form.tasaEstadisticaPct / 100) : 0;
-    const iva105Amount = form.includeTaxes && form.valorFob ? (form.valorFob * form.ivaAduana105Pct / 100) : 0;
-    const iva21Amount = form.includeTaxes && form.valorFob ? (form.valorFob * form.ivaAduana21Pct / 100) : 0;
+    // CIF = FOB + Flete ($2.70/kg) + Seguro (1% FOB)
+    const FLETE_PER_KG = 2.70;
+    const SEGURO_PCT = 0.01;
+    const cifFlete = form.includeTaxes && form.valorFob ? (form.weightKg * FLETE_PER_KG) : 0;
+    const cifSeguro = form.includeTaxes && form.valorFob ? (form.valorFob * SEGURO_PCT) : 0;
+    const cifValue = form.includeTaxes && form.valorFob ? (form.valorFob + cifFlete + cifSeguro) : 0;
+
+    // Derechos y Tasa se calculan sobre CIF
+    const derechosAmount = form.includeTaxes && cifValue ? (cifValue * form.derechosPct / 100) : 0;
+    const tasaAmount = form.includeTaxes && cifValue ? (cifValue * form.tasaEstadisticaPct / 100) : 0;
+    // IVA se calcula sobre CIF + Derechos + Tasa (base acumulada, así lo hace Aduana)
+    const ivaBase = cifValue + derechosAmount + tasaAmount;
+    const iva105Amount = form.includeTaxes && cifValue ? (ivaBase * form.ivaAduana105Pct / 100) : 0;
+    const iva21Amount = form.includeTaxes && cifValue ? (ivaBase * form.ivaAduana21Pct / 100) : 0;
     const totalTaxes = derechosAmount + tasaAmount + iva105Amount + iva21Amount;
 
     const totalUSD = subtotalLogistico + (form.includeTaxes ? totalTaxes : 0);
@@ -323,6 +338,8 @@ export default function CotizacionesPage() {
                                 exchangeRate={exchangeRate}
                                 deliveryDays={deliveryDays}
                                 canPreview={canPreview}
+                                cifValue={cifValue}
+                                taxCategories={taxCategories}
                                 onPreview={() => setShowPreview(true)}
                             />
                         </motion.div>
@@ -359,7 +376,7 @@ export default function CotizacionesPage() {
 function QuoteForm({
     form, setField, clientSearch, setClientSearch, showClientDropdown, setShowClientDropdown,
     filteredClients, selectClient, shippingCost, gastoDoc, subtotalLogistico, totalTaxes, totalUSD, totalARS,
-    exchangeRate, deliveryDays, canPreview, onPreview
+    exchangeRate, deliveryDays, canPreview, cifValue, taxCategories, onPreview
 }: any) {
     const formatMoney = (n: number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 
@@ -581,6 +598,13 @@ function QuoteForm({
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden space-y-4"
                         >
+                            {cifValue > 0 && (
+                                <div className="bg-slate-100 dark:bg-slate-700/50 rounded-xl px-4 py-2.5 flex items-center justify-between">
+                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Base Imponible (CIF)</span>
+                                    <span className="text-xs font-black text-slate-600 dark:text-slate-300">${formatMoney(cifValue)} USD</span>
+                                </div>
+                            )}
+
                             <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 rounded-xl">
                                 <AlertTriangle size={14} className="text-amber-500 shrink-0" />
                                 <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400">Los impuestos son aproximados y pueden variar según la determinación de Aduana</p>
@@ -596,6 +620,33 @@ function QuoteForm({
                                     placeholder="Valor declarado de la mercadería"
                                 />
                             </div>
+
+                            {/* Tax category selector */}
+                            {taxCategories.length > 0 && (
+                                <div>
+                                    <label className={labelClass}>Categoría (auto-rellena %)</label>
+                                    <select
+                                        className={inputClass}
+                                        defaultValue=""
+                                        onChange={(e) => {
+                                            const cat = taxCategories.find((c: any) => c.id === e.target.value);
+                                            if (cat) {
+                                                setField('derechosPct', cat.derechos_pct || 0);
+                                                setField('tasaEstadisticaPct', cat.tasa_estadistica_pct || 3);
+                                                setField('ivaAduana105Pct', cat.iva_pct === 10.5 ? 10.5 : 0);
+                                                setField('ivaAduana21Pct', cat.iva_pct === 21 ? 21 : 0);
+                                            }
+                                        }}
+                                    >
+                                        <option value="" disabled>Seleccionar categoría...</option>
+                                        {taxCategories.map((cat: any) => (
+                                            <option key={cat.id} value={cat.id}>
+                                                {cat.name} — Der. {cat.derechos_pct}% / Tasa {cat.tasa_estadistica_pct}% / IVA {cat.iva_pct}%
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 {[
