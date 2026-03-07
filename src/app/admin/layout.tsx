@@ -113,7 +113,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { icon: <Settings size={18} strokeWidth={1.5} />, label: 'Ajustes', href: '/admin/dashboard/settings', roles: ['admin', 'logistics'] },
     ];
 
-    const menuItems = allMenuItems.filter(item => item.roles.includes(userRole));
+    // super_admin sees everything admin sees
+    const effectiveRole = userRole === 'super_admin' ? 'admin' : userRole;
+    const menuItems = allMenuItems.filter(item => item.roles.includes(effectiveRole));
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
