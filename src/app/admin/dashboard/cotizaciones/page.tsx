@@ -770,11 +770,11 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                 <div style={{ height: '3px', background: `linear-gradient(90deg, ${S.accent} 0%, ${S.green} 100%)` }} />
 
                 {/* ── HEADER ── */}
-                <div style={{ padding: '18px 20px 14px', background: S.bg, borderBottom: `1px solid ${S.cardBorder}` }}>
+                <div style={{ padding: '22px 20px 14px', background: S.bg, borderBottom: `1px solid ${S.cardBorder}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
-                            <img src="/logo-dark.png" alt="Shippar" style={{ height: '20px' }} />
-                            <p style={{ fontSize: '6.5px', fontWeight: 500, color: S.muted, letterSpacing: '0.15em', textTransform: 'uppercase', marginTop: '2px', fontStyle: 'italic' }}>Tu socio en comercio internacional</p>
+                            <img src="/logo-dark.png" alt="Shippar" style={{ height: '24px' }} />
+                            <p style={{ fontSize: '6.5px', fontWeight: 500, color: S.muted, letterSpacing: '0.15em', textTransform: 'uppercase', marginTop: '3px', fontStyle: 'italic' }}>Tu socio en comercio internacional</p>
                         </div>
                         <div style={{ textAlign: 'right' }}>
                             <p style={{ fontSize: '6.5px', fontWeight: 500, color: S.muted, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Cotización</p>
@@ -844,8 +844,8 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
 
                         {form.valorFob && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', marginBottom: '3px' }}>
-                                <span style={{ fontSize: '8px', fontWeight: 400, color: S.muted }}>Valor FOB declarado</span>
-                                <span style={{ fontSize: '8px', fontWeight: 700, color: S.dim }}>USD ${formatMoney(form.valorFob)}</span>
+                                <span style={{ fontSize: '8px', fontWeight: 400, color: 'rgba(168,184,204,0.6)' }}>Valor FOB declarado</span>
+                                <span style={{ fontSize: '8px', fontWeight: 500, color: 'rgba(203,213,225,0.5)' }}>USD ${formatMoney(form.valorFob)}</span>
                             </div>
                         )}
                         {derechosAmount > 0 && (
@@ -873,8 +873,8 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                             </div>
                         )}
                         <div style={{ borderTop: `1px solid rgba(212,165,116,0.25)`, marginTop: '3px', paddingTop: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '7px', fontWeight: 600, color: S.amber, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Total Impuestos</span>
-                            <span style={{ fontSize: '11px', fontWeight: 700, color: S.amber }}>USD ${formatMoney(totalTaxes)}</span>
+                            <span style={{ fontSize: '7.5px', fontWeight: 600, color: '#e0a960', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Total Impuestos</span>
+                            <span style={{ fontSize: '12px', fontWeight: 700, color: '#e0a960' }}>USD ${formatMoney(totalTaxes)}</span>
                         </div>
                         <p style={{ fontSize: '6px', fontWeight: 400, color: S.muted, marginTop: '4px', fontStyle: 'italic' }}>* Estimados, pueden variar según determinación de Aduana.</p>
                     </div>
@@ -925,7 +925,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                 {/* ── QUÉ INCLUYE ── */}
                 <div style={{ margin: '10px 20px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '5px', padding: '10px 14px' }}>
                     <p style={{ fontSize: '6.5px', fontWeight: 600, color: S.muted, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px', textAlign: 'center' }}>Incluye</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px 6px' }}>
                         {SERVICE_INCLUDES.map(item => (
                             <div key={item} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                                 <CheckCircle2 size={7} style={{ color: S.green, flexShrink: 0 }} />
