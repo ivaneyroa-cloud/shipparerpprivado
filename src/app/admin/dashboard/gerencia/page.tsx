@@ -103,7 +103,7 @@ export default function GerenciaPage() {
         // Fetch versions
         const { data: v } = await supabase
             .from('reception_versions')
-            .select('id, shipment_id, version_number, is_post_delivery, reason, diff_summary, snapshot, created_at')
+            .select('id, shipment_id, version_number, is_post_delivery, reason, diff_summary, snapshot, payload_snapshot, created_by, created_at')
             .eq('shipment_id', s.id)
             .order('version_number', { ascending: false });
         setVersions((v as ReceptionVersion[]) || []);

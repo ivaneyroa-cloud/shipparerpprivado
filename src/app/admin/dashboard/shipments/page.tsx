@@ -186,7 +186,7 @@ export default function ShipmentsPage() {
                 }
             } else {
                 // Past month: only shipments received in that month
-                const result = await withTimeout(receivedQuery, QUERY_TIMEOUT_MS, 'Past month fetch');
+                const result = await withTimeout(Promise.resolve(receivedQuery), QUERY_TIMEOUT_MS, 'Past month fetch');
 
                 if (result.error) {
                     toast.error(`Error al cargar envíos: ${result.error.message}`);
