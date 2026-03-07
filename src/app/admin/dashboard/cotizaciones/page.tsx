@@ -66,6 +66,7 @@ const SERVICE_INCLUDES = [
     'TCA (Terminal Cargo Aéreo)',
     'Despacho de importación',
     'Envío integral puerta a puerta',
+    'Seguimiento en tiempo real',
 ];
 
 // ═══════════════════════════════════════════════════════════════
@@ -900,33 +901,30 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                 )}
 
                 {/* ── TOTAL GRANDE (green accent) ── */}
-                <div style={{ margin: '10px 24px 0', background: `linear-gradient(135deg, #0d2818 0%, #0a1f14 100%)`, border: `1px solid rgba(74,222,128,0.15)`, borderLeft: `3px solid ${S.green}`, borderRadius: '8px', padding: '16px', textAlign: 'center' }}>
-                    <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '4px' }}>Costo Total Estimado</p>
-                    <p style={{ fontSize: '28px', fontWeight: 900, color: S.green, letterSpacing: '-0.02em', lineHeight: 1 }}>
-                        ${formatMoney(totalUSD)} <span style={{ fontSize: '13px', fontWeight: 700, color: S.greenDim }}>USD</span>
+                <div style={{ margin: '8px 24px 0', background: `linear-gradient(135deg, #0d2818 0%, #0a1f14 100%)`, border: `1px solid rgba(74,222,128,0.15)`, borderLeft: `3px solid ${S.green}`, borderRadius: '8px', padding: '14px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '7px', fontWeight: 700, color: S.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '3px' }}>Costo Total Estimado</p>
+                    <p style={{ fontSize: '26px', fontWeight: 900, color: S.green, letterSpacing: '-0.02em', lineHeight: 1 }}>
+                        ${formatMoney(totalUSD)} <span style={{ fontSize: '12px', fontWeight: 700, color: S.greenDim }}>USD</span>
                     </p>
                     {totalARS && exchangeRate && (
-                        <p style={{ fontSize: '10px', fontWeight: 600, color: S.dim, marginTop: '6px' }}>
+                        <p style={{ fontSize: '9px', fontWeight: 600, color: S.dim, marginTop: '4px' }}>
                             Equivalente ARS {new Intl.NumberFormat('es-AR').format(Math.round(totalARS))}
                         </p>
                     )}
                     {exchangeRate && (
-                        <p style={{ fontSize: '7px', fontWeight: 500, color: S.muted, marginTop: '3px' }}>
+                        <p style={{ fontSize: '7px', fontWeight: 500, color: S.muted, marginTop: '2px' }}>
                             TC Oficial BCRA: ${exchangeRate} — {exchangeDate}
                         </p>
                     )}
                 </div>
 
-                {/* ── SEPARADOR PÁGINA ── */}
-                <div style={{ margin: '12px 24px 0', height: '1px', background: `linear-gradient(90deg, transparent 0%, ${S.cardBorder} 50%, transparent 100%)` }} />
-
-                {/* ── QUÉ INCLUYE (page 2 content) ── */}
-                <div style={{ margin: '10px 24px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '6px', padding: '10px 14px' }}>
-                    <p style={{ fontSize: '7px', fontWeight: 800, color: S.muted, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '6px' }}>Incluye</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+                {/* ── QUÉ INCLUYE ── */}
+                <div style={{ margin: '8px 24px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '6px', padding: '8px 14px' }}>
+                    <p style={{ fontSize: '7px', fontWeight: 800, color: S.muted, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '5px', textAlign: 'center' }}>Incluye</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px' }}>
                         {SERVICE_INCLUDES.map(item => (
-                            <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                <CheckCircle2 size={9} style={{ color: S.green, flexShrink: 0 }} />
+                            <div key={item} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                                <CheckCircle2 size={8} style={{ color: S.green, flexShrink: 0 }} />
                                 <span style={{ fontSize: '8px', fontWeight: 600, color: S.dim }}>{item}</span>
                             </div>
                         ))}
@@ -934,15 +932,13 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                 </div>
 
                 {/* ── DISCLAIMERS ── */}
-                <div style={{ padding: '10px 24px 16px' }}>
-                    <div style={{ borderTop: `1px solid ${S.cardBorder}`, paddingTop: '8px' }}>
-                        <p style={{ fontSize: '7px', fontWeight: 500, color: S.muted, lineHeight: 1.6, marginBottom: '2px' }}>
-                            Costos sujetos a KG efectivamente recepcionados. Cobro en ARS al TC venta BNA del día de llegada (puede variar). Propuesta aproximada de costos finales.
-                        </p>
-                        <p style={{ fontSize: '7px', fontWeight: 600, color: S.muted, marginTop: '6px' }}>
-                            Cotización generada por Shippar · {today}
-                        </p>
-                    </div>
+                <div style={{ padding: '8px 24px 12px' }}>
+                    <p style={{ fontSize: '6.5px', fontWeight: 500, color: S.muted, lineHeight: 1.5 }}>
+                        Costos sujetos a KG efectivamente recepcionados. Cobro en ARS al TC venta BNA del día de llegada (puede variar). Propuesta aproximada de costos finales.
+                    </p>
+                    <p style={{ fontSize: '6.5px', fontWeight: 600, color: S.muted, marginTop: '4px' }}>
+                        Cotización generada por Shippar · {today}
+                    </p>
                 </div>
 
             </div>
