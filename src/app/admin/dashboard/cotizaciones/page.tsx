@@ -62,11 +62,11 @@ const ORIGINS = [
 
 const SERVICE_INCLUDES = [
     'Recolección en origen',
+    'TCA (Terminal Cargas Argentina)',
     'Handling & almacenaje',
-    'TCA (Terminal Cargo Aéreo)',
     'Despacho de importación',
-    'Envío integral puerta a puerta',
     'Seguimiento en tiempo real',
+    'Facturado a dólar oficial',
 ];
 
 // ═══════════════════════════════════════════════════════════════
