@@ -269,9 +269,11 @@ export default function CotizacionesPage() {
                             background: white;
                         }
                         @media print {
-                            body { margin: 0; }
+                            body { margin: 0; padding: 0; }
                             .quote-container { max-width: 100%; }
                             .no-print { display: none !important; }
+                            div { page-break-inside: avoid; }
+                            @page { margin: 10mm 8mm; size: A4; }
                         }
                     </style>
                     <script src="https://cdn.tailwindcss.com"><\/script>
