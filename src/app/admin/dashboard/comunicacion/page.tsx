@@ -54,18 +54,18 @@ export default function ComunicacionPage() {
                 <button
                     onClick={() => setActiveTab('ia')}
                     className={`flex-1 flex items-center justify-center gap-2.5 py-3.5 px-5 rounded-2xl text-sm font-black transition-all ${activeTab === 'ia'
-                            ? 'bg-blue-600 text-white  scale-[1.01]'
-                            : 'bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/[0.07]'
+                        ? 'bg-blue-600 text-white  scale-[1.01]'
+                        : 'bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/[0.07]'
                         }`}
                 >
                     <MessageCircle size={18} />
                     Asistente IA
                 </button>
                 <button
-                    onClick={() => { setActiveTab('equipo'); setUnreadCount(0); }}
+                    onClick={() => { setActiveTab('equipo'); setUnreadCount(0); window.dispatchEvent(new Event('shippar_chat_read')); }}
                     className={`relative flex-1 flex items-center justify-center gap-2.5 py-3.5 px-5 rounded-2xl text-sm font-black transition-all ${activeTab === 'equipo'
-                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/25 scale-[1.01]'
-                            : 'bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/[0.07]'
+                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/25 scale-[1.01]'
+                        : 'bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/[0.07]'
                         }`}
                 >
                     <MessageSquare size={18} />

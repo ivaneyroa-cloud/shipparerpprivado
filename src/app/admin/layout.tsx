@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -41,7 +41,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
     const [userRole, setUserRole] = useState<string>('admin'); // Default to admin, will update on profile load
     const [unreadMessages, setUnreadMessages] = useState(0);
-    const lastReadRef = useRef<string>(new Date().toISOString());
     const router = useRouter();
     const pathname = usePathname();
 
@@ -77,22 +76,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return () => subscription.unsubscribe();
     }, [router, pathname]);
 
-    // ── Unread messages polling for sidebar badge ──
+    // ── Unread messages for sidebar badge ──
+    // Uses localStorage to persist "last read" timestamp — only resets when user opens Chat Equipo tab
+    const getLastReadTimestamp = useCallback(() => {
+        if (typeof window === 'undefined') return new Date().toISOString();
+        return localStorage.getItem('shippar_chat_last_read') || new Date(Date.now() - 1000 * 60 * 60).toISOString();
+    }, []);
+
     const fetchUnreadMessages = useCallback(async () => {
         if (!session?.user?.id) return;
-        // If user is on comunicacion page, mark as read
-        if (pathname?.includes('/comunicacion')) {
-            lastReadRef.current = new Date().toISOString();
-            setUnreadMessages(0);
-            return;
-        }
+        const lastRead = getLastReadTimestamp();
         const { count } = await supabase
             .from('team_messages')
             .select('id', { count: 'exact', head: true })
             .neq('user_id', session.user.id)
-            .gte('created_at', lastReadRef.current);
+            .gte('created_at', lastRead);
         setUnreadMessages(count || 0);
-    }, [session?.user?.id, pathname]);
+    }, [session?.user?.id, getLastReadTimestamp]);
 
     useEffect(() => {
         fetchUnreadMessages();
@@ -100,13 +100,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return () => clearInterval(interval);
     }, [fetchUnreadMessages]);
 
-    // Reset unread when navigating to comunicacion
+    // Listen for "chat read" event from comunicacion page when user opens Chat Equipo tab
     useEffect(() => {
-        if (pathname?.includes('/comunicacion')) {
-            lastReadRef.current = new Date().toISOString();
+        const handleChatRead = () => {
+            localStorage.setItem('shippar_chat_last_read', new Date().toISOString());
             setUnreadMessages(0);
-        }
-    }, [pathname]);
+        };
+        window.addEventListener('shippar_chat_read', handleChatRead);
+        return () => window.removeEventListener('shippar_chat_read', handleChatRead);
+    }, []);
 
     // Realtime subscription for instant notification
     useEffect(() => {
@@ -114,13 +116,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         const channel = supabase
             .channel('team_messages_notify')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'team_messages' }, (payload) => {
-                if (payload.new && (payload.new as any).user_id !== session.user.id && !pathname?.includes('/comunicacion')) {
+                if (payload.new && (payload.new as any).user_id !== session.user.id) {
                     setUnreadMessages(prev => prev + 1);
                 }
             })
             .subscribe();
         return () => { supabase.removeChannel(channel); };
-    }, [session?.user?.id, pathname]);
+    }, [session?.user?.id]);
 
     useEffect(() => {
         if (isDarkMode) {
