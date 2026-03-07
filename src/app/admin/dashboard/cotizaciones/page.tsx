@@ -756,182 +756,184 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
 
     return (
         <div className="max-w-2xl mx-auto">
-            <div ref={ref} className="bg-white rounded-2xl shadow-xl overflow-hidden" style={{ fontFamily: "'Inter', 'Outfit', system-ui, sans-serif", color: '#1a1f36' }}>
+            <div ref={ref} className="bg-white rounded-2xl shadow-xl overflow-hidden" style={{ fontFamily: "'Inter', system-ui, sans-serif", color: '#1a1f36' }}>
                 {/* Header */}
-                <div className="bg-gradient-to-r from-[#0B1628] to-[#152238] px-8 py-6">
+                <div style={{ background: 'linear-gradient(135deg, #0B1628 0%, #152238 100%)' }} className="px-8 py-7">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                        <div>
                             <img src="/logo-dark.png" alt="Shippar" className="h-7" />
                         </div>
                         <div className="text-right">
-                            <p className="text-[10px] font-bold text-blue-300/60 uppercase tracking-[0.15em]">Cotización</p>
-                            <p className="text-xs font-bold text-slate-400">{today}</p>
-                            <span className="inline-block mt-1 text-[9px] font-black uppercase tracking-widest text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full">
-                                Válida 72hs
-                            </span>
+                            <p style={{ fontSize: '10px', fontWeight: 600, color: '#94a3b8', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Cotización</p>
+                            <p style={{ fontSize: '13px', fontWeight: 700, color: '#e2e8f0', marginTop: '2px' }}>{today}</p>
+                            <p style={{ fontSize: '9px', fontWeight: 600, color: '#94a3b8', marginTop: '4px' }}>Válida por 72 horas</p>
                         </div>
                     </div>
-                    <div className="mt-5 flex items-center gap-4">
-                        <span className="text-2xl">{originInfo?.flag}</span>
-                        <div>
-                            <p className="text-white font-black text-lg tracking-tight">{originInfo?.label?.toUpperCase()} → BUENOS AIRES</p>
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-blue-300 bg-blue-500/15 px-2.5 py-1 rounded-full">
-                                    {form.serviceType === 'Express' ? '⚡' : '✈️'} {form.serviceType} Air
-                                </span>
-                                <span className="text-[9px] font-bold text-slate-400 bg-white/5 px-2.5 py-1 rounded-full">
-                                    🕐 {deliveryDays} días hábiles
-                                </span>
-                            </div>
+                    <div style={{ marginTop: '24px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px' }}>
+                        <p style={{ color: '#fff', fontWeight: 800, fontSize: '20px', letterSpacing: '-0.02em' }}>
+                            {originInfo?.label?.toUpperCase()} → BUENOS AIRES
+                        </p>
+                        <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                            <span style={{ fontSize: '10px', fontWeight: 700, color: '#e2e8f0', background: 'rgba(59,130,246,0.12)', padding: '4px 12px', borderRadius: '4px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                                {form.serviceType} Air
+                            </span>
+                            <span style={{ fontSize: '10px', fontWeight: 600, color: '#94a3b8', background: 'rgba(255,255,255,0.04)', padding: '4px 12px', borderRadius: '4px' }}>
+                                {deliveryDays} días hábiles
+                            </span>
                         </div>
                     </div>
                 </div>
 
                 {/* Body */}
-                <div className="px-8 py-6 space-y-6">
+                <div className="px-8 py-7" style={{ lineHeight: 1.6 }}>
                     {/* Client info */}
-                    <div className="flex items-center justify-between pb-5 border-b border-slate-100">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '20px', borderBottom: '1px solid #f1f5f9' }}>
                         <div>
-                            <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Cliente</p>
-                            <p className="text-lg font-black text-slate-800">{form.clientName.toUpperCase()}</p>
+                            <p style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#94a3b8', marginBottom: '2px' }}>Cliente</p>
+                            <p style={{ fontSize: '16px', fontWeight: 800, color: '#1e293b' }}>{form.clientName.toUpperCase()}</p>
                         </div>
                         {form.clientCode && (
-                            <span className="text-sm font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg">{form.clientCode}</span>
+                            <span style={{ fontSize: '12px', fontWeight: 800, color: '#2563eb', background: '#eff6ff', padding: '6px 14px', borderRadius: '6px' }}>{form.clientCode}</span>
                         )}
                     </div>
 
                     {/* Big KG + Tarifa */}
-                    <div className="grid grid-cols-2 gap-6 pb-5 border-b border-slate-100">
-                        <div className="text-center">
-                            <p className="text-3xl font-black text-slate-800">{form.weightKg}</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">KG Totales</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', padding: '24px 0', borderBottom: '1px solid #f1f5f9' }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <p style={{ fontSize: '32px', fontWeight: 900, color: '#1e293b' }}>{form.weightKg}</p>
+                            <p style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#94a3b8', marginTop: '4px' }}>KG Totales</p>
                         </div>
-                        <div className="text-center">
-                            <p className="text-3xl font-black text-blue-600">${form.tarifaPerKg}</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">USD / KG</p>
+                        <div style={{ textAlign: 'center' }}>
+                            <p style={{ fontSize: '32px', fontWeight: 900, color: '#2563eb' }}>${form.tarifaPerKg}</p>
+                            <p style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#94a3b8', marginTop: '4px' }}>USD / KG</p>
                         </div>
                     </div>
 
-                    {/* Costos Logísticos */}
-                    <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-2">
-                            <Plane size={12} /> Costos Logísticos
+                    {/* Detalle de Envío */}
+                    <div style={{ paddingTop: '24px' }}>
+                        <p style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#64748b', marginBottom: '12px' }}>
+                            Detalle de Envío
                         </p>
-                        <div className="space-y-2">
-                            <div className="flex justify-between items-center py-2">
-                                <span className="text-xs font-bold text-slate-600">Transporte aéreo</span>
-                                <span className="text-sm font-black text-slate-800">${formatMoney(shippingCost)}</span>
+                        <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0' }}>
+                                <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>Transporte aéreo</span>
+                                <span style={{ fontSize: '13px', fontWeight: 800, color: '#1e293b' }}>${formatMoney(shippingCost)}</span>
                             </div>
                             {gastoDoc > 0 && (
-                                <div className="flex justify-between items-center py-2 border-t border-slate-50">
-                                    <span className="text-xs font-bold text-slate-600">Gasto documental</span>
-                                    <span className="text-sm font-black text-slate-800">${formatMoney(gastoDoc)}</span>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderTop: '1px solid #f8fafc' }}>
+                                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>Gasto documental</span>
+                                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#1e293b' }}>${formatMoney(gastoDoc)}</span>
                                 </div>
                             )}
                             {form.guiaAerea > 0 && (
-                                <div className="flex justify-between items-center py-2 border-t border-slate-50">
-                                    <span className="text-xs font-bold text-slate-600">Guía aérea</span>
-                                    <span className="text-sm font-black text-slate-800">${formatMoney(form.guiaAerea)}</span>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderTop: '1px solid #f8fafc' }}>
+                                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>Guía aérea</span>
+                                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#1e293b' }}>${formatMoney(form.guiaAerea)}</span>
                                 </div>
                             )}
-                            <div className="flex justify-between items-center py-2 border-t border-slate-200 mt-1">
-                                <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Subtotal</span>
-                                <span className="text-sm font-black text-slate-800">${formatMoney(subtotalLogistico)}</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderTop: '2px solid #e2e8f0', marginTop: '4px' }}>
+                                <span style={{ fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Subtotal Envío</span>
+                                <span style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b' }}>${formatMoney(subtotalLogistico)}</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Impuestos */}
                     {form.includeTaxes && totalTaxes > 0 && (
-                        <div className="border-l-4 border-amber-400 bg-amber-50/50 rounded-r-xl p-4">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-3 flex items-center gap-2">
-                                <AlertTriangle size={12} /> Impuestos Estimados
+                        <div style={{ borderLeft: '3px solid #f59e0b', background: '#fffbeb', borderRadius: '0 8px 8px 0', padding: '16px 20px', marginTop: '24px' }}>
+                            <p style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#92400e', marginBottom: '12px' }}>
+                                Impuestos Estimados
                             </p>
                             {form.valorFob && (
-                                <div className="flex justify-between items-center py-1 mb-2">
-                                    <span className="text-[10px] font-bold text-slate-500">Valor FOB declarado</span>
-                                    <span className="text-xs font-black text-slate-600">${formatMoney(form.valorFob)}</span>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', marginBottom: '8px' }}>
+                                    <span style={{ fontSize: '10px', fontWeight: 600, color: '#78716c' }}>Valor FOB declarado</span>
+                                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#44403c' }}>${formatMoney(form.valorFob)}</span>
                                 </div>
                             )}
-                            <div className="space-y-1">
+                            <div>
                                 {derechosAmount > 0 && (
-                                    <div className="flex justify-between items-center py-1.5">
-                                        <span className="text-xs font-bold text-slate-600">Derechos ({form.derechosPct}%)</span>
-                                        <span className="text-sm font-black text-slate-700">${formatMoney(derechosAmount)}</span>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
+                                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#57534e' }}>Derechos ({form.derechosPct}%)</span>
+                                        <span style={{ fontSize: '13px', fontWeight: 800, color: '#292524' }}>${formatMoney(derechosAmount)}</span>
                                     </div>
                                 )}
                                 {tasaAmount > 0 && (
-                                    <div className="flex justify-between items-center py-1.5">
-                                        <span className="text-xs font-bold text-slate-600">Tasa estadística ({form.tasaEstadisticaPct}%)</span>
-                                        <span className="text-sm font-black text-slate-700">${formatMoney(tasaAmount)}</span>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
+                                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#57534e' }}>Tasa estadística ({form.tasaEstadisticaPct}%)</span>
+                                        <span style={{ fontSize: '13px', fontWeight: 800, color: '#292524' }}>${formatMoney(tasaAmount)}</span>
                                     </div>
                                 )}
                                 {iva105Amount > 0 && (
-                                    <div className="flex justify-between items-center py-1.5">
-                                        <span className="text-xs font-bold text-slate-600">IVA Aduana ({form.ivaAduana105Pct}%)</span>
-                                        <span className="text-sm font-black text-slate-700">${formatMoney(iva105Amount)}</span>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
+                                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#57534e' }}>IVA Aduana ({form.ivaAduana105Pct}%)</span>
+                                        <span style={{ fontSize: '13px', fontWeight: 800, color: '#292524' }}>${formatMoney(iva105Amount)}</span>
                                     </div>
                                 )}
                                 {iva21Amount > 0 && (
-                                    <div className="flex justify-between items-center py-1.5">
-                                        <span className="text-xs font-bold text-slate-600">IVA Aduana ({form.ivaAduana21Pct}%)</span>
-                                        <span className="text-sm font-black text-slate-700">${formatMoney(iva21Amount)}</span>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
+                                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#57534e' }}>IVA Aduana ({form.ivaAduana21Pct}%)</span>
+                                        <span style={{ fontSize: '13px', fontWeight: 800, color: '#292524' }}>${formatMoney(iva21Amount)}</span>
                                     </div>
                                 )}
                             </div>
-                            <div className="flex justify-between items-center py-2 border-t border-amber-200 mt-2">
-                                <span className="text-xs font-black text-amber-600 uppercase tracking-wider">Total Impuestos</span>
-                                <span className="text-sm font-black text-amber-600">${formatMoney(totalTaxes)}</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0 4px', borderTop: '1px solid #fde68a', marginTop: '8px' }}>
+                                <span style={{ fontSize: '11px', fontWeight: 800, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Total Impuestos</span>
+                                <span style={{ fontSize: '14px', fontWeight: 900, color: '#92400e' }}>${formatMoney(totalTaxes)}</span>
                             </div>
-                            <p className="text-[8px] font-medium text-amber-500/80 mt-2 italic">* Los impuestos son aproximados y pueden variar según la determinación de Aduana</p>
+                            <p style={{ fontSize: '9px', fontWeight: 500, color: '#78716c', marginTop: '8px' }}>* Los impuestos son estimados y pueden variar según la determinación final de Aduana.</p>
                         </div>
                     )}
 
                     {/* Desglose antes del total */}
                     {form.includeTaxes && totalTaxes > 0 && (
-                        <div className="flex items-center justify-between text-xs font-bold text-slate-500 px-1">
-                            <span>Logística: ${formatMoney(subtotalLogistico)}</span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 4px', fontSize: '11px', fontWeight: 600, color: '#64748b' }}>
+                            <span>Envío: ${formatMoney(subtotalLogistico)}</span>
                             <span>+</span>
                             <span>Impuestos: ${formatMoney(totalTaxes)}</span>
                             <span>=</span>
-                            <span className="text-slate-800 font-black">${formatMoney(totalUSD)}</span>
+                            <span style={{ color: '#1e293b', fontWeight: 800 }}>${formatMoney(totalUSD)}</span>
                         </div>
                     )}
 
                     {/* TOTAL */}
-                    <div className="bg-gradient-to-br from-[#0B1628] to-[#1a2744] rounded-2xl px-6 py-5 text-center">
-                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-300/50 mb-1">Costo Total</p>
-                        <p className="text-3xl font-black text-white">${formatMoney(totalUSD)} <span className="text-base text-blue-300">USD</span></p>
+                    <div style={{ background: 'linear-gradient(135deg, #0B1628 0%, #1a2744 100%)', borderRadius: '12px', padding: '28px 24px', textAlign: 'center', marginTop: '16px' }}>
+                        <p style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'rgba(148,163,184,0.6)', marginBottom: '6px' }}>Costo Total Estimado</p>
+                        <p style={{ fontSize: '30px', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em' }}>
+                            ${formatMoney(totalUSD)} <span style={{ fontSize: '16px', fontWeight: 700, color: '#93c5fd' }}>USD</span>
+                        </p>
                         {totalARS && exchangeRate && (
-                            <p className="text-xs font-bold text-slate-400 mt-1.5">
-                                ≈ ARS {new Intl.NumberFormat('es-AR').format(Math.round(totalARS))}
-                                <span className="text-[9px] ml-1.5 text-slate-500">(TC Oficial BCRA: ${exchangeRate} — {exchangeDate})</span>
+                            <p style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8', marginTop: '8px' }}>
+                                Equivalente ARS {new Intl.NumberFormat('es-AR').format(Math.round(totalARS))}
+                                <span style={{ fontSize: '9px', marginLeft: '6px', color: '#64748b' }}>(TC Oficial BCRA: ${exchangeRate} — {exchangeDate})</span>
                             </p>
                         )}
                     </div>
 
                     {/* Qué incluye */}
-                    <div className="pt-4 border-t border-slate-100">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Esta cotización incluye</p>
-                        <div className="grid grid-cols-2 gap-2">
+                    <div style={{ paddingTop: '24px', marginTop: '24px', borderTop: '1px solid #f1f5f9' }}>
+                        <p style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#64748b', marginBottom: '14px' }}>Esta cotización incluye</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                             {SERVICE_INCLUDES.map(item => (
-                                <div key={item} className="flex items-center gap-2">
-                                    <CheckCircle2 size={12} className="text-emerald-500 shrink-0" />
-                                    <span className="text-[10px] font-bold text-slate-600">{item}</span>
+                                <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <CheckCircle2 size={13} style={{ color: '#22c55e', flexShrink: 0 }} />
+                                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#475569' }}>{item}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
 
                     {/* Disclaimers */}
-                    <div className="pt-4 border-t border-slate-100 space-y-1.5">
-                        <p className="text-[8px] font-medium text-slate-400 leading-relaxed">
-                            Los gastos de envío son exactos pero quedan supeditados a los kg recepcionados en oficina. Por favor proveer datos exactos.
+                    <div style={{ paddingTop: '20px', marginTop: '20px', borderTop: '1px solid #f1f5f9' }}>
+                        <p style={{ fontSize: '9px', fontWeight: 500, color: '#64748b', lineHeight: 1.7, marginBottom: '6px' }}>
+                            Los costos de envío quedan sujetos a los kilogramos efectivamente recepcionados en origen. Por favor proveer datos exactos.
                         </p>
-                        <p className="text-[8px] font-medium text-slate-400 leading-relaxed">
-                            La propuesta comercial presentada refleja la aproximación de los costos finales. {exchangeDate && `Tipo de cambio USD Oficial BCRA al ${exchangeDate}.`}
+                        <p style={{ fontSize: '9px', fontWeight: 500, color: '#64748b', lineHeight: 1.7, marginBottom: '6px' }}>
+                            El cobro se realiza en pesos argentinos al tipo de cambio venta Banco Nación del día en que llega la mercadería. El monto en pesos puede variar.
                         </p>
-                        <p className="text-[8px] font-medium text-slate-400 mt-2">
+                        <p style={{ fontSize: '9px', fontWeight: 500, color: '#64748b', lineHeight: 1.7, marginBottom: '6px' }}>
+                            La presente propuesta comercial refleja una aproximación de los costos finales.{exchangeDate && ` Tipo de cambio USD Oficial BCRA al ${exchangeDate}.`}
+                        </p>
+                        <p style={{ fontSize: '9px', fontWeight: 600, color: '#94a3b8', marginTop: '12px' }}>
                             Cotización generada por Shippar · {today}
                         </p>
                     </div>
