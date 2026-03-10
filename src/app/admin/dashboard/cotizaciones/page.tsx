@@ -838,7 +838,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                         )}
                         {form.valorFob && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', marginTop: '3px' }}>
-                                <span style={{ fontSize: '8px', fontWeight: 400, color: 'rgba(168,184,204,0.6)' }}>Valor FOB declarado</span>
+                                <span style={{ fontSize: '8px', fontWeight: 400, color: 'rgba(168,184,204,0.6)' }}>Valor CIF</span>
                                 <span style={{ fontSize: '8px', fontWeight: 500, color: 'rgba(203,213,225,0.5)' }}>USD ${formatMoney(form.valorFob)}</span>
                             </div>
                         )}
