@@ -72,11 +72,15 @@ export function QuickReceiveScreen({ shipments, onClose, onReceived }: QuickRece
 
         try {
             const updatePayload: any = {
-                internal_status: 'Recibido en Oficina',
                 date_arrived: new Date().toISOString().slice(0, 10),
                 delta_kg: parseFloat(diffAbsolute.toFixed(2)),
                 updated_at: new Date().toISOString(),
             };
+
+            // Only set internal_status when transitioning from a different state
+            if (matchedShipment.internal_status !== 'Recibido en Oficina') {
+                updatePayload.internal_status = 'Recibido en Oficina';
+            }
 
             if (receivedBoxes) {
                 updatePayload.boxes_count = parseInt(receivedBoxes);

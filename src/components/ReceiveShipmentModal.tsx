@@ -329,7 +329,6 @@ export function ReceiveShipmentModal({ isOpen, onClose, onSuccess, shipment }: R
 
             // 2. Update shipment via secure API
             const updateFields: Record<string, any> = {
-                internal_status: 'Recibido en Oficina',
                 date_arrived: new Date().toISOString().split('T')[0],
                 weight: parseFloat(finalTotalFisico.toFixed(2)),
                 peso_computable: parseFloat(finalTotalComputable.toFixed(2)),
@@ -345,6 +344,12 @@ export function ReceiveShipmentModal({ isOpen, onClose, onSuccess, shipment }: R
                 ...(url1 && { invoice_photo_1: url1 }),
                 ...(url2 && { invoice_photo_2: url2 }),
             };
+
+            // Only set internal_status when transitioning from a different state
+            // (avoids "Recibido en Oficina" → "Recibido en Oficina" invalid transition)
+            if (shipment.internal_status !== 'Recibido en Oficina') {
+                updateFields.internal_status = 'Recibido en Oficina';
+            }
 
             const result = await secureShipmentUpdate(shipment.id, updateFields);
 
