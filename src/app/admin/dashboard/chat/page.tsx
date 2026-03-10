@@ -412,13 +412,28 @@ function parseInvoiceFromResponse(content: string): { text: string; invoice: Inv
 
 // ── Chat Panel Component ──
 function ChatPanel({ tab, isActive }: { tab: TabConfig; isActive: boolean }) {
-    const { messages, sendMessage, status, setMessages } = useChat({
-        id: tab.id,
-        messages: [{
+    const STORAGE_KEY = `shippar_chat_${tab.id}`;
+
+    // Load persisted messages or use welcome
+    const getInitialMessages = (): UIMessage[] => {
+        if (typeof window === 'undefined') return [];
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved) as UIMessage[];
+                if (parsed.length > 0) return parsed;
+            }
+        } catch { /* ignore parse errors */ }
+        return [{
             id: `welcome-${tab.id}`,
             role: 'assistant',
             parts: [{ type: 'text', text: tab.welcome }],
-        }] as UIMessage[],
+        }] as UIMessage[];
+    };
+
+    const { messages, sendMessage, status, setMessages } = useChat({
+        id: tab.id,
+        messages: getInitialMessages(),
         transport: new DefaultChatTransport({
             api: '/api/chat',
             body: { mode: tab.id },
@@ -430,6 +445,15 @@ function ChatPanel({ tab, isActive }: { tab: TabConfig; isActive: boolean }) {
             }
         })
     });
+
+    // Persist messages to localStorage on change
+    useEffect(() => {
+        if (messages.length > 0) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+            } catch { /* quota exceeded, ignore */ }
+        }
+    }, [messages, STORAGE_KEY]);
 
 
     const [input, setInput] = useState('');
@@ -456,6 +480,7 @@ function ChatPanel({ tab, isActive }: { tab: TabConfig; isActive: boolean }) {
     }, [isActive]);
 
     const clearChat = () => {
+        localStorage.removeItem(STORAGE_KEY);
         setMessages([{
             id: `welcome-${tab.id}`,
             role: 'assistant',

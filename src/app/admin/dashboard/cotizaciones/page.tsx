@@ -128,11 +128,11 @@ export default function CotizacionesPage() {
 
     // Filtered clients for autocomplete
     const filteredClients = useMemo(() => {
-        if (!clientSearch.trim()) return clients.slice(0, 10);
+        if (!clientSearch.trim()) return clients.slice(0, 50);
         const term = clientSearch.toLowerCase();
         return clients.filter(c =>
             c.name.toLowerCase().includes(term) || (c.code || '').toLowerCase().includes(term)
-        ).slice(0, 10);
+        );
     }, [clients, clientSearch]);
 
     // ── Calculations ──
@@ -434,7 +434,7 @@ function QuoteForm({
                                     initial={{ opacity: 0, y: -5 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -5 }}
-                                    className="absolute z-50 top-full mt-1 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl max-h-52 overflow-y-auto"
+                                    className="absolute z-50 top-full mt-1 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl max-h-72 overflow-y-auto"
                                 >
                                     {filteredClients.map((c: any) => (
                                         <button
