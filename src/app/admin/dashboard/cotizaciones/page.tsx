@@ -232,64 +232,189 @@ export default function CotizacionesPage() {
         }
     };
 
-    // Download PDF
+    // Download PDF via print (vector, ~200KB)
     const [generatingPDF, setGeneratingPDF] = useState(false);
-    const downloadPDF = async () => {
-        if (!previewRef.current) {
-            toast.error('Preview no disponible');
-            return;
-        }
+    const downloadPDF = () => {
         setGeneratingPDF(true);
-        try {
-            const html2canvas = (await import('html2canvas')).default;
-            const jsPDF = (await import('jspdf')).default;
+        const formatMoney = (n: number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+        const originInfo = ORIGINS.find(o => o.value === form.origin);
+        const today = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-            // Render at 2x for crisp output, JPEG for smaller file
-            const canvas = await html2canvas(previewRef.current, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: '#070d19',
-                logging: false,
-            });
+        const taxRows = [
+            gastoDoc > 0 ? `<tr><td>Gasto documental de aduana</td><td>$${formatMoney(gastoDoc)}</td></tr>` : '',
+            form.valorFob ? `<tr class="dim"><td>Valor FOB declarado</td><td>USD $${formatMoney(form.valorFob)}</td></tr>` : '',
+            derechosAmount > 0 ? `<tr><td>Derechos (${form.derechosPct}%)</td><td>USD $${formatMoney(derechosAmount)}</td></tr>` : '',
+            tasaAmount > 0 ? `<tr><td>Tasa estadística (${form.tasaEstadisticaPct}%)</td><td>USD $${formatMoney(tasaAmount)}</td></tr>` : '',
+            iva105Amount > 0 ? `<tr><td>IVA Aduana (${form.ivaAduana105Pct}%)</td><td>USD $${formatMoney(iva105Amount)}</td></tr>` : '',
+            iva21Amount > 0 ? `<tr><td>IVA Aduana (${form.ivaAduana21Pct}%)</td><td>USD $${formatMoney(iva21Amount)}</td></tr>` : '',
+        ].filter(Boolean).join('');
 
-            const imgData = canvas.toDataURL('image/jpeg', 0.92);
-            const imgWidth = 210; // A4 width mm
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        const showTaxSection = (form.includeTaxes && totalTaxes > 0) || gastoDoc > 0;
+        const totalTaxAndAduana = totalTaxes + gastoDoc;
+        const envioTotal = shippingCost + form.guiaAerea;
 
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            let position = 0;
-            const pageHeight = 297; // A4 height mm
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) { setGeneratingPDF(false); return; }
 
-            // Fill entire page with dark background
-            pdf.setFillColor(7, 13, 25); // #070d19
-            pdf.rect(0, 0, 210, 297, 'F');
+        printWindow.document.write(`<!DOCTYPE html>
+<html><head><title>Cotización - ${form.clientName}</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #070d19; color: #f1f5f9; padding: 30px; }
+    .accent-bar { height: 3px; background: linear-gradient(90deg, #3b82f6 0%, #4ADE80 100%); border-radius: 2px 2px 0 0; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; padding: 18px 0; border-bottom: 1px solid #1e2d47; }
+    .header-left h1 { font-size: 16px; font-weight: 800; color: #fff; }
+    .header-left p { font-size: 7px; color: #a8b8cc; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 2px; font-style: italic; }
+    .header-right { text-align: right; }
+    .header-right .label { font-size: 7px; color: #a8b8cc; letter-spacing: 0.1em; text-transform: uppercase; }
+    .header-right .date { font-size: 11px; font-weight: 700; color: #fff; margin-top: 1px; }
+    .header-right .valid { font-size: 7px; color: #a8b8cc; font-style: italic; margin-top: 1px; }
+    .info-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; padding: 10px 0; }
+    .info-card { background: #111d32; border: 1px solid #1e2d47; border-radius: 5px; padding: 8px; }
+    .info-card .lbl { font-size: 6.5px; font-weight: 500; color: #a8b8cc; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2px; }
+    .info-card .val { font-size: 10px; font-weight: 700; color: #fff; line-height: 1.2; }
+    .info-card .sub { font-size: 7px; color: #cbd5e1; margin-top: 1px; }
+    .info-card .code { font-size: 7px; color: #3b82f6; margin-top: 1px; }
+    .info-card.center { text-align: center; }
+    .info-card .big { font-size: 20px; font-weight: 700; color: #fff; line-height: 1; }
+    .info-card .accent { font-size: 20px; font-weight: 700; color: #3b82f6; line-height: 1; }
+    .section { background: #111d32; border: 1px solid #1e2d47; border-radius: 5px; padding: 10px 12px; margin-top: 10px; }
+    .section.blue { border-left: 2px solid #3b82f6; }
+    .section.amber { border-left: 2px solid #d4a574; }
+    .section-title { font-size: 7px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px; }
+    .section-title.blue { color: #3b82f6; }
+    .section-title.amber { color: #d4a574; }
+    .row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; }
+    .row .label { font-size: 9px; font-weight: 500; color: #cbd5e1; }
+    .row .value { font-size: 9px; font-weight: 700; color: #fff; }
+    .row .value.big { font-size: 14px; }
+    .row.dim .label, .row.dim .value { font-size: 8px; color: rgba(168,184,204,0.6); font-weight: 400; }
+    .row.total { border-top: 2px solid #3b82f6; margin-top: 4px; padding-top: 5px; }
+    .row.total-amber { border-top: 1px solid rgba(212,165,116,0.25); margin-top: 3px; padding-top: 4px; }
+    .row.total-amber .label { font-size: 8px; font-weight: 600; color: #e0a960; text-transform: uppercase; letter-spacing: 0.1em; }
+    .row.total-amber .value { font-size: 13px; font-weight: 700; color: #e0a960; }
+    table.tax { width: 100%; border-collapse: collapse; }
+    table.tax td { padding: 2px 0; font-size: 9px; }
+    table.tax td:first-child { color: #cbd5e1; font-weight: 400; }
+    table.tax td:last-child { text-align: right; color: #fff; font-weight: 700; }
+    table.tax tr.dim td { font-size: 8px; color: rgba(168,184,204,0.6); font-weight: 400; }
+    table.tax tr.dim td:last-child { color: rgba(203,213,225,0.5); font-weight: 500; }
+    .summary-bar { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 3px; align-items: center; padding: 8px; background: #111d32; border: 1px solid #1e2d47; border-radius: 5px; margin-top: 10px; text-align: center; }
+    .summary-bar .lbl { font-size: 6.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+    .summary-bar .val { font-size: 10px; font-weight: 700; color: #fff; }
+    .summary-bar .op { font-size: 10px; color: #a8b8cc; font-weight: 700; }
+    .total-box { margin-top: 10px; background: linear-gradient(135deg, #0f3f2c 0%, #1a5e40 100%); border: 1px solid rgba(74,222,128,0.2); border-left: 3px solid #4ADE80; border-radius: 6px; padding: 18px 14px; text-align: center; }
+    .total-box .lbl { font-size: 7px; font-weight: 600; color: #a8b8cc; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 4px; }
+    .total-box .amount { font-size: 28px; font-weight: 800; color: #4ADE80; letter-spacing: -0.02em; line-height: 1; }
+    .total-box .amount span { font-size: 12px; font-weight: 600; color: #2a9d5c; }
+    .total-box .ars { font-size: 8px; color: rgba(203,213,225,0.7); margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(74,222,128,0.12); }
+    .total-box .tc { font-size: 7px; color: rgba(168,184,204,0.6); margin-top: 3px; font-style: italic; }
+    .includes { background: #111d32; border: 1px solid #1e2d47; border-radius: 5px; padding: 10px 14px; margin-top: 10px; text-align: center; }
+    .includes .title { font-size: 7px; font-weight: 600; color: #a8b8cc; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 4px; }
+    .includes-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px 6px; }
+    .includes-grid .item { font-size: 8px; color: #cbd5e1; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    .includes-grid .dot { color: #4ADE80; font-size: 10px; }
+    .disclaimer { font-size: 6.5px; color: #a8b8cc; line-height: 1.4; font-style: italic; margin-top: 10px; }
+    .footer { text-align: center; border-top: 1px solid #1e2d47; padding-top: 10px; margin-top: 10px; }
+    .footer p { font-size: 7.5px; font-weight: 600; color: #cbd5e1; letter-spacing: 0.05em; }
+    .footer .slogan { font-size: 7px; font-weight: 400; color: #a8b8cc; font-style: italic; margin-top: 2px; }
+    @media print { body { padding: 15px; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
+</style></head><body>
+<div class="accent-bar"></div>
+<div class="header">
+    <div class="header-left">
+        <h1>SHIPPAR</h1>
+        <p>Tu socio en comercio internacional</p>
+    </div>
+    <div class="header-right">
+        <p class="label">Cotización</p>
+        <p class="date">${today}</p>
+        <p class="valid">Válida por 72hs</p>
+    </div>
+</div>
+<div class="info-grid">
+    <div class="info-card">
+        <p class="lbl">Cliente</p>
+        <p class="val">${form.clientName.toUpperCase()}</p>
+        ${form.clientCode ? `<p class="code">${form.clientCode}</p>` : ''}
+    </div>
+    <div class="info-card">
+        <p class="lbl">Ruta</p>
+        <p class="val">${originInfo?.label?.toUpperCase() || form.origin}</p>
+        <p class="sub">→ Buenos Aires</p>
+    </div>
+    <div class="info-card">
+        <p class="lbl">Servicio</p>
+        <p class="val">${form.serviceType} Air</p>
+        <p class="sub">${deliveryDays} días hábiles</p>
+    </div>
+    <div class="info-card center">
+        <p class="lbl">KG Cotizados</p>
+        <p class="big">${form.weightKg}</p>
+    </div>
+    <div class="info-card center">
+        <p class="lbl">Tarifa por KG</p>
+        <p class="accent">$${form.tarifaPerKg}</p>
+    </div>
+</div>
 
-            // Handle multi-page if content is taller than A4
-            if (imgHeight <= pageHeight) {
-                pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
-            } else {
-                let remaining = imgHeight;
-                while (remaining > 0) {
-                    if (position < 0) {
-                        pdf.setFillColor(7, 13, 25);
-                        pdf.rect(0, 0, 210, 297, 'F');
-                    }
-                    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-                    remaining -= pageHeight;
-                    position -= pageHeight;
-                    if (remaining > 0) pdf.addPage();
-                }
-            }
+<div class="section blue">
+    <div class="row">
+        <span class="label">Transporte aéreo (${form.weightKg} kg × $${form.tarifaPerKg}/kg)</span>
+        <span class="value big">$${formatMoney(shippingCost)}</span>
+    </div>
+    ${form.guiaAerea > 0 ? `
+    <div class="row" style="border-top: 1px solid #1e2d47; margin-top: 5px; padding-top: 5px;">
+        <span class="label">Guía aérea</span>
+        <span class="value">$${formatMoney(form.guiaAerea)}</span>
+    </div>` : ''}
+</div>
 
-            const fileName = `Cotizacion_${form.clientName.replace(/\s+/g, '_')}_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`;
-            pdf.save(fileName);
-            toast.success('PDF descargado');
-        } catch (err: any) {
-            console.error('PDF Error:', err);
-            toast.error(`Error al generar PDF: ${err.message || 'desconocido'}`);
-        } finally {
-            setGeneratingPDF(false);
-        }
+${showTaxSection ? `
+<div class="section amber">
+    <p class="section-title amber">Impuestos y Aduana</p>
+    <table class="tax">${taxRows}</table>
+    <div class="row total-amber">
+        <span class="label">Total Impuestos y Aduana</span>
+        <span class="value">USD $${formatMoney(totalTaxAndAduana)}</span>
+    </div>
+    <p style="font-size: 6.5px; color: #a8b8cc; margin-top: 4px; font-style: italic;">* Estimados, pueden variar según determinación de Aduana.</p>
+</div>` : ''}
+
+${form.includeTaxes && totalTaxes > 0 ? `
+<div class="summary-bar">
+    <div><p class="lbl" style="color:#3b82f6">Envío</p><p class="val">$${formatMoney(envioTotal)}</p></div>
+    <span class="op">+</span>
+    <div><p class="lbl" style="color:#d4a574">Impuestos y Aduana</p><p class="val">$${formatMoney(totalTaxAndAduana)}</p></div>
+    <span class="op">=</span>
+    <div><p class="lbl" style="color:#4ADE80">Total</p><p class="val" style="color:#4ADE80">$${formatMoney(totalUSD)}</p></div>
+</div>` : ''}
+
+<div class="total-box">
+    <p class="lbl">Costo Total Estimado</p>
+    <p class="amount">$${formatMoney(totalUSD)} <span>USD</span></p>
+    ${totalARS && exchangeRate ? `
+    <p class="ars">Equivalente ARS ${new Intl.NumberFormat('es-AR').format(Math.round(totalARS))}</p>
+    <p class="tc">TC Oficial BCRA: $${exchangeRate} — ${exchangeDate}</p>
+    ` : ''}
+</div>
+
+<div class="includes">
+    <p class="title">Incluye</p>
+    <div class="includes-grid">
+        ${SERVICE_INCLUDES.map(item => `<div class="item"><span class="dot">✓</span> ${item}</div>`).join('')}
+    </div>
+</div>
+
+<p class="disclaimer">Costos sujetos a KG efectivamente recepcionados. Cobro en ARS al TC venta BNA del día de llegada (puede variar). Propuesta aproximada de costos finales.</p>
+<div class="footer">
+    <p>Shippar Global Logistics S.R.L.</p>
+    <p class="slogan">Comercio sin fronteras.</p>
+</div>
+</body></html>`);
+        printWindow.document.close();
+        setTimeout(() => { printWindow.print(); setGeneratingPDF(false); }, 500);
     };
 
     // ═══════════════════════════════════════════════════════════════
