@@ -40,7 +40,7 @@ interface InvoiceData {
     buyer_phone: string;
     items: InvoiceItem[];
     origin: string;
-    signature: string;
+    signature?: string;
     date: string;
 }
 
@@ -110,86 +110,136 @@ const TABS: TabConfig[] = [
         color: 'text-violet-500',
         bgColor: 'bg-violet-500',
         placeholder: 'Describí los datos: proveedor, comprador, productos, cantidades, precios...',
-        welcome: '📄 **Generador de Commercial Invoice**\n\nDescribime los datos y genero la factura:\n\n🏭 **Proveedor** — nombre y dirección\n🏢 **Comprador** — nombre, dirección, CUIT\n📦 **Productos** — descripción, cantidad, precio unitario USD\n📋 **Extras** — código HS, material, propósito\n\nEjemplo: *"Haceme una invoice de Guangzhou Seawave para TMCO SRL, 1000 pvc zipper bags a 0.207 USD c/u"*',
+        welcome: '📄 **Generador de Commercial Invoice**\n\nPasame proveedor, comprador y productos con precio y la genero al toque.\n\nEjemplo: *"Haceme una invoice de Guangzhou Seawave para TMCO SRL, 1000 pvc zipper bags a 0.207 USD c/u"*',
         suggestedPrompts: ['Haceme una invoice de proveedor X para TMCO SRL', 'Agregale un producto más a la última invoice', 'Cambiá el precio unitario a 0.15 USD']
     },
 ];
 
-// ── Invoice Preview Component ──
+// ── Editable Invoice Preview Component ──
 function InvoicePreview({ data }: { data: InvoiceData }) {
-    const total = data.items.reduce((sum, item) => sum + item.quantity * item.unit_value, 0);
+    const [invoice, setInvoice] = useState<InvoiceData>({ ...data });
+
+    // Recalculate totals
+    const total = invoice.items.reduce((sum, item) => sum + item.quantity * item.unit_value, 0);
+
+    const updateField = (field: keyof InvoiceData, value: string) => {
+        setInvoice(prev => ({ ...prev, [field]: value }));
+    };
+
+    const updateItem = (index: number, field: keyof InvoiceItem, value: string | number) => {
+        setInvoice(prev => {
+            const items = [...prev.items];
+            items[index] = { ...items[index], [field]: value };
+            return { ...prev, items };
+        });
+    };
+
+    const addItem = () => {
+        setInvoice(prev => ({
+            ...prev,
+            items: [...prev.items, { description: '', hs_code: '', material: '', purpose: 'Commercial use', quantity: 1, unit_value: 0 }]
+        }));
+    };
+
+    const removeItem = (index: number) => {
+        if (invoice.items.length <= 1) return;
+        setInvoice(prev => ({
+            ...prev,
+            items: prev.items.filter((_, i) => i !== index)
+        }));
+    };
 
     const handlePrint = () => {
         const printWindow = window.open('', '_blank');
         if (!printWindow) return;
+        const itemRows = invoice.items.map((item, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td style="text-align:left">${item.description}</td>
+                <td>${item.hs_code || ''}</td>
+                <td>${item.material || ''}</td>
+                <td>${item.purpose || ''}</td>
+                <td>${item.quantity.toLocaleString()}</td>
+                <td>${Number(item.unit_value).toFixed(3)}</td>
+                <td>${(item.quantity * item.unit_value).toFixed(2)}</td>
+            </tr>
+        `).join('');
+
         printWindow.document.write(`
             <!DOCTYPE html>
-            <html><head><title>Commercial Invoice - ${data.buyer_name}</title>
+            <html><head><title>Commercial Invoice - ${invoice.buyer_name}</title>
             <style>
                 * { margin: 0; padding: 0; box-sizing: border-box; }
-                body { font-family: 'Times New Roman', serif; padding: 40px; color: #000; background: #fff; }
-                .header { text-align: center; margin-bottom: 30px; }
-                .header h1 { font-size: 22px; margin-bottom: 4px; }
-                .header p { font-size: 12px; color: #444; }
-                .title { text-align: center; font-size: 24px; font-weight: bold; margin: 25px 0; letter-spacing: 2px; }
-                .info { margin-bottom: 20px; font-size: 13px; line-height: 1.8; }
-                .info strong { font-weight: bold; }
-                table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 12px; }
-                th, td { border: 1px solid #000; padding: 8px 10px; text-align: center; }
-                th { background: #f5f5f5; font-weight: bold; font-size: 11px; }
-                td { font-size: 12px; }
-                .total-row td { font-weight: bold; }
-                .footer { margin-top: 30px; font-size: 13px; line-height: 2; }
+                body { font-family: 'Times New Roman', serif; padding: 40px; color: #000; background: #fff; font-size: 13px; }
+                .header { text-align: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 2px solid #000; }
+                .header h1 { font-size: 20px; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 1px; }
+                .header p { font-size: 12px; color: #333; }
+                .title { text-align: center; font-size: 20px; font-weight: bold; margin: 15px 0; letter-spacing: 3px; text-transform: uppercase; text-decoration: underline; }
+                .info-grid { display: flex; justify-content: space-between; margin-bottom: 15px; }
+                .info-block { width: 48%; }
+                .info-block h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; border-bottom: 1px solid #999; padding-bottom: 2px; }
+                .info-block p { font-size: 12px; line-height: 1.6; }
+                .meta-line { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 12px; }
+                .meta-line span { font-weight: bold; }
+                table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 11px; }
+                th, td { border: 1px solid #000; padding: 6px 8px; text-align: center; }
+                th { background: #f0f0f0; font-weight: bold; font-size: 10px; text-transform: uppercase; }
+                .total-row td { font-weight: bold; font-size: 12px; }
+                .footer { margin-top: 20px; font-size: 12px; }
+                .footer-grid { display: flex; justify-content: space-between; margin-top: 10px; }
+                .footer-block { text-align: center; }
                 @media print { body { padding: 20px; } }
             </style></head><body>
             <div class="header">
-                <h1>${data.supplier_name}</h1>
-                <p>${data.supplier_address}</p>
+                <h1>${invoice.supplier_name}</h1>
+                <p>${invoice.supplier_address}</p>
             </div>
             <div class="title">Commercial Invoice</div>
-            <div class="info">
-                <p><strong>Attn:</strong> ${data.buyer_name}</p>
-                <p><strong>Address:</strong> ${data.buyer_address}</p>
-                <p><strong>Zip code:</strong> ${data.buyer_zip}</p>
-                <p><strong>Phone:</strong> ${data.buyer_phone}</p>
+            <div class="info-grid">
+                <div class="info-block">
+                    <h4>Ship To / Buyer</h4>
+                    <p><strong>${invoice.buyer_name}</strong></p>
+                    <p>${invoice.buyer_address}</p>
+                    <p>CP: ${invoice.buyer_zip}</p>
+                    <p>BUENOS AIRES, ARGENTINA</p>
+                    ${invoice.buyer_phone ? `<p>CUIT: ${invoice.buyer_phone}</p>` : ''}
+                </div>
+                <div class="info-block" style="text-align:right">
+                    <h4>Invoice Details</h4>
+                    <p><strong>Date:</strong> ${invoice.date}</p>
+                    <p><strong>Origin:</strong> ${invoice.origin}</p>
+                    <p><strong>Currency:</strong> USD</p>
+                </div>
             </div>
             <table>
                 <thead>
                     <tr>
-                        <th>Item</th>
+                        <th>#</th>
                         <th>Full Description of Goods</th>
                         <th>HS Code</th>
                         <th>Material</th>
                         <th>Purpose</th>
-                        <th>Quantity (pcs)</th>
+                        <th>Qty (pcs)</th>
                         <th>Unit Value (USD)</th>
                         <th>Total Value (USD)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${data.items.map((item, i) => `
-                        <tr>
-                            <td>${i + 1}</td>
-                            <td style="text-align:left">${item.description}</td>
-                            <td>${item.hs_code || ''}</td>
-                            <td>${item.material}</td>
-                            <td>${item.purpose}</td>
-                            <td>${item.quantity.toLocaleString()}</td>
-                            <td>${item.unit_value.toFixed(3)}</td>
-                            <td>${(item.quantity * item.unit_value).toFixed(2)}</td>
-                        </tr>
-                    `).join('')}
+                    ${itemRows}
                     <tr class="total-row">
-                        <td colspan="6"></td>
-                        <td><strong>Total (USD)</strong></td>
-                        <td><strong>$${total.toFixed(2)}</strong></td>
+                        <td colspan="7" style="text-align:right">TOTAL (USD)</td>
+                        <td>$${total.toFixed(2)}</td>
                     </tr>
                 </tbody>
             </table>
             <div class="footer">
-                <p><strong>Made in ${data.origin}</strong></p>
-                <p style="text-align:center; margin-top:20px"><strong>Signature: ${data.signature}</strong></p>
-                <p style="text-align:center"><strong>Date: ${data.date}</strong></p>
+                <p>Country of Origin: <strong>${invoice.origin}</strong></p>
+                <p style="margin-top: 5px">I hereby certify that the information on this invoice is true and correct.</p>
+                <div class="footer-grid">
+                    <div class="footer-block">
+                        <p style="margin-top: 40px; border-top: 1px solid #000; padding-top: 5px">Date: ${invoice.date}</p>
+                    </div>
+                </div>
             </div>
             </body></html>
         `);
@@ -197,27 +247,61 @@ function InvoicePreview({ data }: { data: InvoiceData }) {
         setTimeout(() => printWindow.print(), 500);
     };
 
+    // Editable input style
+    const editInput = "bg-transparent border-b border-dashed border-slate-300 dark:border-white/20 outline-none focus:border-blue-500 transition-colors text-inherit font-inherit w-full";
+    const editInputSm = `${editInput} text-[11px]`;
+
     return (
         <div className="mt-2">
-            {/* Invoice Card */}
+            {/* Editable Invoice Card */}
             <div className="bg-white text-black rounded-xl overflow-hidden shadow-lg border border-slate-200 max-w-2xl">
                 {/* Supplier Header */}
                 <div className="text-center py-4 px-6 border-b border-slate-200">
-                    <h2 className="text-lg font-bold text-slate-900">{data.supplier_name}</h2>
-                    <p className="text-[11px] text-slate-500 mt-1">{data.supplier_address}</p>
+                    <input
+                        className={`${editInput} text-lg font-bold text-center text-slate-900`}
+                        value={invoice.supplier_name}
+                        onChange={e => updateField('supplier_name', e.target.value)}
+                    />
+                    <input
+                        className={`${editInputSm} text-center text-slate-500 mt-1`}
+                        value={invoice.supplier_address}
+                        onChange={e => updateField('supplier_address', e.target.value)}
+                    />
                 </div>
 
                 {/* Title */}
-                <div className="text-center py-3">
-                    <h3 className="text-xl font-bold tracking-widest text-slate-800">Commercial Invoice</h3>
+                <div className="text-center py-2">
+                    <h3 className="text-lg font-bold tracking-[3px] text-slate-800 uppercase underline">Commercial Invoice</h3>
                 </div>
 
-                {/* Buyer Info */}
-                <div className="px-6 py-3 text-xs space-y-1 border-b border-slate-100">
-                    <p><span className="font-bold">Attn:</span> {data.buyer_name}</p>
-                    <p><span className="font-bold">Address:</span> {data.buyer_address}</p>
-                    <p><span className="font-bold">Zip code:</span> {data.buyer_zip}</p>
-                    <p><span className="font-bold">Phone:</span> {data.buyer_phone}</p>
+                {/* Buyer Info + Invoice Meta */}
+                <div className="px-6 py-3 grid grid-cols-2 gap-4 border-b border-slate-100">
+                    <div className="text-xs space-y-1">
+                        <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-200 pb-1">Ship To / Buyer</p>
+                        <input className={`${editInputSm} font-bold text-black`} value={invoice.buyer_name} onChange={e => updateField('buyer_name', e.target.value)} />
+                        <input className={editInputSm} value={invoice.buyer_address} onChange={e => updateField('buyer_address', e.target.value)} />
+                        <div className="flex items-center gap-1">
+                            <span className="text-slate-500 shrink-0">CP:</span>
+                            <input className={`${editInputSm} w-20`} value={invoice.buyer_zip} onChange={e => updateField('buyer_zip', e.target.value)} />
+                        </div>
+                        <p className="text-[11px] text-slate-600">BUENOS AIRES, ARGENTINA</p>
+                        <div className="flex items-center gap-1">
+                            <span className="text-slate-500 shrink-0">CUIT:</span>
+                            <input className={`${editInputSm} flex-1`} value={invoice.buyer_phone} onChange={e => updateField('buyer_phone', e.target.value)} placeholder="—" />
+                        </div>
+                    </div>
+                    <div className="text-xs space-y-1 text-right">
+                        <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-200 pb-1">Invoice Details</p>
+                        <div className="flex items-center justify-end gap-1">
+                            <span className="font-bold">Date:</span>
+                            <input className={`${editInputSm} w-28 text-right`} value={invoice.date} onChange={e => updateField('date', e.target.value)} />
+                        </div>
+                        <div className="flex items-center justify-end gap-1">
+                            <span className="font-bold">Origin:</span>
+                            <input className={`${editInputSm} w-28 text-right`} value={invoice.origin} onChange={e => updateField('origin', e.target.value)} />
+                        </div>
+                        <p><span className="font-bold">Currency:</span> USD</p>
+                    </div>
                 </div>
 
                 {/* Items Table */}
@@ -225,43 +309,76 @@ function InvoicePreview({ data }: { data: InvoiceData }) {
                     <table className="w-full text-[11px]">
                         <thead>
                             <tr className="bg-slate-50">
-                                <th className="border border-slate-200 px-2 py-2 font-bold">#</th>
-                                <th className="border border-slate-200 px-2 py-2 font-bold text-left">Description</th>
-                                <th className="border border-slate-200 px-2 py-2 font-bold">HS Code</th>
-                                <th className="border border-slate-200 px-2 py-2 font-bold">Material</th>
-                                <th className="border border-slate-200 px-2 py-2 font-bold">Purpose</th>
-                                <th className="border border-slate-200 px-2 py-2 font-bold">Qty</th>
-                                <th className="border border-slate-200 px-2 py-2 font-bold">Unit (USD)</th>
-                                <th className="border border-slate-200 px-2 py-2 font-bold">Total (USD)</th>
+                                <th className="border border-slate-200 px-1.5 py-2 font-bold w-8">#</th>
+                                <th className="border border-slate-200 px-1.5 py-2 font-bold text-left">Description</th>
+                                <th className="border border-slate-200 px-1.5 py-2 font-bold">HS Code</th>
+                                <th className="border border-slate-200 px-1.5 py-2 font-bold">Material</th>
+                                <th className="border border-slate-200 px-1.5 py-2 font-bold">Purpose</th>
+                                <th className="border border-slate-200 px-1.5 py-2 font-bold">Qty</th>
+                                <th className="border border-slate-200 px-1.5 py-2 font-bold">Unit (USD)</th>
+                                <th className="border border-slate-200 px-1.5 py-2 font-bold">Total (USD)</th>
+                                <th className="border border-slate-200 px-1.5 py-2 font-bold w-8"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            {data.items.map((item, i) => (
-                                <tr key={i}>
-                                    <td className="border border-slate-200 px-2 py-2 text-center">{i + 1}</td>
-                                    <td className="border border-slate-200 px-2 py-2">{item.description}</td>
-                                    <td className="border border-slate-200 px-2 py-2 text-center">{item.hs_code || '-'}</td>
-                                    <td className="border border-slate-200 px-2 py-2 text-center">{item.material}</td>
-                                    <td className="border border-slate-200 px-2 py-2 text-center">{item.purpose}</td>
-                                    <td className="border border-slate-200 px-2 py-2 text-center">{item.quantity.toLocaleString()}</td>
-                                    <td className="border border-slate-200 px-2 py-2 text-center">{item.unit_value.toFixed(3)}</td>
-                                    <td className="border border-slate-200 px-2 py-2 text-center font-medium">{(item.quantity * item.unit_value).toFixed(2)}</td>
+                            {invoice.items.map((item, i) => (
+                                <tr key={i} className="group">
+                                    <td className="border border-slate-200 px-1.5 py-1.5 text-center text-slate-400">{i + 1}</td>
+                                    <td className="border border-slate-200 px-1.5 py-1.5">
+                                        <input className={`${editInputSm} text-left`} value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} />
+                                    </td>
+                                    <td className="border border-slate-200 px-1.5 py-1.5">
+                                        <input className={`${editInputSm} text-center w-16`} value={item.hs_code || ''} onChange={e => updateItem(i, 'hs_code', e.target.value)} placeholder="—" />
+                                    </td>
+                                    <td className="border border-slate-200 px-1.5 py-1.5">
+                                        <input className={`${editInputSm} text-center w-20`} value={item.material} onChange={e => updateItem(i, 'material', e.target.value)} placeholder="—" />
+                                    </td>
+                                    <td className="border border-slate-200 px-1.5 py-1.5">
+                                        <input className={`${editInputSm} text-center w-24`} value={item.purpose} onChange={e => updateItem(i, 'purpose', e.target.value)} />
+                                    </td>
+                                    <td className="border border-slate-200 px-1.5 py-1.5">
+                                        <input className={`${editInputSm} text-center w-14`} type="number" value={item.quantity} onChange={e => updateItem(i, 'quantity', parseInt(e.target.value) || 0)} />
+                                    </td>
+                                    <td className="border border-slate-200 px-1.5 py-1.5">
+                                        <input className={`${editInputSm} text-center w-16`} type="number" step="0.001" value={item.unit_value} onChange={e => updateItem(i, 'unit_value', parseFloat(e.target.value) || 0)} />
+                                    </td>
+                                    <td className="border border-slate-200 px-1.5 py-1.5 text-center font-medium">
+                                        {(item.quantity * item.unit_value).toFixed(2)}
+                                    </td>
+                                    <td className="border border-slate-200 px-1 py-1.5 text-center">
+                                        {invoice.items.length > 1 && (
+                                            <button onClick={() => removeItem(i)} className="text-slate-300 hover:text-red-500 transition-colors text-xs" title="Eliminar">✕</button>
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                             <tr className="bg-slate-50 font-bold">
-                                <td colSpan={6} className="border border-slate-200 px-2 py-2"></td>
-                                <td className="border border-slate-200 px-2 py-2 text-center text-[10px]">Total (USD)</td>
+                                <td colSpan={7} className="border border-slate-200 px-2 py-2 text-right text-[10px] uppercase tracking-wider">Total (USD)</td>
                                 <td className="border border-slate-200 px-2 py-2 text-center text-sm">${total.toFixed(2)}</td>
+                                <td className="border border-slate-200"></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
+                {/* Add item button */}
+                <div className="px-6 py-2">
+                    <button onClick={addItem} className="text-[10px] font-bold text-blue-600 hover:text-blue-500 transition-colors">
+                        + Agregar producto
+                    </button>
+                </div>
+
                 {/* Footer */}
-                <div className="px-6 py-4 text-xs space-y-2">
-                    <p className="font-bold">Made in {data.origin}</p>
-                    <p className="text-center font-bold pt-2">Signature: {data.signature}</p>
-                    <p className="text-center font-bold">Date: {data.date}</p>
+                <div className="px-6 py-3 text-xs border-t border-slate-100 space-y-1">
+                    <p className="text-slate-600">Country of Origin: <span className="font-bold text-black">{invoice.origin}</span></p>
+                    <p className="text-slate-400 italic text-[10px]">I hereby certify that the information on this invoice is true and correct.</p>
+                </div>
+
+                {/* Edit hint */}
+                <div className="px-6 pb-3">
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                        ✏️ Todos los campos son editables — hacé click para modificar antes de imprimir
+                    </p>
                 </div>
             </div>
 

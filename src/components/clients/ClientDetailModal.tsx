@@ -28,6 +28,8 @@ export function ClientDetailModal({ client, onClose, onSaved, getVendorName }: C
         if (!editingClient) return;
         setSavingClient(true);
         const { error } = await supabase.from('clients').update({
+            name: editingClient.name,
+            code: editingClient.code,
             cuit: editingClient.cuit,
             phone: editingClient.phone,
             email: editingClient.email,
@@ -54,9 +56,9 @@ export function ClientDetailModal({ client, onClose, onSaved, getVendorName }: C
                     {client.name.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight truncate">{client.name}</h2>
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight truncate">{(editingClient || client).name}</h2>
                     <div className="flex items-center gap-2 mt-1">
-                        <span className="bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-full">{client.code || 'Sin código'}</span>
+                        <span className="bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-full">{(editingClient || client).code || 'Sin código'}</span>
                     </div>
                 </div>
                 <button onClick={() => { onClose(); setEditingClient(null); }} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
@@ -67,6 +69,8 @@ export function ClientDetailModal({ client, onClose, onSaved, getVendorName }: C
             {/* Editable fields */}
             <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[55vh] overflow-y-auto">
                 {[
+                    { label: 'Nombre / Razón Social', key: 'name', placeholder: 'Nombre completo o razón social' },
+                    { label: 'Código (SH)', key: 'code', placeholder: 'SH-001' },
                     { label: 'CUIL / CUIT', key: 'cuit', placeholder: '20-12345678-9' },
                     { label: 'Teléfono', key: 'phone', placeholder: '549 11 ...' },
                     { label: 'Email', key: 'email', placeholder: 'correo@ejemplo.com' },
