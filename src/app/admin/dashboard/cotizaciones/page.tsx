@@ -244,7 +244,7 @@ export default function CotizacionesPage() {
             const html2canvas = (await import('html2canvas')).default;
             const jsPDF = (await import('jspdf')).default;
 
-            // Render at 2x for crisp output
+            // Render at 2x for crisp output, JPEG for smaller file
             const canvas = await html2canvas(previewRef.current, {
                 scale: 2,
                 useCORS: true,
@@ -252,7 +252,7 @@ export default function CotizacionesPage() {
                 logging: false,
             });
 
-            const imgData = canvas.toDataURL('image/png');
+            const imgData = canvas.toDataURL('image/jpeg', 0.92);
             const imgWidth = 210; // A4 width mm
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
@@ -266,7 +266,7 @@ export default function CotizacionesPage() {
 
             // Handle multi-page if content is taller than A4
             if (imgHeight <= pageHeight) {
-                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
             } else {
                 let remaining = imgHeight;
                 while (remaining > 0) {
@@ -274,7 +274,7 @@ export default function CotizacionesPage() {
                         pdf.setFillColor(7, 13, 25);
                         pdf.rect(0, 0, 210, 297, 'F');
                     }
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
                     remaining -= pageHeight;
                     position -= pageHeight;
                     if (remaining > 0) pdf.addPage();
@@ -811,39 +811,33 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                     </div>
                 </div>
 
-                {/* ── DETALLE DE ENVÍO (blue accent) ── */}
+                {/* ── TRANSPORTE AÉREO (single line, clean) ── */}
                 <div style={{ margin: '8px 20px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderLeft: `2px solid ${S.accent}`, borderRadius: '5px', padding: '10px 12px' }}>
-                    <p style={{ fontSize: '6.5px', fontWeight: 600, color: S.accent, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '6px' }}>Detalle de envío</p>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
-                        <span style={{ fontSize: '9px', fontWeight: 400, color: S.dim }}>Transporte aéreo</span>
-                        <span style={{ fontSize: '9px', fontWeight: 700, color: S.white }}>${formatMoney(shippingCost)}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '9px', fontWeight: 500, color: S.dim }}>Transporte aéreo ({form.weightKg} kg × ${form.tarifaPerKg}/kg)</span>
+                        <span style={{ fontSize: '13px', fontWeight: 700, color: S.white }}>${formatMoney(shippingCost)}</span>
                     </div>
-                    {gastoDoc > 0 && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderTop: `1px solid ${S.cardBorder}` }}>
-                            <span style={{ fontSize: '9px', fontWeight: 400, color: S.dim }}>Gasto documental</span>
-                            <span style={{ fontSize: '9px', fontWeight: 700, color: S.white }}>${formatMoney(gastoDoc)}</span>
-                        </div>
-                    )}
                     {form.guiaAerea > 0 && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderTop: `1px solid ${S.cardBorder}` }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0 0', borderTop: `1px solid ${S.cardBorder}`, marginTop: '5px' }}>
                             <span style={{ fontSize: '9px', fontWeight: 400, color: S.dim }}>Guía aérea</span>
                             <span style={{ fontSize: '9px', fontWeight: 700, color: S.white }}>${formatMoney(form.guiaAerea)}</span>
                         </div>
                     )}
-                    <div style={{ borderTop: `2px solid ${S.accent}`, marginTop: '4px', paddingTop: '5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '7px', fontWeight: 600, color: S.accent, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Subtotal Envío</span>
-                        <span style={{ fontSize: '13px', fontWeight: 700, color: S.white }}>${formatMoney(subtotalLogistico)}</span>
-                    </div>
                 </div>
 
-                {/* ── IMPUESTOS (amber accent) ── */}
-                {form.includeTaxes && totalTaxes > 0 && (
+                {/* ── IMPUESTOS Y ADUANA (amber accent) ── */}
+                {(form.includeTaxes && totalTaxes > 0) || gastoDoc > 0 ? (
                     <div style={{ margin: '10px 20px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderLeft: `2px solid ${S.amber}`, borderRadius: '5px', padding: '10px 12px' }}>
-                        <p style={{ fontSize: '6.5px', fontWeight: 600, color: S.amber, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '6px' }}>Impuestos estimados</p>
+                        <p style={{ fontSize: '6.5px', fontWeight: 600, color: S.amber, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '6px' }}>Impuestos y Aduana</p>
 
+                        {gastoDoc > 0 && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
+                                <span style={{ fontSize: '9px', fontWeight: 400, color: S.dim }}>Gasto documental de aduana</span>
+                                <span style={{ fontSize: '9px', fontWeight: 700, color: S.white }}>${formatMoney(gastoDoc)}</span>
+                            </div>
+                        )}
                         {form.valorFob && (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', marginBottom: '3px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', marginTop: '3px' }}>
                                 <span style={{ fontSize: '8px', fontWeight: 400, color: 'rgba(168,184,204,0.6)' }}>Valor FOB declarado</span>
                                 <span style={{ fontSize: '8px', fontWeight: 500, color: 'rgba(203,213,225,0.5)' }}>USD ${formatMoney(form.valorFob)}</span>
                             </div>
@@ -873,24 +867,24 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                             </div>
                         )}
                         <div style={{ borderTop: `1px solid rgba(212,165,116,0.25)`, marginTop: '3px', paddingTop: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '7.5px', fontWeight: 600, color: '#e0a960', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Total Impuestos</span>
-                            <span style={{ fontSize: '12px', fontWeight: 700, color: '#e0a960' }}>USD ${formatMoney(totalTaxes)}</span>
+                            <span style={{ fontSize: '7.5px', fontWeight: 600, color: '#e0a960', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Total Impuestos y Aduana</span>
+                            <span style={{ fontSize: '12px', fontWeight: 700, color: '#e0a960' }}>USD ${formatMoney(totalTaxes + gastoDoc)}</span>
                         </div>
                         <p style={{ fontSize: '6px', fontWeight: 400, color: S.muted, marginTop: '4px', fontStyle: 'italic' }}>* Estimados, pueden variar según determinación de Aduana.</p>
                     </div>
-                )}
+                ) : null}
 
                 {/* ── RESUMEN ── */}
                 {form.includeTaxes && totalTaxes > 0 && (
                     <div style={{ margin: '10px 20px 0', display: 'grid', gridTemplateColumns: '1fr auto 1fr auto 1fr', gap: '3px', alignItems: 'center', padding: '8px 8px', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '5px' }}>
                         <div style={{ textAlign: 'center' }}>
                             <p style={{ fontSize: '6px', fontWeight: 500, color: S.accent, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Envío</p>
-                            <p style={{ fontSize: '9px', fontWeight: 700, color: S.white }}>${formatMoney(subtotalLogistico)}</p>
+                            <p style={{ fontSize: '9px', fontWeight: 700, color: S.white }}>${formatMoney(shippingCost + form.guiaAerea)}</p>
                         </div>
                         <span style={{ fontSize: '9px', color: S.muted, fontWeight: 700 }}>+</span>
                         <div style={{ textAlign: 'center' }}>
-                            <p style={{ fontSize: '6px', fontWeight: 500, color: S.amber, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Impuestos</p>
-                            <p style={{ fontSize: '9px', fontWeight: 700, color: S.white }}>${formatMoney(totalTaxes)}</p>
+                            <p style={{ fontSize: '6px', fontWeight: 500, color: S.amber, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Impuestos y Aduana</p>
+                            <p style={{ fontSize: '9px', fontWeight: 700, color: S.white }}>${formatMoney(totalTaxes + gastoDoc)}</p>
                         </div>
                         <span style={{ fontSize: '9px', color: S.muted, fontWeight: 700 }}>=</span>
                         <div style={{ textAlign: 'center' }}>
