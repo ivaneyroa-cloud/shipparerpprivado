@@ -382,14 +382,6 @@ ${showTaxSection ? `
     <p style="font-size: 6.5px; color: #a8b8cc; margin-top: 4px; font-style: italic;">* Estimados, pueden variar según determinación de Aduana.</p>
 </div>` : ''}
 
-${form.includeTaxes && totalTaxes > 0 ? `
-<div class="summary-bar">
-    <div><p class="lbl" style="color:#3b82f6">Envío</p><p class="val">$${formatMoney(envioTotal)}</p></div>
-    <span class="op">+</span>
-    <div><p class="lbl" style="color:#d4a574">Impuestos y Aduana</p><p class="val">$${formatMoney(totalTaxAndAduana)}</p></div>
-    <span class="op">=</span>
-    <div><p class="lbl" style="color:#4ADE80">Total</p><p class="val" style="color:#4ADE80">$${formatMoney(totalUSD)}</p></div>
-</div>` : ''}
 
 <div class="total-box">
     <p class="lbl">Costo Total Estimado</p>
@@ -999,25 +991,6 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                     </div>
                 ) : null}
 
-                {/* ── RESUMEN ── */}
-                {form.includeTaxes && totalTaxes > 0 && (
-                    <div style={{ margin: '10px 20px 0', display: 'grid', gridTemplateColumns: '1fr auto 1fr auto 1fr', gap: '3px', alignItems: 'center', padding: '8px 8px', background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '5px' }}>
-                        <div style={{ textAlign: 'center' }}>
-                            <p style={{ fontSize: '6px', fontWeight: 500, color: S.accent, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Envío</p>
-                            <p style={{ fontSize: '9px', fontWeight: 700, color: S.white }}>${formatMoney(shippingCost + form.guiaAerea)}</p>
-                        </div>
-                        <span style={{ fontSize: '9px', color: S.muted, fontWeight: 700 }}>+</span>
-                        <div style={{ textAlign: 'center' }}>
-                            <p style={{ fontSize: '6px', fontWeight: 500, color: S.amber, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Impuestos y Aduana</p>
-                            <p style={{ fontSize: '9px', fontWeight: 700, color: S.white }}>${formatMoney(totalTaxes + gastoDoc)}</p>
-                        </div>
-                        <span style={{ fontSize: '9px', color: S.muted, fontWeight: 700 }}>=</span>
-                        <div style={{ textAlign: 'center' }}>
-                            <p style={{ fontSize: '6px', fontWeight: 500, color: S.green, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total</p>
-                            <p style={{ fontSize: '10px', fontWeight: 700, color: S.green }}>${formatMoney(totalUSD)}</p>
-                        </div>
-                    </div>
-                )}
 
                 {/* ── TOTAL GRANDE (green accent) ── */}
                 <div style={{ margin: '10px 20px 0', background: `linear-gradient(135deg, #0f3f2c 0%, #1a5e40 100%)`, border: `1px solid rgba(74,222,128,0.2)`, borderLeft: `3px solid ${S.green}`, borderRadius: '6px', padding: '18px 14px', textAlign: 'center' }}>
