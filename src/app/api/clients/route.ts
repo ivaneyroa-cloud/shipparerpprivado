@@ -135,7 +135,7 @@ export async function PATCH(req: NextRequest) {
             return NextResponse.json({ error: 'Ningún campo válido para actualizar' }, { status: 400 });
         }
 
-        sanitized.updated_at = new Date().toISOString();
+
 
         const { error } = await supabaseAdmin
             .from('clients')
