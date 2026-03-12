@@ -98,7 +98,7 @@ export default function ShipmentsPage() {
     const retenidoStatuses = ['Retenido'];
 
     // ── Data fetching ──
-    const SHIPMENT_COLUMNS = 'id, tracking_number, client_id, client_name, client_code, category, weight, internal_status, origin, date_shipped, date_arrived, created_at, updated_at, precio_envio, gastos_documentales, impuestos, observaciones_cotizacion, boxes_count, retenido_nota';
+    const SHIPMENT_COLUMNS = 'id, tracking_number, client_id, client_name, client_code, category, weight, internal_status, origin, date_shipped, date_arrived, created_at, updated_at, precio_envio, gastos_documentales, impuestos, observaciones_cotizacion, boxes_count, retenido_nota, quote_mode, quote_pdf_url';
 
     // Timeout wrapper for mobile resilience
     const withTimeout = <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> =>
