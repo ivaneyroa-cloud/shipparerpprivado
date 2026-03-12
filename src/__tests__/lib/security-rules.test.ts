@@ -7,11 +7,24 @@ import { describe, it, expect } from 'vitest';
 
 // Replicate the security rules from route.ts for testing
 const FIELD_PERMISSIONS: Record<string, string[]> = {
+    super_admin: [
+        'internal_status', 'date_shipped', 'date_arrived', 'date_dispatched',
+        'origin', 'tracking_number', 'category', 'weight', 'client_id', 'client_name', 'client_code',
+        'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion',
+        'costo_flete', 'costo_impuestos_proveedor', 'monto_cobrado', 'estado_cobranza', 'estado_pago_proveedor',
+        'payment_proof_url', 'payment_notes', 'retenido_nota',
+        'delta_kg', 'delta_boxes', 'boxes_count',
+        'reception_status', 'received_at', 'received_by', 'received_weight',
+        'has_weight_anomaly', 'anomaly_percentage', 'anomaly_absolute',
+        'bultos', 'peso_computable', 'invoice_photo_1', 'invoice_photo_2',
+        'reception_version_count', 'current_version_id',
+        'edited_post_delivery', 'post_delivery_edit', 'edit_count',
+    ],
     admin: [
         'internal_status', 'date_shipped', 'date_arrived', 'date_dispatched',
         'origin', 'tracking_number', 'category', 'weight', 'client_id', 'client_name', 'client_code',
         'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion',
-        'costo_flete', 'monto_cobrado', 'estado_cobranza', 'estado_pago_proveedor',
+        'costo_flete', 'costo_impuestos_proveedor', 'monto_cobrado', 'estado_cobranza', 'estado_pago_proveedor',
         'payment_proof_url', 'payment_notes', 'retenido_nota',
         'delta_kg', 'delta_boxes', 'boxes_count',
         'reception_status', 'received_at', 'received_by', 'received_weight',
@@ -33,15 +46,24 @@ const FIELD_PERMISSIONS: Record<string, string[]> = {
         'has_weight_anomaly', 'anomaly_percentage', 'anomaly_absolute',
         'bultos', 'peso_computable', 'weight',
         'invoice_photo_1', 'invoice_photo_2',
-        'retenido_nota', 'costo_flete',
+        'retenido_nota', 'costo_flete', 'costo_impuestos_proveedor',
         'reception_version_count', 'current_version_id',
         'edited_post_delivery', 'post_delivery_edit', 'edit_count',
     ],
     billing: [
         'estado_cobranza', 'estado_pago_proveedor',
-        'costo_flete', 'monto_cobrado',
+        'costo_flete', 'costo_impuestos_proveedor', 'monto_cobrado',
         'precio_envio', 'gastos_documentales', 'impuestos',
         'payment_proof_url', 'payment_notes',
+        'tracking_number', 'weight',
+        'internal_status', 'date_arrived', 'date_dispatched',
+        'delta_kg', 'delta_boxes', 'boxes_count',
+        'reception_status', 'received_at', 'received_by', 'received_weight',
+        'has_weight_anomaly', 'anomaly_percentage', 'anomaly_absolute',
+        'bultos', 'peso_computable',
+        'invoice_photo_1', 'invoice_photo_2',
+        'reception_version_count', 'current_version_id',
+        'edited_post_delivery', 'post_delivery_edit', 'edit_count',
     ],
     sales: [
         'precio_envio', 'gastos_documentales', 'impuestos', 'observaciones_cotizacion',
@@ -96,10 +118,16 @@ describe('Field Permissions', () => {
         expect(filtered).toEqual(fields);
     });
 
-    it('billing CANNOT edit tracking or logistics fields', () => {
-        const fields = { tracking_number: 'HACK', origin: 'MARS', category: 'TEST' };
+    it('billing CANNOT edit origin or category', () => {
+        const fields = { origin: 'MARS', category: 'TEST' };
         const filtered = filterByRole(fields, 'billing');
         expect(filtered).toEqual({});
+    });
+
+    it('billing CAN edit tracking_number and weight (depot reception)', () => {
+        const fields = { tracking_number: '1Z0J5W578632211979', weight: 10 };
+        const filtered = filterByRole(fields, 'billing');
+        expect(filtered).toEqual(fields);
     });
 
     it('sales CANNOT edit status', () => {

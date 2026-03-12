@@ -77,22 +77,22 @@ describe('validateReception', () => {
         expect(errors).toHaveLength(0);
     });
 
-    it('fails when costoFlete is empty', () => {
-        const { errors } = validateReception({
+    it('warns when costoFlete is empty (optional field)', () => {
+        const { warnings } = validateReception({
             ...baseArgs,
             bultos: [validBox()],
             costoFlete: '',
         });
-        expect(errors.some(e => e.includes('Monto factura'))).toBe(true);
+        expect(warnings.some(e => e.includes('Monto factura'))).toBe(true);
     });
 
-    it('fails when costoFlete is 0', () => {
-        const { errors } = validateReception({
+    it('warns when costoFlete is 0 (optional field)', () => {
+        const { warnings } = validateReception({
             ...baseArgs,
             bultos: [validBox()],
             costoFlete: '0',
         });
-        expect(errors.some(e => e.includes('Monto factura'))).toBe(true);
+        expect(warnings.some(e => e.includes('Monto factura'))).toBe(true);
     });
 
     it('fails when no boxes have data', () => {
@@ -143,13 +143,13 @@ describe('validateReception', () => {
         expect(errors.some(e => e.includes(`≥ ${MIN_WEIGHT_KG}`))).toBe(true);
     });
 
-    it('fails when photo1 is missing', () => {
-        const { errors } = validateReception({
+    it('warns when photo1 is missing (optional field)', () => {
+        const { warnings } = validateReception({
             ...baseArgs,
             bultos: [validBox()],
             photo1: null,
         });
-        expect(errors.some(e => e.includes('Factura 1'))).toBe(true);
+        expect(warnings.some(e => e.includes('Factura 1'))).toBe(true);
     });
 
     it('passes when photo1 is null but existingPhoto1 is set', () => {

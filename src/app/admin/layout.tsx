@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     });
     const [isDarkMode, setIsDarkMode] = useState(true);
     const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
-    const [userRole, setUserRole] = useState<string>('admin'); // Default to admin, will update on profile load
+    const [userRole, setUserRole] = useState<string>(''); // Empty until profile confirms — prevents UI privilege leak
     const [unreadMessages, setUnreadMessages] = useState(0);
     const router = useRouter();
     const pathname = usePathname();

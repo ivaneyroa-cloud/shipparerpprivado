@@ -29,8 +29,13 @@ function InlineTarifaCell({ clientId, value, onSaved }: { clientId: string; valu
         setEditing(false);
         const trimmed = draft.trim();
         if (trimmed === value) { savingRef.current = false; return; }
-        const { error } = await supabase.from('clients').update({ tarifa_aplicable: trimmed || null }).eq('id', clientId);
-        if (error) {
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch('/api/clients', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+            body: JSON.stringify({ clientId, fields: { tarifa_aplicable: trimmed || null } }),
+        });
+        if (!res.ok) {
             toast.error('Error al guardar tarifa');
             setDraft(value);
         } else {
@@ -81,8 +86,13 @@ function InlineCodeCell({ clientId, value, onSaved }: { clientId: string; value:
         const trimmed = draft.trim().toUpperCase();
         if (trimmed === value) { savingRef.current = false; return; }
         if (!trimmed) { toast.error('El código no puede estar vacío'); setDraft(value); savingRef.current = false; return; }
-        const { error } = await supabase.from('clients').update({ code: trimmed }).eq('id', clientId);
-        if (error) {
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch('/api/clients', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+            body: JSON.stringify({ clientId, fields: { code: trimmed } }),
+        });
+        if (!res.ok) {
             toast.error('Error al guardar código (¿duplicado?)');
             setDraft(value);
         } else {
@@ -190,16 +200,19 @@ export default function ClientsPage() {
 
     const handleAssignVendor = async (clientId: string, vendorId: string | null) => {
         setSavingAssignment(true);
-        const { error } = await supabase
-            .from('clients')
-            .update({ assigned_to: vendorId })
-            .eq('id', clientId);
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch('/api/clients', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+            body: JSON.stringify({ clientId, fields: { assigned_to: vendorId } }),
+        });
 
-        if (!error) {
+        if (res.ok) {
             toast.success(vendorId ? 'Vendedor asignado' : 'Vendedor desasignado');
             fetchClients();
         } else {
-            toast.error(error.message);
+            const result = await res.json();
+            toast.error(result.error || 'Error al asignar vendedor');
         }
         setSavingAssignment(false);
         setAssigningVendor(null);
@@ -288,24 +301,20 @@ export default function ClientsPage() {
                 return;
             }
 
-            // Insert in batches of 50, retry individually on failure
+            // Insert via API route (bypasses RLS)
+            const { data: { session } } = await supabase.auth.getSession();
             let inserted = 0;
             let errors = 0;
-            for (let i = 0; i < rows.length; i += 50) {
-                const batch = rows.slice(i, i + 50);
-                const { error } = await supabase.from('clients').insert(batch);
-                if (error) {
-                    // Batch failed — try one by one to skip only the problematic rows
-                    for (const row of batch) {
-                        const { error: singleErr } = await supabase.from('clients').insert([row]);
-                        if (singleErr) {
-                            errors++;
-                        } else {
-                            inserted++;
-                        }
-                    }
+            for (const row of rows) {
+                const res = await fetch('/api/clients', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+                    body: JSON.stringify(row),
+                });
+                if (res.ok) {
+                    inserted++;
                 } else {
-                    inserted += batch.length;
+                    errors++;
                 }
             }
 
@@ -566,8 +575,13 @@ export default function ClientsPage() {
                                     client={client}
                                     onView={(c) => setViewClient(c)}
                                     onTarifaSave={async (clientId, val) => {
-                                        const { error } = await supabase.from('clients').update({ tarifa_aplicable: val || null }).eq('id', clientId);
-                                        if (error) {
+                                        const { data: { session } } = await supabase.auth.getSession();
+                                        const res = await fetch('/api/clients', {
+                                            method: 'PATCH',
+                                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+                                            body: JSON.stringify({ clientId, fields: { tarifa_aplicable: val || null } }),
+                                        });
+                                        if (!res.ok) {
                                             toast.error('Error al guardar tarifa');
                                         } else {
                                             setClients(prev => prev.map(c => c.id === clientId ? { ...c, tarifa_aplicable: val } : c));

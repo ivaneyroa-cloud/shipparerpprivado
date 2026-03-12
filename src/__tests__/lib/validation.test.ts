@@ -78,25 +78,22 @@ describe('sanitizeLine', () => {
 // isValidTrackingNumber
 // ─────────────────────────────────────────────────────────────
 describe('isValidTrackingNumber', () => {
-    it('accepts valid tracking numbers', () => {
-        expect(isValidTrackingNumber('ABC-123')).toBe(true);
-        expect(isValidTrackingNumber('TRACKING_001')).toBe(true);
-        expect(isValidTrackingNumber('SF1234567890')).toBe(true);
+    it('accepts valid 18-char alphanumeric tracking numbers', () => {
+        expect(isValidTrackingNumber('1Z0J5W578632211979')).toBe(true);
+        expect(isValidTrackingNumber('ABCDEFGH1234567890')).toBe(true);
     });
 
-    it('rejects too short (< 3 chars)', () => {
+    it('rejects tracking numbers that are not exactly 18 chars', () => {
         expect(isValidTrackingNumber('AB')).toBe(false);
         expect(isValidTrackingNumber('A')).toBe(false);
+        expect(isValidTrackingNumber('ABC123')).toBe(false);
+        expect(isValidTrackingNumber('A'.repeat(19))).toBe(false);
     });
 
-    it('rejects too long (> 50 chars)', () => {
-        expect(isValidTrackingNumber('A'.repeat(51))).toBe(false);
-    });
-
-    it('rejects special characters', () => {
-        expect(isValidTrackingNumber('ABC 123')).toBe(false); // space
-        expect(isValidTrackingNumber('ABC@123')).toBe(false); // @
-        expect(isValidTrackingNumber('ABC#123')).toBe(false); // #
+    it('rejects special characters (dashes, underscores, spaces)', () => {
+        expect(isValidTrackingNumber('ABC-1234567890123')).toBe(false); // dash
+        expect(isValidTrackingNumber('ABC 1234567890123')).toBe(false); // space
+        expect(isValidTrackingNumber('ABC@1234567890123')).toBe(false); // @
     });
 
     it('rejects empty/null/undefined', () => {
@@ -105,8 +102,9 @@ describe('isValidTrackingNumber', () => {
         expect(isValidTrackingNumber(undefined as any)).toBe(false);
     });
 
-    it('trims whitespace before validating', () => {
-        expect(isValidTrackingNumber('  ABC-123  ')).toBe(true);
+    it('trims whitespace and uppercases before validating', () => {
+        expect(isValidTrackingNumber('  1Z0J5W578632211979  ')).toBe(true);
+        expect(isValidTrackingNumber('1z0j5w578632211979')).toBe(true); // lowercase gets uppercased
     });
 });
 
@@ -162,16 +160,16 @@ describe('parseNumeric', () => {
 // isValidWeight
 // ─────────────────────────────────────────────────────────────
 describe('isValidWeight', () => {
-    it('accepts valid weights', () => {
+    it('accepts valid weights (0 to 500 kg)', () => {
         expect(isValidWeight(0)).toBe(true);
         expect(isValidWeight(0.5)).toBe(true);
-        expect(isValidWeight(50000)).toBe(true);
+        expect(isValidWeight(500)).toBe(true);
         expect(isValidWeight('25.5')).toBe(true);
     });
 
-    it('rejects invalid weights', () => {
+    it('rejects invalid weights (> 500 kg or negative)', () => {
         expect(isValidWeight(-1)).toBe(false);
-        expect(isValidWeight(50001)).toBe(false);
+        expect(isValidWeight(501)).toBe(false);
         expect(isValidWeight('abc')).toBe(false);
         expect(isValidWeight(NaN)).toBe(false);
     });
@@ -271,7 +269,7 @@ describe('isValidDate', () => {
 // ─────────────────────────────────────────────────────────────
 describe('validateShipmentPayload', () => {
     const validPayload = {
-        tracking_number: 'SF-12345',
+        tracking_number: '1Z0J5W578632211979',
         client_name: 'Juan Pérez',
         internal_status: 'Guía Creada',
         weight: 10,
@@ -291,7 +289,7 @@ describe('validateShipmentPayload', () => {
         expect(result.errors).toContain('Tracking number inválido (3-50 caracteres alfanuméricos)');
     });
 
-    it('fails for invalid tracking format', () => {
+    it('fails for invalid tracking format (not 18 alphanumeric)', () => {
         const result = validateShipmentPayload({ ...validPayload, tracking_number: 'a@b' });
         expect(result.valid).toBe(false);
     });
@@ -316,10 +314,15 @@ describe('validateShipmentPayload', () => {
     it('fails for invalid weight', () => {
         const result = validateShipmentPayload({ ...validPayload, weight: -5 });
         expect(result.valid).toBe(false);
-        expect(result.errors).toContain('Peso inválido (0 - 50,000 kg)');
+        expect(result.errors).toContain('Peso inválido. Máximo 500 kg por envío.');
     });
 
-    it('passes when weight is null/undefined (optional)', () => {
+    it('fails for weight exceeding 500 kg', () => {
+        const result = validateShipmentPayload({ ...validPayload, weight: 501 });
+        expect(result.valid).toBe(false);
+    });
+
+    it('passes when weight is null (optional)', () => {
         const result = validateShipmentPayload({ ...validPayload, weight: null });
         expect(result.valid).toBe(true);
     });

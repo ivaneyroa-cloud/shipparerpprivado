@@ -72,17 +72,26 @@ export function AddClientModal({ isOpen, onClose, onCreated, salesMembers }: Add
         if (formData.assigned_to) {
             insertData.assigned_to = formData.assigned_to;
         }
-        const { error } = await supabase
-            .from('clients')
-            .insert([insertData]);
 
-        if (!error) {
+        // Use API route (supabaseAdmin) to bypass RLS
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch('/api/clients', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session?.access_token}`,
+            },
+            body: JSON.stringify(insertData),
+        });
+        const result = await res.json();
+
+        if (res.ok) {
             toast.success(`Cliente ${formData.name} creado exitosamente`);
             onClose();
             setFormData(INITIAL_FORM);
             onCreated();
         } else {
-            toast.error(error.message);
+            toast.error(result.error || 'Error al crear cliente');
         }
     };
 

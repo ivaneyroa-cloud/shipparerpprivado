@@ -27,24 +27,38 @@ export function ClientDetailModal({ client, onClose, onSaved, getVendorName }: C
     const handleSave = async () => {
         if (!editingClient) return;
         setSavingClient(true);
-        const { error } = await supabase.from('clients').update({
-            name: editingClient.name,
-            code: editingClient.code,
-            cuit: editingClient.cuit,
-            phone: editingClient.phone,
-            email: editingClient.email,
-            address: editingClient.address,
-            tax_condition: editingClient.tax_condition,
-            service_type: editingClient.service_type,
-            tarifa_aplicable: editingClient.tarifa_aplicable,
-        }).eq('id', client.id);
+
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch('/api/clients', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session?.access_token}`,
+            },
+            body: JSON.stringify({
+                clientId: client.id,
+                fields: {
+                    name: editingClient.name,
+                    code: editingClient.code,
+                    cuit: editingClient.cuit,
+                    phone: editingClient.phone,
+                    email: editingClient.email,
+                    address: editingClient.address,
+                    tax_condition: editingClient.tax_condition,
+                    service_type: editingClient.service_type,
+                    tarifa_aplicable: editingClient.tarifa_aplicable,
+                },
+            }),
+        });
+        const result = await res.json();
+
         setSavingClient(false);
-        if (!error) {
+        if (res.ok) {
             toast.success('Datos actualizados');
             onClose();
             onSaved();
         } else {
-            toast.error(error.message);
+            toast.error(result.error || 'Error al actualizar');
         }
     };
 
