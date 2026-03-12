@@ -9,6 +9,12 @@ import {
     DollarSign, AlertTriangle, CheckCircle2, Search, X, ChevronDown,
     Globe, Clock, Shield, Settings, Plus, Trash2, Pencil
 } from 'lucide-react';
+import {
+    CIF_FLETE_PER_KG, CIF_SEGURO_PCT,
+    DEFAULT_TASA_ESTADISTICA, DEFAULT_IVA_105, DEFAULT_IVA_21, DEFAULT_DERECHOS,
+    DELIVERY_DAYS_EXPRESS, DELIVERY_DAYS_STANDARD,
+    COMPANY_LEGAL_NAME, calcGastoDocumental,
+} from '@/lib/constants';
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -44,10 +50,10 @@ const INITIAL_FORM: QuoteFormData = {
     guiaAerea: 0,
     valorFob: null,
     includeTaxes: false,
-    derechosPct: 0,
-    tasaEstadisticaPct: 3,
-    ivaAduana105Pct: 10.5,
-    ivaAduana21Pct: 0,
+    derechosPct: DEFAULT_DERECHOS,
+    tasaEstadisticaPct: DEFAULT_TASA_ESTADISTICA,
+    ivaAduana105Pct: DEFAULT_IVA_105,
+    ivaAduana21Pct: DEFAULT_IVA_21,
     notes: '',
 };
 
@@ -69,14 +75,7 @@ const SERVICE_INCLUDES = [
     'Facturado a dólar oficial',
 ];
 
-// ═══════════════════════════════════════════════════════════════
-// GASTO DOCUMENTAL FORMULA
-// ═══════════════════════════════════════════════════════════════
-function calcGastoDocumental(fob: number | null): number {
-    if (!fob || fob <= 0) return 0;
-    if (fob < 500) return Math.min(fob * 0.20, 60);
-    return Math.min(fob * 0.0935, 140);
-}
+// calcGastoDocumental is now imported from @/lib/constants
 
 // ═══════════════════════════════════════════════════════════════
 // MAIN PAGE
@@ -140,11 +139,9 @@ export default function CotizacionesPage() {
     const gastoDoc = form.valorFob ? calcGastoDocumental(form.valorFob) : form.gastoDocumental;
     const subtotalLogistico = shippingCost + gastoDoc + form.guiaAerea;
 
-    // CIF = FOB + Flete ($2.70/kg) + Seguro (1% FOB)
-    const FLETE_PER_KG = 2.70;
-    const SEGURO_PCT = 0.01;
-    const cifFlete = form.includeTaxes && form.valorFob ? (form.weightKg * FLETE_PER_KG) : 0;
-    const cifSeguro = form.includeTaxes && form.valorFob ? (form.valorFob * SEGURO_PCT) : 0;
+    // CIF = FOB + Flete + Seguro
+    const cifFlete = form.includeTaxes && form.valorFob ? (form.weightKg * CIF_FLETE_PER_KG) : 0;
+    const cifSeguro = form.includeTaxes && form.valorFob ? (form.valorFob * CIF_SEGURO_PCT) : 0;
     const cifValue = form.includeTaxes && form.valorFob ? (form.valorFob + cifFlete + cifSeguro) : 0;
 
     // Derechos y Tasa se calculan sobre CIF
@@ -159,7 +156,7 @@ export default function CotizacionesPage() {
     const totalUSD = subtotalLogistico + (form.includeTaxes ? totalTaxes : 0);
     const totalARS = exchangeRate ? totalUSD * exchangeRate : null;
 
-    const deliveryDays = form.serviceType === 'Express' ? '5-8' : '10-12';
+    const deliveryDays = form.serviceType === 'Express' ? DELIVERY_DAYS_EXPRESS : DELIVERY_DAYS_STANDARD;
 
     // Update field helper
     const setField = <K extends keyof QuoteFormData>(key: K, value: QuoteFormData[K]) => {
@@ -918,7 +915,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                         Costos sujetos a KG efectivamente recepcionados. Cobro en ARS al TC venta BNA del día de llegada (puede variar). Propuesta aproximada de costos finales.
                     </p>
                     <div style={{ marginTop: '10px', textAlign: 'center', borderTop: `1px solid ${S.cardBorder}`, paddingTop: '10px' }}>
-                        <p style={{ fontSize: '7px', fontWeight: 600, color: S.dim, letterSpacing: '0.05em' }}>Shippar Global Logistics S.R.L.</p>
+                        <p style={{ fontSize: '7px', fontWeight: 600, color: S.dim, letterSpacing: '0.05em' }}>{COMPANY_LEGAL_NAME}</p>
                         <p style={{ fontSize: '6.5px', fontWeight: 400, color: S.muted, fontStyle: 'italic', marginTop: '2px' }}>Comercio sin fronteras.</p>
                     </div>
                 </div>

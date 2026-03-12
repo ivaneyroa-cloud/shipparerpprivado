@@ -304,7 +304,7 @@ export default function TeamPage() {
                                 ) : (
                                     users.map(user => {
                                         const roleConfig = ROLE_CONFIG[user.role] || ROLE_CONFIG.operator;
-                                        const isSuperAdmin = user.email === 'ivaneyroa@shippar.net';
+                                        const isSuperAdmin = !!user.is_protected;
                                         const isSelf = session?.user?.id === user.id;
                                         return (
                                             <tr key={user.id} style={{ borderColor: 'var(--card-border)' }} className={`border-b last:border-b-0 hover:bg-blue-500/5 transition-colors ${isSuperAdmin ? 'bg-amber-500/5' : ''}`}>

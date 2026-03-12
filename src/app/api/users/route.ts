@@ -185,7 +185,14 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
-        return NextResponse.json({ users: profiles });
+        // Mark super admin as protected (resolved server-side, never exposed to frontend)
+        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
+        const enrichedUsers = (profiles || []).map((p: any) => ({
+            ...p,
+            is_protected: SUPER_ADMIN_EMAIL ? p.email === SUPER_ADMIN_EMAIL : false,
+        }));
+
+        return NextResponse.json({ users: enrichedUsers });
 
     } catch (error: any) {
         return NextResponse.json({ error: error.message || 'Error interno' }, { status: 500 });
@@ -261,8 +268,8 @@ export async function PATCH(req: NextRequest) {
             return NextResponse.json({ error: 'is_active debe ser true/false' }, { status: 400 });
         }
 
-        // SUPER ADMIN PROTECTION — env var with fallback
-        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || 'ivaneyroa@shippar.net';
+        // SUPER ADMIN PROTECTION — must be set in env vars (Vercel)
+        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
 
         const { data: targetProfile } = await supabaseAdmin
             .from('profiles')
