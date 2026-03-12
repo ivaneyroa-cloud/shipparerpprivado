@@ -35,6 +35,11 @@ interface QuoteFormData {
     tasaEstadisticaPct: number;
     ivaAduana105Pct: number;
     ivaAduana21Pct: number;
+    // National shipping (optional)
+    includeNacional: boolean;
+    nacionalDestino: string;
+    nacionalTransportista: string;
+    nacionalCosto: number;
     notes: string;
 }
 
@@ -54,6 +59,10 @@ const INITIAL_FORM: QuoteFormData = {
     tasaEstadisticaPct: DEFAULT_TASA_ESTADISTICA,
     ivaAduana105Pct: DEFAULT_IVA_105,
     ivaAduana21Pct: DEFAULT_IVA_21,
+    includeNacional: false,
+    nacionalDestino: '',
+    nacionalTransportista: '',
+    nacionalCosto: 0,
     notes: '',
 };
 
@@ -153,7 +162,10 @@ export default function CotizacionesPage() {
     const iva21Amount = form.includeTaxes && cifValue ? (ivaBase * form.ivaAduana21Pct / 100) : 0;
     const totalTaxes = derechosAmount + tasaAmount + iva105Amount + iva21Amount;
 
-    const totalUSD = subtotalLogistico + (form.includeTaxes ? totalTaxes : 0);
+    // National shipping
+    const nacionalCost = form.includeNacional ? form.nacionalCosto : 0;
+
+    const totalUSD = subtotalLogistico + (form.includeTaxes ? totalTaxes : 0) + nacionalCost;
     const totalARS = exchangeRate ? totalUSD * exchangeRate : null;
 
     const deliveryDays = form.serviceType === 'Express' ? DELIVERY_DAYS_EXPRESS : DELIVERY_DAYS_STANDARD;
@@ -212,6 +224,10 @@ export default function CotizacionesPage() {
                 iva_aduana_105_pct: form.ivaAduana105Pct,
                 iva_aduana_21_pct: form.ivaAduana21Pct,
                 total_taxes: totalTaxes,
+                include_nacional: form.includeNacional,
+                nacional_destino: form.nacionalDestino || null,
+                nacional_transportista: form.nacionalTransportista || null,
+                nacional_costo: form.includeNacional ? form.nacionalCosto : 0,
                 total_usd: totalUSD,
                 exchange_rate: exchangeRate,
                 total_ars: totalARS,
@@ -337,6 +353,7 @@ export default function CotizacionesPage() {
                                 deliveryDays={deliveryDays}
                                 canPreview={canPreview}
                                 cifValue={cifValue}
+                                nacionalCost={nacionalCost}
                                 taxCategories={taxCategories}
                                 onOpenTaxManager={() => setShowTaxManager(true)}
                                 onPreview={() => setShowPreview(true)}
@@ -360,6 +377,7 @@ export default function CotizacionesPage() {
                                 exchangeRate={exchangeRate}
                                 exchangeDate={exchangeDate}
                                 deliveryDays={deliveryDays}
+                                nacionalCost={nacionalCost}
                             />
                         </motion.div>
                     )}
@@ -384,7 +402,7 @@ export default function CotizacionesPage() {
 function QuoteForm({
     form, setField, clientSearch, setClientSearch, showClientDropdown, setShowClientDropdown,
     filteredClients, selectClient, shippingCost, gastoDoc, subtotalLogistico, totalTaxes, totalUSD, totalARS,
-    exchangeRate, deliveryDays, canPreview, cifValue, taxCategories, onOpenTaxManager, onPreview
+    exchangeRate, deliveryDays, canPreview, cifValue, nacionalCost, taxCategories, onOpenTaxManager, onPreview
 }: any) {
     const formatMoney = (n: number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 
@@ -690,6 +708,75 @@ function QuoteForm({
                 </AnimatePresence>
             </div>
 
+            {/* SECTION 4: Envío Nacional (Toggle) */}
+            <div className="bg-white dark:bg-slate-800/50 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-700/50 space-y-5">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center">
+                            <ArrowRight size={18} className="text-violet-500" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-black text-slate-800 dark:text-white">Envío Nacional</h3>
+                            <p className="text-[10px] text-slate-400 font-bold">Opcional — distribución dentro de Argentina</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => setField('includeNacional', !form.includeNacional)}
+                        className={`w-14 h-7 rounded-full transition-all relative ${form.includeNacional ? 'bg-violet-500' : 'bg-slate-200 dark:bg-slate-700'}`}
+                    >
+                        <div className={`w-5 h-5 rounded-full bg-white shadow-md absolute top-1 transition-all ${form.includeNacional ? 'left-8' : 'left-1'}`} />
+                    </button>
+                </div>
+
+                <AnimatePresence>
+                    {form.includeNacional && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden space-y-4"
+                        >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className={labelClass}>Destino</label>
+                                    <input
+                                        className={inputClass}
+                                        value={form.nacionalDestino}
+                                        onChange={(e) => setField('nacionalDestino', e.target.value)}
+                                        placeholder="Ej: Córdoba, Mendoza, Rosario..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Transportista / Método</label>
+                                    <input
+                                        className={inputClass}
+                                        value={form.nacionalTransportista}
+                                        onChange={(e) => setField('nacionalTransportista', e.target.value)}
+                                        placeholder="Ej: Andreani, OCA, Correo Arg..."
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className={labelClass}>Costo Envío Nacional (USD)</label>
+                                <input
+                                    type="number" step="0.01" min="0"
+                                    className={`${inputClass} text-2xl text-center font-black text-violet-600 dark:text-violet-400`}
+                                    value={form.nacionalCosto || ''}
+                                    onChange={(e) => setField('nacionalCosto', parseFloat(e.target.value) || 0)}
+                                    placeholder="0.00"
+                                />
+                            </div>
+                            {nacionalCost > 0 && (
+                                <div className="border-t border-violet-200 dark:border-violet-500/20 pt-3 flex items-center justify-between">
+                                    <span className="text-xs font-black text-violet-600 uppercase tracking-widest">Envío Nacional</span>
+                                    <span className="text-lg font-black text-violet-600">${formatMoney(nacionalCost)} USD</span>
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
             {/* TOTAL CARD */}
             {totalUSD > 0 && (
                 <div className="bg-gradient-to-br from-[#0B1628] to-[#1a2744] rounded-2xl p-6 text-center shadow-xl">
@@ -737,7 +824,7 @@ function QuoteForm({
 // ═══════════════════════════════════════════════════════════════
 const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview({
     form, shippingCost, gastoDoc, subtotalLogistico, derechosAmount, tasaAmount,
-    iva105Amount, iva21Amount, totalTaxes, totalUSD, totalARS, exchangeRate, exchangeDate, deliveryDays
+    iva105Amount, iva21Amount, totalTaxes, totalUSD, totalARS, exchangeRate, exchangeDate, deliveryDays, nacionalCost
 }, ref) {
     const formatMoney = (n: number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
     const originInfo = ORIGINS.find(o => o.value === form.origin);
@@ -871,7 +958,26 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                     </div>
                 ) : null}
 
-
+                {/* ── ENVÍO NACIONAL (violet accent) ── */}
+                {nacionalCost > 0 && (
+                    <div style={{ margin: '10px 20px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderLeft: '2px solid #8b5cf6', borderRadius: '5px', padding: '10px 12px' }}>
+                        <p style={{ fontSize: '6.5px', fontWeight: 600, color: '#8b5cf6', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '6px' }}>Envío Nacional</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                {form.nacionalDestino && (
+                                    <span style={{ fontSize: '9px', fontWeight: 500, color: S.dim }}>{form.nacionalDestino}</span>
+                                )}
+                                {form.nacionalDestino && form.nacionalTransportista && (
+                                    <span style={{ fontSize: '8px', color: S.muted }}> · </span>
+                                )}
+                                {form.nacionalTransportista && (
+                                    <span style={{ fontSize: '8px', fontWeight: 400, color: S.muted }}>{form.nacionalTransportista}</span>
+                                )}
+                            </div>
+                            <span style={{ fontSize: '13px', fontWeight: 700, color: S.white }}>${formatMoney(nacionalCost)}</span>
+                        </div>
+                    </div>
+                )}
 
 
                 {/* ── TOTAL GRANDE (green accent) ── */}
