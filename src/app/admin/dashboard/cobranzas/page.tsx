@@ -265,8 +265,8 @@ export default function CobranzasPage() {
             </div>
 
             {/* Table wrapper */}
-            <div className="flex-1 overflow-hidden flex flex-col relative mask-bottom pb-4">
-                <div className="absolute inset-0 overflow-y-auto no-scrollbar pb-20 px-2 -mx-2">
+            <div className="flex-1 overflow-hidden flex flex-col relative pb-4">
+                <div className="absolute inset-0 overflow-y-auto pb-20 px-2 -mx-2" style={{ scrollbarWidth: 'thin' }}>
                     <CobranzasTable
                         shipments={filteredShipments}
                         loading={loading}
