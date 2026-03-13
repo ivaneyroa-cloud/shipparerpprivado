@@ -322,7 +322,7 @@ export function ProviderPaymentView({ onBack }: ProviderPaymentViewProps) {
                                                 : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
                                         >
                                             {activeTab === 'pending' && (
-                                                <td className="px-5 py-4">
+                                                <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedIds.has(s.id)}
