@@ -38,3 +38,31 @@ export function calcGastoDocumental(fob: number | null): number {
     if (fob < GASTO_DOC_LOW_THRESHOLD) return Math.min(fob * GASTO_DOC_LOW_RATE, GASTO_DOC_LOW_CAP);
     return Math.min(fob * GASTO_DOC_HIGH_RATE, GASTO_DOC_HIGH_CAP);
 }
+
+// ── Shipment Status Groups ──
+// Single source of truth — used by shipments, deposito, operations, gerencia, etc.
+export const SHIPMENT_STATUSES = {
+    TRANSIT: ['Guía Creada', 'Pendiente Expo', 'En Transito'] as const,
+    AT_DEPOT: ['Recibido en Oficina', 'Enviado BUE', 'Cerrado/Facturado', 'Listo Para Entregar'] as const,
+    DELIVERED: ['Entregado', 'Retirado', 'Despachado', 'Mercado Libre full'] as const,
+    RETENIDO: ['Retenido'] as const,
+} as const;
+
+/** All statuses that mean "already received" (depot + delivered) */
+export const RECEIVED_STATUSES = [
+    ...SHIPMENT_STATUSES.AT_DEPOT,
+    ...SHIPMENT_STATUSES.DELIVERED,
+] as const;
+
+/** Status options for creating/editing shipments */
+export const STATUS_OPTIONS = [...SHIPMENT_STATUSES.TRANSIT] as const;
+
+// ── ERP Color Palette ──
+export const ERP_COLORS = {
+    transit: '#2E7BFF',
+    success: '#10B981',
+    warning: '#FFB020',
+    danger: '#EF4444',
+    depot: '#8B5CF6',
+    info: '#00C2FF',
+} as const;

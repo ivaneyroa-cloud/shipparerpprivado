@@ -6,7 +6,6 @@ import { supabase } from '@/lib/supabase';
 import { secureShipmentUpdate } from '@/lib/secure-shipment-update';
 import { toast } from 'sonner';
 import Confetti from 'react-confetti';
-import { useWindowSize } from 'react-use';
 import { format } from 'date-fns';
 
 import { useExcelImport } from '@/hooks/useExcelImport';
@@ -24,6 +23,7 @@ import { useShipmentStore } from '@/store/useShipmentStore';
 import { Client, Shipment, UserProfile } from '@/types';
 import { isPossiblyTruncated } from '@/lib/pagination';
 import { exportShipmentsToExcel } from '@/lib/export-excel';
+import { SHIPMENT_STATUSES, RECEIVED_STATUSES } from '@/lib/constants';
 
 // ─────────────────────────────────────────────
 // Pure Orchestrator — no JSX table, no 30 useState
@@ -90,12 +90,12 @@ export default function ShipmentsPage() {
     const dailyGoal = 50;
     const progressPercent = useMemo(() => Math.min((todayCount / dailyGoal) * 100, 100), [todayCount]);
 
-    const statusOptions = ['Guía Creada', 'Pendiente Expo', 'En Transito'];
+    const statusOptions = [...SHIPMENT_STATUSES.TRANSIT];
 
     // Statuses for the two tab views
-    const transitStatuses = ['Guía Creada', 'Pendiente Expo', 'En Transito'];
-    const receivedStatuses = ['Recibido en Oficina', 'Enviado BUE', 'Cerrado/Facturado', 'Listo Para Entregar', 'Entregado', 'Retirado', 'Despachado', 'Mercado Libre full'];
-    const retenidoStatuses = ['Retenido'];
+    const transitStatuses = SHIPMENT_STATUSES.TRANSIT;
+    const receivedStatuses = [...SHIPMENT_STATUSES.AT_DEPOT, ...SHIPMENT_STATUSES.DELIVERED];
+    const retenidoStatuses = SHIPMENT_STATUSES.RETENIDO;
 
     // ── Data fetching ──
     const SHIPMENT_COLUMNS = 'id, tracking_number, client_id, client_name, client_code, category, weight, internal_status, origin, date_shipped, date_arrived, created_at, updated_at, precio_envio, gastos_documentales, impuestos, observaciones_cotizacion, boxes_count, retenido_nota, quote_mode, quote_pdf_url';

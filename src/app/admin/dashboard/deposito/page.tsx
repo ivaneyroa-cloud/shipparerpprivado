@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { secureShipmentUpdate } from '@/lib/secure-shipment-update';
-import { Package, Search, Truck, CheckCircle2, Clock, Archive, Plane, AlertTriangle, Zap, Scale, X, ScanBarcode } from 'lucide-react';
+import { Package, Search, CheckCircle2, Clock, Archive, Plane, AlertTriangle, Zap } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, differenceInDays, differenceInHours } from 'date-fns';
+import { differenceInDays } from 'date-fns';
+import { SHIPMENT_STATUSES } from '@/lib/constants';
 import { ReceiveShipmentModal } from '@/components/ReceiveShipmentModal';
 import { QuickReceiveScreen } from '@/components/QuickReceiveScreen';
 import type { Shipment } from '@/types';
@@ -26,14 +27,9 @@ export default function DepositoPage() {
     const [quickReceiveMode, setQuickReceiveMode] = useState(false);
     const [filterStale, setFilterStale] = useState(false);
 
-    // Transit = everything NOT yet at depot (still flying/shipping)
-    const transitStatuses = ['Guía Creada', 'Pendiente Expo', 'En Transito'];
-
-    // At depot = received, waiting for payment or dispatch
-    const atDepotStatuses = ['Recibido en Oficina', 'Enviado BUE', 'Cerrado/Facturado', 'Listo Para Entregar'];
-
-    // Already left the depot
-    const deliveredStatuses = ['Entregado', 'Retirado', 'Despachado', 'Mercado Libre full'];
+    const transitStatuses = SHIPMENT_STATUSES.TRANSIT;
+    const atDepotStatuses = SHIPMENT_STATUSES.AT_DEPOT;
+    const deliveredStatuses = SHIPMENT_STATUSES.DELIVERED;
 
     useEffect(() => {
         fetchAllShipments();

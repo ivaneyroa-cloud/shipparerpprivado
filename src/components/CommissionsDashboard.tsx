@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { format, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { formatUSD as formatMoney } from '@/lib/formatters';
 
 interface Shipment {
     id: string;
@@ -116,9 +117,8 @@ export default function CommissionsDashboard() {
         init();
     }, [currentMonth]);
 
-    const formatMoney = (val: number) => new Intl.NumberFormat('en-US', {
-        style: 'currency', currency: 'USD', minimumFractionDigits: 2
-    }).format(val);
+
+
 
     // Advanced Stats Calculation
     const stats: {

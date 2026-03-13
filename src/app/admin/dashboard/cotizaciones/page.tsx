@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { formatUSD as formatMoney } from '@/lib/formatters';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    FileText, Download, Eye, ArrowRight, Package, Plane, Scale,
-    DollarSign, AlertTriangle, CheckCircle2, Search, X, ChevronDown,
-    Globe, Clock, Shield, Settings, Plus, Trash2, Pencil
+    Download, Eye, ArrowRight, Package, Plane, Scale,
+    AlertTriangle, CheckCircle2, Search, X, Plus, Trash2, Pencil
 } from 'lucide-react';
 import {
     CIF_FLETE_PER_KG, CIF_SEGURO_PCT,
@@ -84,7 +84,7 @@ const SERVICE_INCLUDES = [
     'Facturado a dólar oficial',
 ];
 
-// calcGastoDocumental is now imported from @/lib/constants
+
 
 // ═══════════════════════════════════════════════════════════════
 // MAIN PAGE
@@ -404,7 +404,7 @@ function QuoteForm({
     filteredClients, selectClient, shippingCost, gastoDoc, subtotalLogistico, totalTaxes, totalUSD, totalARS,
     exchangeRate, deliveryDays, canPreview, cifValue, nacionalCost, taxCategories, onOpenTaxManager, onPreview
 }: any) {
-    const formatMoney = (n: number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+    // formatMoney is defined at file level
 
     const inputClass = "w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all text-sm font-bold text-slate-800 dark:text-white placeholder:text-slate-400";
     const labelClass = "text-[10px] font-black uppercase tracking-widest text-slate-500 ml-0.5 mb-1.5 block";
@@ -826,7 +826,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
     form, shippingCost, gastoDoc, subtotalLogistico, derechosAmount, tasaAmount,
     iva105Amount, iva21Amount, totalTaxes, totalUSD, totalARS, exchangeRate, exchangeDate, deliveryDays, nacionalCost
 }, ref) {
-    const formatMoney = (n: number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+    // formatMoney is defined at file level
     const originInfo = ORIGINS.find(o => o.value === form.origin);
     const today = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 

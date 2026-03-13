@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { format, differenceInDays } from 'date-fns';
 import { StatusBadge, CobranzaBadge, LegendRow, DonutChart, MarginDistribution } from '@/components/finanzas/FinanzasCharts';
 import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
+import { formatARS as formatMoney, formatARSFull as formatMoneyFull } from '@/lib/formatters';
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -49,11 +50,6 @@ const revenue = (s: FinanceShipment) =>
 
 const margin = (s: FinanceShipment) => revenue(s) - (s.costo_flete || 0);
 
-const formatMoney = (value: number) =>
-    new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
-
-const formatMoneyFull = (value: number) =>
-    new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(value);
 
 const atDepotStatuses = ['Recibido en Oficina', 'Retenido'];
 const deliveredStatuses = ['Retirado', 'Despachado', 'Mercado Libre full'];

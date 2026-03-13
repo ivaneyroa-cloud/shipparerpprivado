@@ -5,18 +5,19 @@ import { supabase } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
-    Package, Scale, TrendingUp, AlertTriangle, Clock,
+    Package, Scale, AlertTriangle,
     ChevronRight, ArrowLeft, Shield, FileWarning,
     Activity, Zap, Target, BarChart3, Truck
 } from 'lucide-react';
+import { SHIPMENT_STATUSES } from '@/lib/constants';
 
 // ── Status Pipeline Stages ──
 const PIPELINE_STAGES = [
     { key: 'creada', label: 'Creadas', statuses: ['Guía Creada'], color: '#64748B' },
-    { key: 'transito', label: 'En Tránsito', statuses: ['Pendiente Expo', 'En Transito'], color: '#2E7BFF' },
+    { key: 'transito', label: 'En Tránsito', statuses: [...SHIPMENT_STATUSES.TRANSIT.filter(s => s !== 'Guía Creada')], color: '#2E7BFF' },
     { key: 'recibido', label: 'En Depósito', statuses: ['Recibido en Oficina', 'Enviado BUE'], color: '#8B5CF6' },
     { key: 'liberado', label: 'Liberadas', statuses: ['Listo Para Entregar', 'Cerrado/Facturado'], color: '#00C2FF' },
-    { key: 'entregado', label: 'Entregadas', statuses: ['Entregado', 'Retirado', 'Despachado', 'Mercado Libre full'], color: '#10B981' },
+    { key: 'entregado', label: 'Entregadas', statuses: [...SHIPMENT_STATUSES.DELIVERED], color: '#10B981' },
 ] as const;
 
 interface ShipmentRow {
@@ -95,12 +96,12 @@ export default function OperationsPage() {
     }, [shipments]);
 
     const totalActive = useMemo(() => {
-        const deliveredStatuses = ['Entregado', 'Retirado', 'Despachado', 'Mercado Libre full'];
+        const deliveredStatuses = SHIPMENT_STATUSES.DELIVERED;
         return shipments.filter(s => !deliveredStatuses.some(ds => ds.toLowerCase() === (s.internal_status || '').toLowerCase())).length;
     }, [shipments]);
 
     const totalKgInSystem = useMemo(() => {
-        const deliveredStatuses = ['Entregado', 'Retirado', 'Despachado', 'Mercado Libre full'];
+        const deliveredStatuses = SHIPMENT_STATUSES.DELIVERED;
         return parseFloat(
             shipments
                 .filter(s => !deliveredStatuses.some(ds => ds.toLowerCase() === (s.internal_status || '').toLowerCase()))

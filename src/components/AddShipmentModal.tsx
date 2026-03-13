@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Client } from '@/types';
 import { validateShipmentPayload, sanitizeLine, isValidBoxesCount } from '@/lib/validation';
 import { BaseModal } from '@/components/ui/BaseModal';
+import { STATUS_OPTIONS } from '@/lib/constants';
 
 interface AddShipmentModalProps {
     isOpen: boolean;
@@ -37,7 +38,7 @@ export function AddShipmentModal({ isOpen, onClose, onSuccess, clients }: AddShi
             }
         });
     }, []);
-    const statusOptions = ['Guía Creada', 'Pendiente Expo', 'En Transito'];
+    const statusOptions = [...STATUS_OPTIONS];
 
     const [formData, setFormData] = useState({
         tracking_number: '',

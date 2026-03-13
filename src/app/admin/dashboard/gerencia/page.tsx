@@ -5,9 +5,9 @@ import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Shield, Search, Package, Weight, DollarSign, AlertTriangle,
-    TrendingUp, Edit3, Eye, X, History, CheckCircle2, Clock,
-    ChevronDown, Filter, Layers, ArrowUpDown
+    TrendingUp, Edit3, Eye, X, History, CheckCircle2
 } from 'lucide-react';
+import { SHIPMENT_STATUSES, RECEIVED_STATUSES } from '@/lib/constants';
 import { Shipment, ShipmentPackage, ReceptionVersion } from '@/types';
 
 type TimeFilter = 'today' | 'week' | 'month';

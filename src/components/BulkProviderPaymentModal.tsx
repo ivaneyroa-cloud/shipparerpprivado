@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { secureShipmentUpdate } from '@/lib/secure-shipment-update';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { formatARSFull as formatMoney } from '@/lib/formatters';
 
 interface ProviderShipment {
     id: string;
@@ -22,12 +23,7 @@ interface ProviderPaymentViewProps {
     onBack: () => void;
 }
 
-const formatMoney = (val: number) =>
-    new Intl.NumberFormat('es-AR', {
-        style: 'currency',
-        currency: 'ARS',
-        minimumFractionDigits: 2,
-    }).format(val);
+
 
 export function ProviderPaymentView({ onBack }: ProviderPaymentViewProps) {
     const [pendingShipments, setPendingShipments] = useState<ProviderShipment[]>([]);

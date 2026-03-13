@@ -6,13 +6,9 @@ import { PaymentVerificationModal } from './PaymentVerificationModal';
 import { supabase } from '@/lib/supabase';
 import { secureShipmentUpdate } from '@/lib/secure-shipment-update';
 import { toast } from 'sonner';
+import { formatARSFull as formatMoney } from '@/lib/formatters';
 
-const formatMoney = (val: number) =>
-    new Intl.NumberFormat('es-AR', {
-        style: 'currency',
-        currency: 'ARS',
-        minimumFractionDigits: 2,
-    }).format(val);
+
 
 interface CobranzasTableProps {
     shipments: ShipmentCobranzasRow[];
