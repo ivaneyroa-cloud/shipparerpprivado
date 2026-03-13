@@ -891,20 +891,20 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                     </div>
                     <div style={{ background: S.card, border: `1px solid ${S.cardBorder}`, borderRadius: '5px', padding: '8px', textAlign: 'center' }}>
                         <p style={{ fontSize: '6px', fontWeight: 500, color: S.muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '3px' }}>Tarifa por KG</p>
-                        <p style={{ fontSize: '18px', fontWeight: 700, color: S.accent, lineHeight: 1 }}>${form.tarifaPerKg}</p>
+                        <p style={{ fontSize: '18px', fontWeight: 700, color: S.accent, lineHeight: 1 }}>USD ${form.tarifaPerKg}</p>
                     </div>
                 </div>
 
                 {/* ── TRANSPORTE AÉREO (single line, clean) ── */}
                 <div style={{ margin: '8px 20px 0', background: S.card, border: `1px solid ${S.cardBorder}`, borderLeft: `2px solid ${S.accent}`, borderRadius: '5px', padding: '10px 12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '9px', fontWeight: 500, color: S.dim }}>Transporte aéreo ({form.weightKg} kg × ${form.tarifaPerKg}/kg)</span>
-                        <span style={{ fontSize: '13px', fontWeight: 700, color: S.white }}>${formatMoney(shippingCost)}</span>
+                        <span style={{ fontSize: '9px', fontWeight: 500, color: S.dim }}>Transporte aéreo ({form.weightKg} kg × USD ${form.tarifaPerKg}/kg)</span>
+                        <span style={{ fontSize: '13px', fontWeight: 700, color: S.white }}>USD ${formatMoney(shippingCost)}</span>
                     </div>
                     {form.guiaAerea > 0 && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0 0', borderTop: `1px solid ${S.cardBorder}`, marginTop: '5px' }}>
                             <span style={{ fontSize: '9px', fontWeight: 400, color: S.dim }}>Guía aérea</span>
-                            <span style={{ fontSize: '9px', fontWeight: 700, color: S.white }}>${formatMoney(form.guiaAerea)}</span>
+                            <span style={{ fontSize: '9px', fontWeight: 700, color: S.white }}>USD ${formatMoney(form.guiaAerea)}</span>
                         </div>
                     )}
                 </div>
@@ -917,7 +917,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                         {gastoDoc > 0 && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
                                 <span style={{ fontSize: '9px', fontWeight: 400, color: S.dim }}>Gasto documental de aduana</span>
-                                <span style={{ fontSize: '9px', fontWeight: 700, color: S.white }}>${formatMoney(gastoDoc)}</span>
+                                <span style={{ fontSize: '9px', fontWeight: 700, color: S.white }}>USD ${formatMoney(gastoDoc)}</span>
                             </div>
                         )}
                         {form.valorFob && (
@@ -974,7 +974,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                                     <span style={{ fontSize: '8px', fontWeight: 400, color: S.muted }}>{form.nacionalTransportista}</span>
                                 )}
                             </div>
-                            <span style={{ fontSize: '13px', fontWeight: 700, color: S.white }}>${formatMoney(nacionalCost)}</span>
+                            <span style={{ fontSize: '13px', fontWeight: 700, color: S.white }}>USD ${formatMoney(nacionalCost)}</span>
                         </div>
                     </div>
                 )}
@@ -984,7 +984,7 @@ const QuotePreview = React.forwardRef<HTMLDivElement, any>(function QuotePreview
                 <div style={{ margin: '10px 20px 0', background: `linear-gradient(135deg, #0f3f2c 0%, #1a5e40 100%)`, border: `1px solid rgba(74,222,128,0.2)`, borderLeft: `3px solid ${S.green}`, borderRadius: '6px', padding: '18px 14px', textAlign: 'center' }}>
                     <p style={{ fontSize: '6.5px', fontWeight: 600, color: S.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '4px' }}>Costo Total Estimado</p>
                     <p style={{ fontSize: '26px', fontWeight: 800, color: S.green, letterSpacing: '-0.02em', lineHeight: 1 }}>
-                        ${formatMoney(totalUSD)} <span style={{ fontSize: '11px', fontWeight: 600, color: S.greenDim }}>USD</span>
+                        <span style={{ fontSize: '13px', fontWeight: 600, color: S.greenDim }}>USD </span>${formatMoney(totalUSD)}
                     </p>
                     {(totalARS || exchangeRate) && (
                         <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(74,222,128,0.12)' }}>
