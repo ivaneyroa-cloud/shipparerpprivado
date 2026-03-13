@@ -7,7 +7,7 @@ import { ShipmentCobranzasRow } from '@/types';
 import { toast } from 'sonner';
 import { CobranzasTable } from '@/components/CobranzasTable';
 import { ProviderPaymentView } from '@/components/BulkProviderPaymentModal';
-import { DollarSign, CreditCard } from 'lucide-react';
+import { CreditCard } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { useRealtimeRefresh } from '@/hooks/useRealtimeRefresh';
@@ -243,24 +243,23 @@ export default function CobranzasPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 shrink-0">
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-                    <p className="text-[11px] font-bold text-slate-500 mb-1">Total por Facturar</p>
-                    <p className="font-black text-2xl text-slate-800 dark:text-white font-[Outfit]">{formatMoney(stats.pendientes)}</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 shrink-0">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-slate-800 px-4 py-3.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700" style={{ borderLeft: '3px solid #94a3b8' }}>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Por Facturar</p>
+                    <p className="font-black text-[15px] text-slate-800 dark:text-white font-[Outfit] tracking-tight">{formatMoney(stats.pendientes)}</p>
                 </motion.div>
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-                    <p className="text-[11px] font-bold text-slate-500 mb-1">Total Facturado</p>
-                    <p className="font-black text-2xl text-slate-800 dark:text-white font-[Outfit]">{formatMoney(stats.facturados)}</p>
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-white dark:bg-slate-800 px-4 py-3.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700" style={{ borderLeft: '3px solid #3b82f6' }}>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-blue-500 mb-1">Facturado</p>
+                    <p className="font-black text-[15px] text-slate-800 dark:text-white font-[Outfit] tracking-tight">{formatMoney(stats.facturados)}</p>
                 </motion.div>
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-                    <p className="text-[11px] font-bold text-slate-500 mb-1">Dinero Ingresado</p>
-                    <p className="font-black text-2xl text-emerald-600 dark:text-emerald-400 font-[Outfit]">{formatMoney(stats.pagados)}</p>
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white dark:bg-slate-800 px-4 py-3.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700" style={{ borderLeft: '3px solid #10b981' }}>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-emerald-500 mb-1">Ingresado</p>
+                    <p className="font-black text-[15px] text-emerald-600 dark:text-emerald-400 font-[Outfit] tracking-tight">{formatMoney(stats.pagados)}</p>
                 </motion.div>
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-md border-b-4 border-b-red-500 dark:border-slate-700 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-10"><DollarSign size={48} /></div>
-                    <p className="text-[11px] font-bold text-red-500 mb-1">Pendientes de Abonar</p>
-                    <p className="font-black text-2xl text-slate-800 dark:text-white font-[Outfit]">{formatMoney(stats.pendientesAbonar)}</p>
-                    <p className="text-[9px] font-medium text-slate-400 mt-1">Costos de flete sin abonar al proveedor</p>
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-white dark:bg-slate-800 px-4 py-3.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700" style={{ borderLeft: '3px solid #ef4444' }}>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-red-500 mb-1">Deuda Proveedor</p>
+                    <p className="font-black text-[15px] text-slate-800 dark:text-white font-[Outfit] tracking-tight">{formatMoney(stats.pendientesAbonar)}</p>
+                    <p className="text-[8px] font-medium text-slate-400 mt-0.5">Fletes sin abonar</p>
                 </motion.div>
             </div>
 
